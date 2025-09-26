@@ -20,12 +20,11 @@ def segment_data(data: np.ndarray, window_size: int, overlap: int) -> np.ndarray
     step_size = window_size - overlap
     num_samples, num_features = data.shape
 
-    # Calculate the number of windows
-    # Ensure that we don't create partial windows at the end
+    # Calculate the number of windows. Ensure that we don't create partial windows at the end
     num_windows = (num_samples - window_size) // step_size + 1
 
+    # Not enough samples to create even one full window
     if num_windows <= 0:
-        # Not enough samples to create even one full window
         return np.empty((0, window_size, num_features), dtype=data.dtype)
 
     segments = np.zeros((num_windows, window_size, num_features), dtype=data.dtype)

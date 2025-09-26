@@ -1,7 +1,6 @@
 import re
 from pathlib import Path
 import pandas as pd
-from .sisfall_paths import RAW_DATA_DIR
 
 # Filename pattern: D01_SA01_R01.txt
 _NAME_RE = re.compile(r"^(?P<code>[DF]\d{2})_(?P<subject>S[AE]\d{2})_(?P<trial>R\d{2})\.txt$")
