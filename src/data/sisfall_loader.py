@@ -29,7 +29,14 @@ def load_sisfall_file(file_path: Path) -> np.ndarray:
     to physical units (g for accelerometer, deg/s for gyroscope).
     Extracts the first 6 columns (ADXL345 accelerometer and ITG3200 gyroscope).
     """
-    arr = pd.read_csv(file_path, sep=",", header=None).to_numpy(dtype=np.float32)
+    df = pd.read_csv(file_path, sep=",", header=None)
+
+    # The last column might contain a trailing semicolon. Remove it.
+    # Check if the last column is of object type (string) before applying .str accessor
+    if df.iloc[:, -1].dtype == 'object':
+        df.iloc[:, -1] = df.iloc[:, -1].str.replace(';', '', regex=False)
+    
+    arr = df.to_numpy(dtype=np.float32)
 
     if arr.shape[1] < 6:
         raise ValueError(f"Data file {file_path} has less than 6 columns.")
