@@ -2,25 +2,47 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-ACC_1_SLICE = slice(0, 3)  # x, y, z
-GYR_SLICE = slice(3, 6)  # x, y, z
-ACC_2_SLICE = slice(6, 9)  # x, y, z
+# Sensor characteristics from Readme.txt
+# ADXL345 (Accelerometer 1)
+ADXL345_RESOLUTION = 13
+ADXL345_RANGE = 16  # +-16g
 
-def load_sisfall_file(file_path, selected_cols=None):
+# ITG3200 (Gyroscope)
+ITG3200_RESOLUTION = 16
+ITG3200_RANGE = 2000  # +-2000 deg/s
+
+# Conversion formulas:
+# Acceleration [g]: [(2*Range)/(2^Resolution)]*AD
+# Angular velocity [deg/s]: [(2*Range)/(2^Resolution)]*RD
+
+ADXL345_CONVERSION_FACTOR = (2 * ADXL345_RANGE) / (2**ADXL345_RESOLUTION)
+ITG3200_CONVERSION_FACTOR = (2 * ITG3200_RANGE) / (2**ITG3200_RESOLUTION)
+
+
+ACC_1_SLICE = slice(0, 3)  # x, y, z for ADXL345
+GYR_SLICE = slice(3, 6)  # x, y, z for ITG3200
+ACC_2_SLICE = slice(6, 9)  # x, y, z for MMA8451Q (not used in first 6 columns)
+
+def load_sisfall_file(file_path: Path) -> np.ndarray:
     """
-    Read a SisFall data file into a numpy array. 
-    Currently supports selecting accelerometer and gyroscope data.
+    Read a SisFall data file into a numpy array and convert raw bit values
+    to physical units (g for accelerometer, deg/s for gyroscope).
+    Extracts the first 6 columns (ADXL345 accelerometer and ITG3200 gyroscope).
     """
     arr = pd.read_csv(file_path, sep=",", header=None).to_numpy(dtype=np.float32)
 
     if arr.shape[1] < 6:
         raise ValueError(f"Data file {file_path} has less than 6 columns.")
     
-    # if selected_cols is None:
-    #     out_data= np.r_[ACC_1_SLICE, GYR_SLICE]
-    # else:
-    #     out_data = arr[:, selected_cols]
+    # Extract the first 6 columns
+    accel_data = arr[:, ACC_1_SLICE]
+    gyro_data = arr[:, GYR_SLICE]
 
-    output = arr[:, np.r_[ACC_1_SLICE, GYR_SLICE]]
+    # Apply unit conversion
+    accel_data_g = accel_data * ADXL345_CONVERSION_FACTOR
+    gyro_data_degs = gyro_data * ITG3200_CONVERSION_FACTOR
+
+    # Concatenate the converted data
+    output = np.concatenate((accel_data_g, gyro_data_degs), axis=1)
 
     return output
