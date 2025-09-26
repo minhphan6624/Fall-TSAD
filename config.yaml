@@ -1,0 +1,19 @@
+# config.yaml
+data:
+  processed_path: 'data/processed'
+
+model:
+  name: 'LstmAE'
+  save_path: 'models/'
+  # LSTM-AE specific hyperparameters
+  n_features: 6 # Number of features in the input data
+  hidden_dim: 64
+  n_layers: 2
+  dropout: 0.2
+
+training:
+  epochs: 50
+  batch_size: 32
+  learning_rate: 0.001
+  optimizer: 'Adam'
+  loss_fn: 'MSELoss'
