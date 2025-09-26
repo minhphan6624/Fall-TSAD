@@ -14,7 +14,7 @@ def parse_filename(name: str) -> dict:
     if not m:
         raise ValueError(f"Invalid filename: {name}")
     
-    
+    # Extract metadata from regex groups
     code = m.group("code")
     subject = m.group("subject")    
     trial = m.group("trial")
