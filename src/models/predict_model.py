@@ -37,6 +37,7 @@ def predict_model():
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval() # Set model to evaluation mode
 
+    # Perform predictions (generating reconstructions)
     reconstructions = []
     with torch.no_grad():
         for data, _ in test_loader:
@@ -46,12 +47,8 @@ def predict_model():
 
     reconstructions = np.concatenate(reconstructions, axis=0)
     
-    # Inverse transform the data if a scaler was used
-    # Note: The scaler was fitted on the raw training data, and the model was trained on normalized data.
-    # To get meaningful reconstructions in the original scale, we need to inverse transform.
-    # However, the current `create_dataloaders` returns the scaler, but the `test_loader` data is already normalized.
-    # We need to reconstruct the *normalized* data and then inverse transform it.
-    # The `test_loader` provides normalized data, so `reconstructions` are also normalized.
+    # Inverse transform the data since the model was trained on normalized data.
+    # The `test_loader` data is already normalized, so the reconstructions are in normalized scale. We need to convert them back for good thresholding and visualization.
     
     # Flatten the 3D reconstructions (batch, sequence_length, n_features) to 2D for inverse_transform
     original_shape = reconstructions.shape
@@ -66,5 +63,3 @@ def predict_model():
 
 if __name__ == "__main__":
     reconstructed_data = predict_model()
-    # Further steps can be added here, e.g., saving the reconstructions or calculating anomaly scores
-    # np.save('results/reconstructions.npy', reconstructed_data)
