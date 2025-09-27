@@ -6,7 +6,7 @@ import yaml
 from pathlib import Path
 from src.models.data_loader import create_dataloaders
 from src.models.architectures.lstm_ae import LSTM_AE
-from src.models.trainer import Trainer # 
+from src.models.trainer import Trainer 
 
 def train_model():
     # Load configuration
@@ -20,7 +20,7 @@ def train_model():
     # Load data
     processed_data_path = Path(config['data']['processed_path'])
     batch_size = config['training']['batch_size']
-    train_loader, val_loader, _, scaler = create_dataloaders(processed_data_path, batch_size)
+    train_loader, val_loader, _, _ = create_dataloaders(processed_data_path, batch_size)
 
     # Model initialization
     model_name = config['model']['name']
@@ -29,7 +29,7 @@ def train_model():
     n_layers = config['model']['n_layers']
     dropout = config['model']['dropout']
 
-    if model_name == 'LstmAE':
+    if model_name == 'LSTM_AE':
         model = LSTM_AE(n_features, hidden_dim, n_layers, dropout).to(device)
     else:
         raise ValueError(f"Model {model_name} not supported.")
@@ -51,17 +51,19 @@ def train_model():
     # Training loop
     epochs = config['training']['epochs']
     model_save_path = Path(config['model']['save_path'])
+    patience = config['training']['patience']
 
+    # Initialize Trainer
     trainer = Trainer(
         model=model,
+        device=device,
         train_loader=train_loader,
         val_loader=val_loader,
         criterion=criterion,
         optimizer=optimizer,
-        device=device,
         model_save_path=model_save_path,
         model_name=model_name,
-        scaler=scaler
+        patience=patience
     )
     trainer.fit(epochs)
 
