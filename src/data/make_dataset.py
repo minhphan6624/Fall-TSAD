@@ -19,11 +19,13 @@ def main():
     metadata_df = build_metadata(RAW_DATA_DIR)
     train_meta, val_meta, test_meta = split_data_by_subject(metadata_df, 
                                                             random_state=RANDOM_STATE)
-
+    
+    train_meta = train_meta[train_meta['is_fall'] == 0].reset_index(drop=True)
+    
     # -- 2. Load data for each split --
     def load_data_for_split(meta_df):
         data_list = []
-        for _, row in meta_df.itterows():
+        for _, row in meta_df.iterrows():
             data = load_sisfall_file(Path(row['path'])) # Load data file based on the path
             data_list.append(data)
 
@@ -49,11 +51,11 @@ def main():
 
     # -- 4. Segmentation --
     train_segments = segment_dataset(
-        train_norm_data, train_meta['label'].tolist(), WINDOW_SIZE, OVERLAP)
+        train_norm_data, train_meta['is_fall'].tolist(), WINDOW_SIZE, OVERLAP)
     val_segments = segment_dataset(
-        val_norm_data, val_meta['label'].tolist(), WINDOW_SIZE, OVERLAP)
+        val_norm_data, val_meta['is_fall'].tolist(), WINDOW_SIZE, OVERLAP)
     test_segments = segment_dataset(
-        test_norm_data, test_meta['label'].tolist(), WINDOW_SIZE, OVERLAP)
+        test_norm_data, test_meta['is_fall'].tolist(), WINDOW_SIZE, OVERLAP)
 
     # -- 5. Serialization --
 
@@ -73,4 +75,3 @@ def main():
     
 if __name__ == "__main__":
     main()
-
