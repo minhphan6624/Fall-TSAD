@@ -79,8 +79,7 @@ class Trainer:
             # If validation loss improves
             if val_loss < self.best_val_loss:
 
-                # Update best validation loss
-                self.best_val_loss = val_loss
+                self.best_val_loss = val_loss # Update best validation loss
 
                 # Save the best model
                 torch.save(self.model.state_dict(), self.model_save_path / f"{self.model_name}_best.pth")

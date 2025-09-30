@@ -9,13 +9,13 @@ from src.models.lstm_ae import LSTM_AE
 
 
 def predict_model():
-    # Load configuration
-    with open('config.yaml', 'r') as f:
-        config = yaml.safe_load(f)
-
     # Device configuration
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
+
+    # Load configuration
+    with open('config.yaml', 'r') as f:
+        config = yaml.safe_load(f)
 
     # Load data (only test loader is needed for prediction)
     processed_data_path = Path(config['data']['processed_path'])

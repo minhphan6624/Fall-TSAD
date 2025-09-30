@@ -19,3 +19,6 @@ training:
   optimizer: 'Adam'
   loss_fn: 'MSELoss'
   patience: 3
+
+results:
+  threshold_path: 'results/'
