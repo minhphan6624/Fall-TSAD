@@ -1,26 +1,28 @@
 import torch
 import yaml
+import json
 from pathlib import Path
-
+from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix
 import numpy as np
 
 from src.training.data_loader import create_dataloaders
 from src.models.lstm_ae import LSTM_AE
+from src.training.select_threshold import calculate_reconstruction_errors 
 
-
-def predict_model():
-    # Device configuration
+def evaluate_model():
+    """
+    Main function to evaluate the model performance on the test set.
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    # Load configuration
     with open('config.yaml', 'r') as f:
         config = yaml.safe_load(f)
 
-    # Load data (only test loader is needed for prediction)
+    # Load data (only test loader is needed for evaluation)
     processed_data_path = Path(config['data']['processed_path'])
     batch_size = config['training']['batch_size']
-    _, _, test_loader, scaler = create_dataloaders(processed_data_path, batch_size)
+    _, _, test_loader, _ = create_dataloaders(processed_data_path, batch_size)
 
     # Model initialization
     model_name = config['model']['name']
@@ -38,31 +40,36 @@ def predict_model():
     model_save_path = Path(config['model']['save_path'])
     model_path = model_save_path / f"{model_name}_best.pth"
     model.load_state_dict(torch.load(model_path, map_location=device))
-    model.eval() # Set model to evaluation mode
+    print(f"Loaded best model from {model_path}")
 
-    # Perform predictions (generating reconstructions)
-    reconstructions = []
-    with torch.no_grad():
-        for data, _ in test_loader:
-            data = data.to(device)
-            outputs = model(data)
-            reconstructions.append(outputs.cpu().numpy())
+    # Load the optimal threshold
+    threshold_save_path = Path(config['results']['threshold_path'])
+    threshold_file = threshold_save_path / "optimal_threshold.json"
+    with open(threshold_file, 'r') as f:
+        threshold_data = json.load(f)
+    optimal_threshold = threshold_data['optimal_threshold']
+    print(f"Loaded optimal threshold: {optimal_threshold:.4f}")
 
-    reconstructions = np.concatenate(reconstructions, axis=0)
-    
-    # Inverse transform the data since the model was trained on normalized data.
-    # The `test_loader` data is already normalized, so the reconstructions are in normalized scale. # We need to convert them back for good thresholding and visualization.
-    
-    # Flatten the 3D reconstructions (batch, sequence_length, n_features) to 2D for inverse_transform
-    original_shape = reconstructions.shape
-    reconstructions_flat = reconstructions.reshape(-1, n_features)
-    
-    # Inverse transform
-    reconstructions_original_scale_flat = scaler.inverse_transform(reconstructions_flat)
-    reconstructions_original_scale = reconstructions_original_scale_flat.reshape(original_shape)
+    # Calculate reconstruction errors on the test set
+    print("Calculating reconstruction errors on test set...")
+    test_errors, test_labels = calculate_reconstruction_errors(model, test_loader, device)
 
-    print("Prediction complete. Reconstructions in original scale generated.")
-    return reconstructions_original_scale
+    # Apply threshold to get predictions
+    predictions = (test_errors > optimal_threshold).astype(int)
+
+    # Calculate evaluation metrics
+    f1 = f1_score(test_labels, predictions)
+    precision = precision_score(test_labels, predictions)
+    recall = recall_score(test_labels, predictions)
+    cm = confusion_matrix(test_labels, predictions)
+
+    print("\n--- Model Evaluation Results ---")
+    print(f"F1-Score: {f1:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print("\nConfusion Matrix:")
+    print(cm)
+    print("------------------------------")
 
 if __name__ == "__main__":
-    reconstructed_data = predict_model()
+    evaluate_model()
