@@ -1,9 +1,12 @@
 import torch
 import yaml
 from pathlib import Path
-from src.models.data_loader import create_dataloaders, TimeSeriesDataset
-from src.models.architectures.lstm_ae import LSTM_AE
+
 import numpy as np
+
+from src.training.data_loader import create_dataloaders
+from src.models.lstm_ae import LSTM_AE
+
 
 def predict_model():
     # Load configuration

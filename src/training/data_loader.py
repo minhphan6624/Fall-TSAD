@@ -1,7 +1,6 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 from src.data.sisfall_serialize import load_processed_data
-import numpy as np
 
 class TimeSeriesDataset(Dataset):
     """

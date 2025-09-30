@@ -4,9 +4,11 @@ import torch.nn as nn
 import torch.optim as optim
 import yaml
 from pathlib import Path
-from src.models.data_loader import create_dataloaders
-from src.models.architectures.lstm_ae import LSTM_AE
-from src.models.trainer import Trainer 
+
+from src.training.data_loader import create_dataloaders
+from src.training.trainer import Trainer 
+
+from src.models.lstm_ae import LSTM_AE
 
 def train_model():
     """
@@ -47,6 +49,11 @@ def train_model():
 
     optimizer_name = config['training']['optimizer']
     learning_rate = config['training']['learning_rate']
+
+    # Check if the optimizer is supported
+    # if optimizer_name not in optim.__all__:
+    #     raise ValueError(f"Optimizer {optimizer_name} not supported.")
+
     if optimizer_name == 'Adam':
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     else:

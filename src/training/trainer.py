@@ -1,7 +1,4 @@
 import torch
-import torch.nn as nn
-import torch.optim as optim
-from pathlib import Path
 import os
 
 class Trainer:
@@ -68,7 +65,11 @@ class Trainer:
         return avg_val_loss
 
     def fit(self, epochs):
+        """
+        Trains the model for a specified number of epochs,
+        """
         for epoch in range(epochs):
+            
             # Train and validate for one epoch
             train_loss = self._train_epoch()
             val_loss = self._validate_epoch()
