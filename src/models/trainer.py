@@ -75,14 +75,21 @@ class Trainer:
 
             print(f"Epoch [{epoch+1}/{epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
 
-            
+            # If validation loss improves
             if val_loss < self.best_val_loss:
+
+                # Update best validation loss
                 self.best_val_loss = val_loss
+
+                # Save the best model
                 torch.save(self.model.state_dict(), self.model_save_path / f"{self.model_name}_best.pth")
                 print(f"Saved best model with validation loss: {self.best_val_loss:.4f}")
-                self.early_stopping_counter = 0 # Reset counter if validation loss improves
+                
+                # Reset early stopping counter
+                self.early_stopping_counter = 0 
             else:
-                self.early_stopping_counter += 1 # Increment counter if no improvement
+                # Increment counter if no improvement
+                self.early_stopping_counter += 1 
                 print(f"Early stopping counter: {self.early_stopping_counter}/{self.patience}")
 
             if self.early_stopping_counter >= self.patience:

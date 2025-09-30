@@ -48,7 +48,7 @@ def predict_model():
     reconstructions = np.concatenate(reconstructions, axis=0)
     
     # Inverse transform the data since the model was trained on normalized data.
-    # The `test_loader` data is already normalized, so the reconstructions are in normalized scale. We need to convert them back for good thresholding and visualization.
+    # The `test_loader` data is already normalized, so the reconstructions are in normalized scale. # We need to convert them back for good thresholding and visualization.
     
     # Flatten the 3D reconstructions (batch, sequence_length, n_features) to 2D for inverse_transform
     original_shape = reconstructions.shape

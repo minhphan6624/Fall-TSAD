@@ -26,11 +26,12 @@ def split_data_by_subject(
     if not np.isclose(train_ratio + val_ratio + (1 - train_ratio - val_ratio), 1.0):
         raise ValueError("Train, validation, and test ratios must sum to 1.0")
 
+    # Randomly shuffle unique subjects
     np.random.seed(random_state)
-    
     unique_subjects = metadata_df["subject"].unique()
     np.random.shuffle(unique_subjects)
 
+    # Determine split indices based on ratios
     num_subjects = len(unique_subjects)
     num_train = int(num_subjects * train_ratio)
     num_val = int(num_subjects * val_ratio)
@@ -39,6 +40,7 @@ def split_data_by_subject(
     val_subjects = unique_subjects[num_train : num_train + num_val]
     test_subjects = unique_subjects[num_train + num_val :]
 
+    # Create metadata DataFrames for each split
     train_df = metadata_df[metadata_df["subject"].isin(train_subjects)].reset_index(drop=True)
     val_df = metadata_df[metadata_df["subject"].isin(val_subjects)].reset_index(drop=True)
     test_df = metadata_df[metadata_df["subject"].isin(test_subjects)].reset_index(drop=True)

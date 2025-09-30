@@ -19,8 +19,8 @@ class StandardScaler:
         """
         self.mean = np.mean(data, axis=0)
         self.std = np.std(data, axis=0)
-        # Avoid division by zero for constant features
-        self.std[self.std == 0] = 1.0
+        
+        self.std[self.std == 0] = 1.0 # Avoid division by zero for constant features, though this is rare.
 
     def transform(self, data: np.ndarray) -> np.ndarray:
         """
@@ -59,6 +59,7 @@ def apply_normalization(
     """
     scaler = StandardScaler()
     
+    # Fit on training data and transform all datasets
     train_normalized = scaler.fit_transform(train_data)
     val_normalized = scaler.transform(val_data)
     test_normalized = scaler.transform(test_data)

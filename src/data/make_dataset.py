@@ -5,7 +5,7 @@ from .sisfall_loader import load_sisfall_file
 from .sisfall_split import split_data_by_subject
 from .sisfall_segment import segment_dataset
 from .sisfall_normalize import StandardScaler
-from .sisfall_serialize import save_processed_data, load_processed_data
+from .sisfall_serialize import save_processed_data
 
 import numpy as np
 
@@ -21,8 +21,8 @@ def main():
                                                             random_state=RANDOM_STATE)
     
     train_meta = train_meta[train_meta['is_fall'] == 0].reset_index(drop=True)
-    
-    # -- 2. Load data for each split --
+
+    # -- 2. Load data for each split based on metadata --
     def load_data_for_split(meta_df):
         data_list = []
         for _, row in meta_df.iterrows():
@@ -38,9 +38,9 @@ def main():
     # -- 3. Normalization --
 
     # Concatenate all training data into a numpy ndarray to fit the scaler
-
     full_train_data = np.concatenate(train_raw_data, axis=0)
 
+    # Initialize and fit the scaler on training data only
     scaler = StandardScaler()
     scaler.fit(full_train_data)
 

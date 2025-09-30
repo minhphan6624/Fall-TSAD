@@ -9,6 +9,10 @@ from src.models.architectures.lstm_ae import LSTM_AE
 from src.models.trainer import Trainer 
 
 def train_model():
+    """
+    Main function to train the model based on configurations specified in config.yaml.
+    """
+
     # Load configuration
     with open('config.yaml', 'r') as f:
         config = yaml.safe_load(f)

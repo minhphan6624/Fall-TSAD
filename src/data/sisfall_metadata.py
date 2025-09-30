@@ -30,8 +30,11 @@ def parse_filename(name: str) -> dict:
     }
 
 def build_metadata(raw_dir: str) -> pd.DataFrame:
+    """
+    Build a metadata DataFrame from the raw data directory
+    Each row corresponds to a data file with extracted metadata
+    """
     rows = []
-
     # Iterate over subject directories and files to parse metadata
     for subj_dir in sorted(raw_dir.glob("S[A|E][0-9][0-9]")): #raw/SA01/*.txt
         for p in sorted(subj_dir.glob("*.txt")):
