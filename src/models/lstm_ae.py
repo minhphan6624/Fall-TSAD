@@ -21,12 +21,15 @@ class LSTM_AE(nn.Module):
         # Decoder LSTM
         self.decoder = nn.LSTM(
             input_size=hidden_dim,
-            hidden_size=n_features,
+            hidden_size=hidden_dim, # Changed to hidden_dim
             num_layers=num_layers,
             dropout=dropout,
             batch_first=True,
             bidirectional=False
         )
+        
+        # Output layer to project decoder output back to n_features
+        self.output_layer = nn.Linear(hidden_dim, n_features)
 
     def forward(self, x):
         # x shape: (batch_size, sequence_length, n_features)
@@ -42,4 +45,7 @@ class LSTM_AE(nn.Module):
         # Decoder forward pass
         decoder_output, _ = self.decoder(decoder_input, (hidden_state, cell_state))
         
-        return decoder_output
+        # Project decoder output to original feature dimension
+        output = self.output_layer(decoder_output)
+        
+        return output
