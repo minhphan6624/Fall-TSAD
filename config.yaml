@@ -1,6 +1,6 @@
 # config.yaml
 data:
-  processed_path: 'data/processed'
+  processed_path: 'data/SisFall/processed/'
 
 model:
   name: 'LSTM_AE'

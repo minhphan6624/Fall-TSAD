@@ -4,6 +4,7 @@ from pathlib import Path
 import pickle
 from .sisfall_normalize import StandardScaler
 
+
 def save_processed_data(
     output_dir: Path,
     train_data: np.ndarray,

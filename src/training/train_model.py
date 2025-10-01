@@ -7,7 +7,6 @@ from pathlib import Path
 
 from src.training.data_loader import create_dataloaders
 from src.training.trainer import Trainer 
-
 from src.models.lstm_ae import LSTM_AE
 
 def train_model():
