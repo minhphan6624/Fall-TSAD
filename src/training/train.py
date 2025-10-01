@@ -15,7 +15,8 @@ def train_model():
     """
 
     # Device configuration
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("mps" if torch.backends.mps.is_available() else
+                        "cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
     # Load configuration
@@ -25,7 +26,7 @@ def train_model():
     # Load data
     processed_data_path = Path(config['data']['processed_path'])
     batch_size = config['training']['batch_size']
-    train_loader, val_loader, _, _ = create_dataloaders(processed_data_path, batch_size)
+    train_loader, val_loader, _ = create_dataloaders(processed_data_path, batch_size)
 
     # Model initialization
     model_name = config['model']['name']
@@ -49,10 +50,6 @@ def train_model():
     optimizer_name = config['training']['optimizer']
     learning_rate = config['training']['learning_rate']
 
-    # Check if the optimizer is supported
-    # if optimizer_name not in optim.__all__:
-    #     raise ValueError(f"Optimizer {optimizer_name} not supported.")
-
     if optimizer_name == 'Adam':
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     else:
@@ -75,6 +72,8 @@ def train_model():
         model_name=model_name,
         patience=patience
     )
+
+    print("Starting training...")
     trainer.fit(epochs)
 
 if __name__ == "__main__":

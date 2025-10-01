@@ -13,7 +13,8 @@ def evaluate_model():
     """
     Main function to evaluate the model performance on the test set.
     """
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("mps" if torch.backends.mps.is_available() else
+                        "cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
     with open('config.yaml', 'r') as f:
@@ -22,7 +23,7 @@ def evaluate_model():
     # Load data (only test loader is needed for evaluation)
     processed_data_path = Path(config['data']['processed_path'])
     batch_size = config['training']['batch_size']
-    _, _, test_loader, _ = create_dataloaders(processed_data_path, batch_size)
+    _, _, test_loader = create_dataloaders(processed_data_path, batch_size)
 
     # Model initialization
     model_name = config['model']['name']

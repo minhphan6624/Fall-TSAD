@@ -65,9 +65,6 @@ def load_processed_data(output_dir: Path) -> dict:
     """
     data = np.load(output_dir / "processed_data.npz")
     
-    with open(output_dir / "scaler.pkl", "rb") as f:
-        scaler = pickle.load(f)
-    
     metadata_df = pd.read_csv(output_dir / "metadata.csv")
 
     return {
@@ -77,6 +74,5 @@ def load_processed_data(output_dir: Path) -> dict:
         "val_labels": data["val_labels"],
         "test_data": data["test_data"],
         "test_labels": data["test_labels"],
-        "scaler": scaler,
         "metadata_df": metadata_df,
     }

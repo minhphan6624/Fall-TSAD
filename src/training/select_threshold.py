@@ -72,7 +72,7 @@ def select_threshold():
     # Load data, only need validation set for threshold selection
     processed_data_path = Path(config['data']['processed_path'])
     batch_size = config['training']['batch_size']
-    _, val_loader, _, _ = create_dataloaders(processed_data_path, batch_size)
+    _, val_loader, _ = create_dataloaders(processed_data_path, batch_size)
 
     # Model initialization
     model_name = config['model']['name']
