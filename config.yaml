@@ -4,7 +4,7 @@ data:
 
 model:
   name: 'LSTM_AE'
-  save_path: 'saved_models/'
+  save_path: 'models/'
   
   # LSTM-AE specific hyperparameters
   n_features: 6 # Number of features in the input data
@@ -18,7 +18,7 @@ training:
   learning_rate: 0.001
   optimizer: 'Adam'
   loss_fn: 'MSELoss'
-  patience: 3
+  patience: 7
 
 results:
   threshold_path: 'results/'

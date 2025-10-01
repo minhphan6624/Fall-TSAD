@@ -1,5 +1,6 @@
 import torch
 import os
+import time
 
 class Trainer:
     """
@@ -30,10 +31,11 @@ class Trainer:
 
     # Run a single epoch of training
     def _train_epoch(self):
+        
         self.model.train() # Set model to training mode
         train_loss = 0
 
-        for data, _ in self.train_loader:
+        for data, idx  in self.train_loader:
             data = data.to(self.device) # Move data to the computing device
             
             self.optimizer.zero_grad() # Clear gradients
@@ -69,12 +71,16 @@ class Trainer:
         Trains the model for a specified number of epochs,
         """
         for epoch in range(epochs):
+            epoch_start_time = time.time()
             
             # Train and validate for one epoch
             train_loss = self._train_epoch()
             val_loss = self._validate_epoch()
+            
+            epoch_end_time = time.time()
+            epoch_duration = epoch_end_time - epoch_start_time
 
-            print(f"Epoch [{epoch+1}/{epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+            print(f"Epoch [{epoch+1}/{epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Time: {epoch_duration:.2f}s")
 
             # If validation loss improves
             if val_loss < self.best_val_loss:
