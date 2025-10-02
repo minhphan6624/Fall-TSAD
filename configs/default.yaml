@@ -1,0 +1,5 @@
+defaults:
+  - data: sisfall
+  - model: lstm_ae
+  - trainer: base
+seed: 42
