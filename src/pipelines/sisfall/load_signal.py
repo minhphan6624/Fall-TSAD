@@ -23,7 +23,7 @@ ACC_1_SLICE = slice(0, 3)  # x, y, z for ADXL345
 GYR_SLICE = slice(3, 6)  # x, y, z for ITG3200
 ACC_2_SLICE = slice(6, 9)  # x, y, z for MMA8451Q (not used in first 6 columns)
 
-def load_sisfall_file(file_path: Path) -> np.ndarray:
+def load_signal(file_path: Path) -> np.ndarray:
     """
     Read a SisFall data file into a numpy array and convert raw bit values
     to physical units (g for accelerometer, deg/s for gyroscope).
@@ -31,13 +31,13 @@ def load_sisfall_file(file_path: Path) -> np.ndarray:
     """
     df = pd.read_csv(file_path, sep=",", header=None)
 
-    # The last column might contain a trailing semicolon. Remove it.
-    # Check if the last column is of object type (string) before applying .str accessor
+    # The last column might contain a trailing semicolon. 
+    # Check if the last column is of object type (string) before applying .str accessor to remove the semicolon.
     if df.iloc[:, -1].dtype == 'object':
         df.iloc[:, -1] = df.iloc[:, -1].str.replace(';', '', regex=False)
     
-    arr = df.to_numpy(dtype=np.float32)
-
+    arr = df.to_numpy(dtype=np.float32) # Convert all data to float32
+    
     if arr.shape[1] < 6:
         raise ValueError(f"Data file {file_path} has less than 6 columns.")
     

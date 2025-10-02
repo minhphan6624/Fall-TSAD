@@ -1,67 +1,36 @@
 import numpy as np
 from typing import Tuple
+from .load_signal import load_signal
 
-class StandardScaler:
+from sklearn.preprocessing import StandardScaler
+import joblib
+
+def normalize_splits(splits) -> dict:
     """
-    A custom StandardScaler to normalize data (mean 0, std dev 1).
-    It fits on training data and transforms all data splits using
-    the training data's statistics.
-    """
-    def __init__(self):
-        self.mean = None
-        self.std = None
-
-    def fit(self, data: np.ndarray):
-        """
-        Calculates the mean and standard deviation from the provided data.
-        Args:
-            data (np.ndarray): The training data to fit the scaler on.
-        """
-        self.mean = np.mean(data, axis=0)
-        self.std = np.std(data, axis=0)
-        
-        self.std[self.std == 0] = 1.0 # Avoid division by zero for constant features, though this is rare.
-
-    def transform(self, data: np.ndarray) -> np.ndarray:
-        """
-        Transforms the data using the fitted mean and standard deviation.
-        """
-        if self.mean is None or self.std is None:
-            raise RuntimeError("Scaler has not been fitted yet. Call .fit() first.")
-        return (data - self.mean) / self.std
-
-    def fit_transform(self, data: np.ndarray) -> np.ndarray:
-        """
-        Fits the scaler to the data and then transforms it.
-        """
-        self.fit(data)
-        return self.transform(data)
-
-def apply_normalization(
-    train_data: np.ndarray, 
-    val_data: np.ndarray, 
-    test_data: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, StandardScaler]:
-    """
-    Applies standardization (Z-score normalization) to the datasets.
-    The scaler is fitted only on the training data, and then used to transform
-    all three datasets to prevent data leakage.
-
+    Normalizes each data file in the splits using StandardScaler.
+    
     Args:
-        train_data (np.ndarray): The training data.
-        val_data (np.ndarray): The validation data.
-        test_data (np.ndarray): The test data.
-
+        splits (dict): A dictionary with keys 'train', 'val', 'test', each containing
+                       a DataFrame with 'file' and 'label' columns.
+    
     Returns:
-        Tuple[np.ndarray, np.ndarray, np.ndarray, StandardScaler]: 
-            A tuple containing the normalized train, validation, test data,
-            and the fitted StandardScaler instance.
+        dict: A dictionary with the same keys as input, where each value is a list of tuples
+              (normalized_data, label).
     """
     scaler = StandardScaler()
-    
-    # Fit on training data and transform all datasets
-    train_normalized = scaler.fit_transform(train_data)
-    val_normalized = scaler.transform(val_data)
-    test_normalized = scaler.transform(test_data)
+    # Concatenate all training data for fitting the scaler
+    X_train = np.vstack([load_signal(f) for f in splits["train"]["file"]])
+    scaler.fit(X_train)
 
-    return train_normalized, val_normalized, test_normalized, scaler
+    # joblib.dump(scaler, "data/processed/sisfall/scaler.pkl")
+
+    def norm_file(f):
+        return scaler.transform(load_signal(f))
+
+    normed = {}
+    for split, df in splits.items():
+        # More efficient iteration over DataFrame rows
+        normed[split] = [
+            (norm_file(row['path']), row['is_fall'])
+            for _, row in df.iterrows()
+        ]
