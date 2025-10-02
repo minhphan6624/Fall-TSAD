@@ -2,7 +2,6 @@ import sys
 import hydra
 from omegaconf import DictConfig
 
-
 from src.pipelines import DATASETS
 
 @hydra.main(version_base=None, config_path="../configs", config_name="default")

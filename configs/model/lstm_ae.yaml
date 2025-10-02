@@ -1,5 +1,4 @@
 name: 'LSTM_AE'
-save_path: 'models/'
 
 # LSTM-AE specific hyperparameters
 n_features: 6
