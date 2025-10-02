@@ -1,11 +1,11 @@
 from pathlib import Path
-from .sisfall_paths import RAW_DATA_DIR, PROCESSED_DATA_DIR
-from .sisfall_metadata import build_metadata
-from .sisfall_loader import load_sisfall_file
-from .sisfall_split import split_data_by_subject
-from .sisfall_segment import segment_dataset
-from .sisfall_normalize import StandardScaler
-from .sisfall_serialize import save_processed_data
+from .paths import RAW_DATA_DIR, PROCESSED_DATA_DIR
+from .build_metadata import build_metadata
+from .loader import load_sisfall_file
+from .split import split_data_by_subject
+from .segment import segment_dataset
+from .normalize import StandardScaler
+from .serialize import save_processed_data
 
 import numpy as np
 

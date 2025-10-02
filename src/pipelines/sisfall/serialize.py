@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import pickle
-from .sisfall_normalize import StandardScaler
+from .normalize import StandardScaler
 
 
 def save_processed_data(
