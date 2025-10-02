@@ -1,0 +1,13 @@
+name: upfall
+raw_dir: data/raw/${.name}/
+processed_dir: data/processed/${.name}/
+
+batch_size: 32
+
+normalize: zscore
+split: 
+  train: 0.7
+  val: 0.15
+  test: 0.15
+
+random_seed: 42
