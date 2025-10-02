@@ -18,7 +18,9 @@ def split_data_by_subject(metadata_df: pd.DataFrame, split, seed: int) -> dict:
         dict: A dictionary with keys 'train', 'val', 'test', each containing a DataFrame
               with the corresponding split of the metadata.
     """
-    train_ratio, val_ratio, test_ratio = split
+    train_ratio = split.train
+    val_ratio = split.val
+    test_ratio = split.test
 
     np.random.seed(seed)
     subjects = metadata_df["subject"].unique()

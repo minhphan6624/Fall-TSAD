@@ -1,3 +1,3 @@
-from .sisfall import aa_run_pipeline
+from .sisfall.aa_run_pipeline import run_pipeline
 
-DATASETS = {"sisfall": aa_run_pipeline }
+DATASETS = {"sisfall": run_pipeline }

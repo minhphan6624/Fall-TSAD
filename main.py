@@ -1,5 +1,7 @@
 import hydra
 from omegaconf import DictConfig, OmegaConf
+from src.utils.registry import DATASETS, MODELS
+from src.trainers.trainer import Trainer
 import logging
 
 log = logging.getLogger(__name__)
@@ -9,17 +11,12 @@ def main(cfg: DictConfig):
     log.info(OmegaConf.to_yaml(cfg))
     log.info(f"Working directory : {cfg.hydra.runtime.cwd}")
 
-    # Example of accessing config parameters
-    # dataset_name = cfg.data.name
-    # model_name = cfg.model.name
-    # trainer_name = cfg.trainer.name
+    dataset = DATASETS[cfg.data.name](**cfg.data.params)
+    model = MODELS[cfg.model.name](**cfg.model.params)
+    trainer = Trainer(model, cfg.trainer.params) # Need modification
 
-    # 1. Initialize dataset/dataloader using cfg.data
-    # 2. Initialize model using cfg.model
-    # 3. Initialize and run trainer using cfg.trainer
+    trainer.fit(dataset)
 
-    log.info("Refactoring in progress. Main entry point is a placeholder.")
-    log.info("Please implement your dataset, model, and trainer initialization here.")
 
 if __name__ == "__main__":
     main()
