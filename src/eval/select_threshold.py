@@ -6,7 +6,7 @@ from pathlib import Path
 from sklearn.metrics import f1_score, precision_score, recall_score
 import numpy as np
 
-from src.training.data_loader import create_dataloaders
+from src.datasets.data_loader import create_dataloaders
 from src.models.lstm_ae import LSTM_AE
 
 def calculate_reconstruction_errors(model, data_loader, device):
