@@ -45,8 +45,7 @@ def build_metadata(raw_dir: str) -> pd.DataFrame:
     if not rows:
         raise FileNotFoundError(f"No data found in {raw_dir}")
     
-    # Create a DataFrame
-    df = pd.DataFrame(rows)
+    df = pd.DataFrame(rows) # Create a DataFrame
 
     # Return sorted DataFrame by subject and filename
     return df.sort_values(by=["subject", "filename"]).reset_index(drop=True)
