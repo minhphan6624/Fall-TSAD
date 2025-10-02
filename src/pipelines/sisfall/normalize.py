@@ -19,7 +19,7 @@ def normalize_splits(splits) -> dict:
     scaler = StandardScaler()
     
     # Concatenate all training data for fitting the scaler
-    X_train = np.vstack([load_signal(f) for f in splits["train"]["file"]])
+    X_train = np.vstack([load_signal(f) for f in splits["train"]["path"]])
     scaler.fit(X_train)
 
     # joblib.dump(scaler, "data/processed/sisfall/scaler.pkl")
@@ -34,3 +34,4 @@ def normalize_splits(splits) -> dict:
             (norm_file(row['path']), row['is_fall'])
             for _, row in df.iterrows()
         ]
+    return normed
