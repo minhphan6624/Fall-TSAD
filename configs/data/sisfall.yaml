@@ -4,6 +4,7 @@ raw_dir: data/raw/${.name}/
 processed_dir: data/processed/${.name}/
 
 batch_size: 32
+sampling_rate: 200  # Hz
 segment_seconds: 3
 overlap: 0.5
 
