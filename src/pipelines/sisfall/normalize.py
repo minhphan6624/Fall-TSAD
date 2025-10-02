@@ -1,5 +1,4 @@
 import numpy as np
-from typing import Tuple
 from .load_signal import load_signal
 
 from sklearn.preprocessing import StandardScaler
@@ -18,6 +17,7 @@ def normalize_splits(splits) -> dict:
               (normalized_data, label).
     """
     scaler = StandardScaler()
+    
     # Concatenate all training data for fitting the scaler
     X_train = np.vstack([load_signal(f) for f in splits["train"]["file"]])
     scaler.fit(X_train)
@@ -29,7 +29,7 @@ def normalize_splits(splits) -> dict:
 
     normed = {}
     for split, df in splits.items():
-        # More efficient iteration over DataFrame rows
+        # Create a list of tuples (normalized_data, label) for each file in the split
         normed[split] = [
             (norm_file(row['path']), row['is_fall'])
             for _, row in df.iterrows()
