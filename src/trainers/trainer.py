@@ -3,6 +3,10 @@ import os
 import time
 from pathlib import Path
 from torch.utils.data import DataLoader
+import logging 
+
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 class Trainer1:
     def __init__(self, model, cfg, run_dir: Path):
@@ -16,13 +20,14 @@ class Trainer1:
         self.model = model.to(device)
 
         self.criterion = torch.nn.MSELoss()
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=cfg.training.learning_rate)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=cfg.trainer.learning_rate)
         self.model_save_path = run_dir / "model.pth"
         self.best_val_loss = float('inf')
         self.metrics_path = run_dir / "metrics.json"
 
     def fit(self, train_loader: DataLoader, val_loader: DataLoader):
-        for epoch in range(self.cfg.training.epochs):
+        for epoch in range(self.cfg.trainer.epochs):
+            log.info(f"Epoch {epoch+1}/{self.cfg.trainer.epochs}")
             train_loss = self._train_epoch(train_loader)
             val_loss = self._validate_epoch(val_loader)
         

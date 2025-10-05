@@ -1,5 +1,3 @@
-name: 'LSTM_AE'
-
 # LSTM-AE specific hyperparameters
 n_features: 6
 hidden_dim: 64
