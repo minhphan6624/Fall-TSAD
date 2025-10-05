@@ -15,7 +15,6 @@ class SisFallDataset(Dataset):
         self.X = torch.tensor(data, dtype=torch.float32)
         self.y = torch.tensor(labels, dtype=torch.long)
 
-
     def __len__(self):
         return len(self.X)
 
