@@ -1,8 +1,7 @@
 name: 'LSTM_AE'
-save_path: 'models/'
 
 # LSTM-AE specific hyperparameters
 n_features: 6
 hidden_dim: 64
-n_layers: 2
+num_layers: 2
 dropout: 0.2

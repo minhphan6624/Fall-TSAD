@@ -1,6 +1,82 @@
 import torch
 import os
 import time
+from pathlib import Path
+from torch.utils.data import DataLoader
+
+class Trainer1:
+    def __init__(self, model, cfg, run_dir: Path):
+        self.cfg = cfg
+        self.run_dir = run_dir
+        self.run_dir.mkdir(parents=True, exist_ok=True)
+
+        device = torch.device("mps" if torch.backends.mps.is_available() else
+                              "cuda" if torch.cuda.is_available() else "cpu")
+        self.device = device
+        self.model = model.to(device)
+
+        self.criterion = torch.nn.MSELoss()
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=cfg.training.learning_rate)
+        self.model_save_path = run_dir / "model.pth"
+        self.best_val_loss = float('inf')
+        self.metrics_path = run_dir / "metrics.json"
+
+    def fit(self, train_loader: DataLoader, val_loader: DataLoader):
+        for epoch in range(self.cfg.training.epochs):
+            train_loss = self._train_epoch(train_loader)
+            val_loss = self._validate_epoch(val_loader)
+        
+        # Logging
+        record = {
+            "epoch": epoch,
+            "train_loss": train_loss,
+            "val_loss": val_loss,
+            "time": time.time()
+        }
+        with open(self.metrics_path, 'a') as f:
+            f.write(f"{record}\n")
+
+        print(f"Epoch [{epoch+1}/{self.cfg.training.epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Time: {record['time']:.2f}s")
+
+        # Checkpoint
+        torch.save(self.model.state_dict(), self.run_dir / "last.pt")
+        if val_loss < self.best_val:
+            self.best_val = val_loss
+            torch.save(self.model.state_dict(), self.run_dir / "best_model.pt")
+
+    def _train_epoch(self, train_loader: DataLoader):
+        self.model.train()
+
+        total_loss = 0.0
+        for data, _ in train_loader:
+            data = data.to(self.device)
+            
+            self.optimizer.zero_grad()
+            outputs = self.model(data)
+
+            loss = self.criterion(outputs, data)
+            loss.backward()
+            self.optimizer.step()
+
+            total_loss += loss.item() * data.size(0)
+
+        return total_loss / len(train_loader)
+
+    @torch.no_grad()
+    def _validate_epoch(self, val_loader: DataLoader):
+        self.model.eval()
+
+        total_loss = 0.0
+        for data, _ in val_loader:
+            data = data.to(self.device)
+            
+            outputs = self.model(data)
+
+            loss = self.criterion(outputs, data)
+            
+            total_loss += loss.item() * data.size(0)
+
+        return total_loss / len(val_loader)
 
 class Trainer:
     """
@@ -52,16 +128,16 @@ class Trainer:
         return avg_train_loss
 
     # Run a single epoch of validation
+    @torch.no_grad()
     def _validate_epoch(self):
         self.model.eval() # Set model to evaluation mode
         val_loss = 0
 
-        with torch.no_grad():
-            for data, _ in self.val_loader:
-                data = data.to(self.device)
-                outputs = self.model(data)
-                loss = self.criterion(outputs, data)
-                val_loss += loss.item()
+        for data, _ in self.val_loader:
+            data = data.to(self.device)
+            outputs = self.model(data)
+            loss = self.criterion(outputs, data)
+            val_loss += loss.item()
 
         avg_val_loss = val_loss / len(self.val_loader)
         return avg_val_loss
