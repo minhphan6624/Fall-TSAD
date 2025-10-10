@@ -21,10 +21,10 @@ def run_pipeline(cfg):
     # 3–4. Normalize
     normed = normalize_splits(splits)
 
-    # Calculate window size and overlap in time steps ()
+    # 5. Windowing
+    # Calculate window size and overlap in time steps
     # Example: windows size: 3seconds * 200Hz = 600 time steps
     # Overlap: 50% of 600 = 300 time steps
-
     window_size = int(cfg.data.segment_seconds * cfg.data.sampling_rate)
     if cfg.data.overlap >= window_size:
         raise ValueError("Overlap must be less than window size.")

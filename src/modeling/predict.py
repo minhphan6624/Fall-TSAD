@@ -6,7 +6,7 @@ from sklearn.metrics import f1_score, precision_score, recall_score, confusion_m
 import numpy as np
 
 from src.datasets.data_loader import create_dataloaders
-from src.eval.select_threshold import calculate_reconstruction_errors 
+from select_threshold import calculate_reconstruction_errors 
 from src.models.lstm_ae import LSTM_AE
 
 
