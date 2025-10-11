@@ -57,6 +57,8 @@ class Trainer1:
         self.model.train()
 
         total_loss = 0.0
+        total_samples = 0
+
         for data, _ in train_loader:
             data = data.to(self.device)
             
@@ -79,6 +81,8 @@ class Trainer1:
         self.model.eval()
 
         total_loss = 0.0
+        total_samples = 0
+        
         for data, _ in val_loader:
             data = data.to(self.device)
             
