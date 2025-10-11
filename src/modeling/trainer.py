@@ -19,13 +19,14 @@ class Trainer1:
         self.device = device
         self.model = model.to(device)
 
-        self.criterion = torch.nn.MSELoss()
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=cfg.trainer.learning_rate)
+        self.criterion = torch.nn.MSELoss()  
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=cfg.trainer.learning_rate) 
         self.model_save_path = run_dir / "model.pth"
         self.best_val_loss = float('inf')
         self.metrics_path = run_dir / "metrics.json"
 
     def fit(self, train_loader: DataLoader, val_loader: DataLoader):
+        ''' Full training loop '''
         for epoch in range(self.cfg.trainer.epochs):
             log.info(f"Epoch {epoch+1}/{self.cfg.trainer.epochs}")
             train_loss = self._train_epoch(train_loader)
@@ -41,7 +42,7 @@ class Trainer1:
         with open(self.metrics_path, 'a') as f:
             f.write(f"{record}\n")
 
-        print(f"Epoch [{epoch+1}/{self.cfg.training.epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Time: {record['time']:.2f}s")
+        print(f"Epoch [{epoch+1}/{self.cfg.trainer.epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Time: {record['time']:.2f}s")
 
         # Checkpoint
         torch.save(self.model.state_dict(), self.run_dir / "last.pt")
@@ -50,6 +51,7 @@ class Trainer1:
             torch.save(self.model.state_dict(), self.run_dir / "best_model.pt")
 
     def _train_epoch(self, train_loader: DataLoader):
+        ''' Train for one epoch '''
         self.model.train()
 
         total_loss = 0.0
@@ -69,6 +71,7 @@ class Trainer1:
 
     @torch.no_grad()
     def _validate_epoch(self, val_loader: DataLoader):
+        ''' Validate for one epoch '''
         self.model.eval()
 
         total_loss = 0.0
