@@ -24,14 +24,17 @@ class Trainer1:
         self.model_save_path = run_dir / "model.pth"
         self.best_val_loss = float('inf')
         self.metrics_path = run_dir / "metrics.json"
+        self.best_val = float('inf')
 
     def fit(self, train_loader: DataLoader, val_loader: DataLoader):
         ''' Full training loop '''
         for epoch in range(self.cfg.trainer.epochs):
             log.info(f"Epoch {epoch+1}/{self.cfg.trainer.epochs}")
+            start = time.time()
             train_loss = self._train_epoch(train_loader)
             val_loss = self._validate_epoch(val_loader)
-            print(f"Epoch [{epoch+1}/{self.cfg.trainer.epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Time: {time.time():.2f}s")
+            elapsed = time.time() - start
+            print(f"Epoch [{epoch+1}/{self.cfg.trainer.epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Time: {elapsed:.2f}s")
         
         # Logging
         record = {
@@ -64,9 +67,11 @@ class Trainer1:
             loss.backward()
             self.optimizer.step()
 
-            total_loss += loss.item() * data.size(0)
+            bsz = data.size(0)
+            total_loss += loss.item() * bsz       # sum of per-sample losses
+            total_samples += bsz
 
-        return total_loss / len(train_loader)
+        return total_loss / max(1, total_samples)  # true mean per sample
 
     @torch.no_grad()
     def _validate_epoch(self, val_loader: DataLoader):
@@ -80,109 +85,9 @@ class Trainer1:
             outputs = self.model(data)
 
             loss = self.criterion(outputs, data)
-            
-            total_loss += loss.item() * data.size(0)
-
-        return total_loss / len(val_loader)
-
-class Trainer:
-    """
-    A generic trainer class for PyTorch models.
-    Handles training loop, validation, early stopping.
-    """
-    def __init__(self, model, model_name, device, train_loader, val_loader, criterion, optimizer, model_save_path, patience=3):
         
-        # Model and device
-        self.model = model
-        self.device = device
-        
-        # Data loaders
-        self.train_loader = train_loader
-        self.val_loader = val_loader
-        
-        # Loss fn. and optimizer
-        self.criterion = criterion
-        self.optimizer = optimizer
+            bsz = data.size(0)
+            total_loss += loss.item() * bsz
+            total_samples += bsz
 
-        self.model_save_path = model_save_path
-        os.makedirs(self.model_save_path, exist_ok=True)
-
-        self.model_name = model_name
-        self.best_val_loss = float('inf')
-        self.patience = patience
-        self.early_stopping_counter = 0
-
-    # Run a single epoch of training
-    def _train_epoch(self):
-        
-        self.model.train() # Set model to training mode
-        train_loss = 0
-
-        for data, idx  in self.train_loader:
-            data = data.to(self.device) # Move data to the computing device
-            
-            self.optimizer.zero_grad() # Clear gradients
-            outputs = self.model(data)
-
-            loss = self.criterion(outputs, data)
-            loss.backward()
-            self.optimizer.step()
-            
-            train_loss += loss.item()
-
-        avg_train_loss = train_loss / len(self.train_loader)
-
-        return avg_train_loss
-
-    # Run a single epoch of validation
-    @torch.no_grad()
-    def _validate_epoch(self):
-        self.model.eval() # Set model to evaluation mode
-        val_loss = 0
-
-        for data, _ in self.val_loader:
-            data = data.to(self.device)
-            outputs = self.model(data)
-            loss = self.criterion(outputs, data)
-            val_loss += loss.item()
-
-        avg_val_loss = val_loss / len(self.val_loader)
-        return avg_val_loss
-
-    def fit(self, epochs):
-        """
-        Trains the model for a specified number of epochs,
-        """
-        for epoch in range(epochs):
-            epoch_start_time = time.time()
-            
-            # Train and validate for one epoch
-            train_loss = self._train_epoch()
-            val_loss = self._validate_epoch()
-            
-            epoch_end_time = time.time()
-            epoch_duration = epoch_end_time - epoch_start_time
-
-            print(f"Epoch [{epoch+1}/{epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Time: {epoch_duration:.2f}s")
-
-            # If validation loss improves
-            if val_loss < self.best_val_loss:
-
-                self.best_val_loss = val_loss # Update best validation loss
-
-                # Save the best model
-                torch.save(self.model.state_dict(), self.model_save_path / f"{self.model_name}_best.pth")
-                print(f"Saved best model with validation loss: {self.best_val_loss:.4f}")
-                
-                # Reset early stopping counter
-                self.early_stopping_counter = 0 
-            else:
-                # Increment counter if no improvement
-                self.early_stopping_counter += 1 
-                print(f"Early stopping counter: {self.early_stopping_counter}/{self.patience}")
-
-            if self.early_stopping_counter >= self.patience:
-                print(f"Early stopping triggered after {epoch+1} epochs due to no improvement in validation loss for {self.patience} consecutive epochs.")
-                break
-        
-        print("Training complete.")
+        return total_loss / max(1, total_samples)  

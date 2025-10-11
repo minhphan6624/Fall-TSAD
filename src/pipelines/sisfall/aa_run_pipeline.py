@@ -20,7 +20,7 @@ def run_pipeline(cfg):
 
     # 3–4. Normalize
     normed = normalize_splits(splits)
-
+    
     # 5. Windowing
     # Calculate window size and overlap in time steps
     # Example: windows size: 3seconds * 200Hz = 600 time steps
