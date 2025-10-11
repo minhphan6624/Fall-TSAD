@@ -1,18 +1,18 @@
 import hydra
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 
 from pathlib import Path
 import logging
 
 from src.datasets.data_loader import get_dataloaders
-from src.trainers.trainer import Trainer1
+from src.modeling.trainer import Trainer1
 from src.models.lstm_ae import LSTM_AE
 
 from src.utils.set_seed import set_seed
 
 log = logging.getLogger(__name__)
 
-@hydra.main(config_path="configs", config_name="default", version_base=None)
+@hydra.main(config_path="../configs", config_name="default", version_base=None)
 def main(cfg: DictConfig):
     set_seed(cfg.seed)
 

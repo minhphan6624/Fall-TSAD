@@ -1,8 +1,7 @@
-import sys
 import hydra
 from omegaconf import DictConfig
 
-from ..src.pipelines import DATASETS
+from src.utils.registry import DATASETS
 
 @hydra.main(version_base=None, config_path="../configs", config_name="default")
 def main(cfg: DictConfig):
@@ -19,6 +18,8 @@ def main(cfg: DictConfig):
     
     dataset_pipeline = DATASETS[dataset_name]   
     dataset_pipeline(cfg)
+
+    print("Preprocessing completed")
 
 if __name__ == "__main__":
     main()

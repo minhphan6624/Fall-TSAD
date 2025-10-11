@@ -1,10 +1,6 @@
 import numpy as np
 from pathlib import Path
 from .segment_data import segment_dataset
-import pandas as pd
-import pickle
-from .normalize import StandardScaler
-
 
 def serialize(normed_splits: dict, out_dir: Path, window: int, overlap: int):
     """
