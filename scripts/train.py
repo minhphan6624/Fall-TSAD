@@ -16,9 +16,8 @@ log = logging.getLogger(__name__)
 def main(cfg: DictConfig):
     set_seed(cfg.seed)
 
-    # Run dir
-    run_dir = Path(f"experiments/{hydra.core.hydra_config.HydraConfig.get().job.name}")
-    run_dir.mkdir(parents=True, exist_ok=True)
+    # Hydra's output directory is the run directory
+    run_dir = Path(hydra.core.hydra_config.HydraConfig.get().runtime.output_dir)
         
     model = LSTM_AE(**cfg.model)
     trainer = Trainer1(model, cfg, run_dir)
