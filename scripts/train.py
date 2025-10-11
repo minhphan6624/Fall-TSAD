@@ -19,7 +19,7 @@ def main(cfg: DictConfig):
     # Run dir
     run_dir = Path(f"experiments/{hydra.core.hydra_config.HydraConfig.get().job.name}")
     run_dir.mkdir(parents=True, exist_ok=True)
-    
+        
     model = LSTM_AE(**cfg.model)
     trainer = Trainer1(model, cfg, run_dir)
     

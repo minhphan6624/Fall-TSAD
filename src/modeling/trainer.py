@@ -31,6 +31,7 @@ class Trainer1:
             log.info(f"Epoch {epoch+1}/{self.cfg.trainer.epochs}")
             train_loss = self._train_epoch(train_loader)
             val_loss = self._validate_epoch(val_loader)
+            print(f"Epoch [{epoch+1}/{self.cfg.trainer.epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Time: {record['time']:.2f}s")
         
         # Logging
         record = {
@@ -42,7 +43,7 @@ class Trainer1:
         with open(self.metrics_path, 'a') as f:
             f.write(f"{record}\n")
 
-        print(f"Epoch [{epoch+1}/{self.cfg.trainer.epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Time: {record['time']:.2f}s")
+        
 
         # Checkpoint
         torch.save(self.model.state_dict(), self.run_dir / "last.pt")
