@@ -1,47 +1,35 @@
 import pandas as pd
 import numpy as np
 from typing import Tuple
+from sklearn.model_selection import train_test_split
 
-def split_data_by_subject(metadata_df: pd.DataFrame, split, seed: int) -> dict:
+def split_data_custom(metadata_df: pd.DataFrame, val_size: float, seed: int) -> dict:
     """
     Splits the metadata DataFrame into training, validation, and test sets
-    based on unique subjects, ensuring no subject's data is in more than one set.
+    based on the specified criteria.
 
     Args:
-        metadata_df (pd.DataFrame): DataFrame containing metadata with a 'subject' column.
-        train_ratio (float): Proportion of subjects to allocate to the training set.
-        val_ratio (float): Proportion of subjects to allocate to the validation set.
-                           The remaining subjects will be allocated to the test set.
-        random_state (int): Seed for random number generation for reproducibility.
+        metadata_df (pd.DataFrame): DataFrame containing metadata.
+        val_size (float): Proportion of the training data to use for validation.
+        seed (int): Seed for random number generation for reproducibility.
 
     Returns:
         dict: A dictionary with keys 'train', 'val', 'test', each containing a DataFrame
               with the corresponding split of the metadata.
     """
-    train_ratio = split.train
-    val_ratio = split.val
-    test_ratio = split.test
+    # Training set: All ADL trials from young adults
+    train_val_df = metadata_df[(metadata_df["group"] == "Adult") & (metadata_df["is_fall"] == 0)]
+    
+    # Split training data into training and validation sets
+    train_df, val_df = train_test_split(train_val_df, test_size=val_size, random_state=seed)
 
-    np.random.seed(seed)
-    subjects = metadata_df["subject"].unique()
-    np.random.shuffle(subjects)
-
-    num_subjects = len(subjects)
-
-    num_train = int(num_subjects * train_ratio)
-    num_val = int(num_subjects * val_ratio)
-
-    # Create splits based on subjects
-    train_ids = subjects[:num_train]
-    val_ids = subjects[num_train:num_train + num_val]
-    test_ids = subjects[num_train + num_val:]
-
-    train_df = metadata_df[metadata_df["subject"].isin(train_ids)].reset_index(drop=True)
-    val_df = metadata_df[metadata_df["subject"].isin(val_ids)].reset_index(drop=True)
-    test_df = metadata_df[metadata_df["subject"].isin(test_ids)].reset_index(drop=True)
+    # Test set: All fall trials (young + elderly) + ADL data from elderly group
+    test_falls = metadata_df[metadata_df["is_fall"] == 1]
+    test_elderly_adl = metadata_df[(metadata_df["group"] == "Elderly") & (metadata_df["is_fall"] == 0)]
+    test_df = pd.concat([test_falls, test_elderly_adl])
 
     return {
-        "train": train_df,
-        "val": val_df,
-        "test": test_df
+        "train": train_df.reset_index(drop=True),
+        "val": val_df.reset_index(drop=True),
+        "test": test_df.reset_index(drop=True)
     }

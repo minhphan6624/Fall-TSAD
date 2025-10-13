@@ -1,6 +1,6 @@
 from pathlib import Path
 from .build_metadata import build_metadata
-from .split import split_data_by_subject as split_subjects
+from .split import split_data_custom as split_data
 from .normalize import normalize_splits
 from .serialize import serialize
 
@@ -16,7 +16,7 @@ def run_pipeline(cfg):
     metadata_df.to_csv(out_dir / "metadata.csv", index=False)
 
     # 2. Splits
-    splits = split_subjects(metadata_df, cfg.data.split, seed)
+    splits = split_data(metadata_df, cfg.data.split.val_size, seed)
 
     # 3–4. Normalize
     normed = normalize_splits(splits)
