@@ -7,8 +7,8 @@ from sklearn.metrics import f1_score
 import numpy as np
 import logging
 
-from src.datasets.data_loader import get_dataloaders
-from src.models.lstm_ae import LSTM_AE
+from datasets.data_loader import get_dataloaders
+from models.lstm_ae import LSTM_AE
 
 log = logging.getLogger(__name__)
 

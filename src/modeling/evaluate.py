@@ -6,9 +6,9 @@ from pathlib import Path
 from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix
 import logging
 
-from src.datasets.data_loader import get_dataloaders
+from datasets.data_loader import get_dataloaders
 from select_threshold import calculate_reconstruction_errors 
-from src.models.lstm_ae import LSTM_AE
+from models.lstm_ae import LSTM_AE
 
 log = logging.getLogger(__name__)
 
