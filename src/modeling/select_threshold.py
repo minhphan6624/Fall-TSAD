@@ -8,7 +8,7 @@ import numpy as np
 import logging
 
 from ..datasets.data_loader import get_dataloaders
-from models.lstm_ae import LSTM_AE
+from ..models.lstm_ae import LSTM_AE
 
 log = logging.getLogger(__name__)
 
