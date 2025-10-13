@@ -8,7 +8,7 @@ sampling_rate: 200  # Hz
 segment_seconds: 3
 overlap: 0.5
 
-normalize: zscore
+normalize: robust_scaler
 
 split: 
   val_size: 0.15

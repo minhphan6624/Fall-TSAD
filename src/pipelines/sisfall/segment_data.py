@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 def segment_data(data: np.ndarray, window_size: int, overlap: int) -> np.ndarray:
     """
@@ -39,18 +40,21 @@ def segment_data(data: np.ndarray, window_size: int, overlap: int) -> np.ndarray
 
 def segment_dataset(
     data_list: list[np.ndarray], 
-    labels_list: list[int], 
+    metadata_rows: list[pd.Series], # Changed from labels_list to metadata_rows
     window_size: int, 
-    overlap: int
+    overlap: int,
+    sampling_rate: int # New parameter
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    Segments a list of data arrays and their corresponding labels into windows.
+    Segments a list of data arrays and their corresponding labels into windows,
+    applying impact-zone-based labeling for fall events.
 
     Args:
         data_list (list[np.ndarray]): A list of individual time-series data arrays.
-        labels_list (list[int]): A list of labels corresponding to each data array.
+        metadata_rows (list[pd.Series]): A list of metadata rows (Series) corresponding to each data array.
         window_size (int): The size of each segment window.
         overlap (int): The number of samples that overlap between consecutive windows.
+        sampling_rate (int): The sampling rate of the data in Hz.
 
     Returns:
         tuple[np.ndarray, np.ndarray]: A tuple containing:
@@ -59,15 +63,42 @@ def segment_dataset(
     """
     all_segments = []
     all_labels = []
+    
+    impact_pre_samples = int(0.5 * sampling_rate) # 0.5 seconds before impact
+    impact_post_samples = int(1.0 * sampling_rate) # 1.0 seconds after impact
 
     for i, data in enumerate(data_list):
+        metadata = metadata_rows[i]
         segments = segment_data(data, window_size, overlap)
+        
         if segments.shape[0] > 0:
             all_segments.append(segments)
-            # Each segment from this data array gets the same label
-            all_labels.append(np.full(segments.shape[0], labels_list[i]))
+            
+            if metadata["is_fall"] == 1:
+                # Fall event: apply impact-zone-based labeling
+                magnitude = np.sqrt(np.sum(data**2, axis=1))
+                impact_idx = np.argmax(magnitude) # Peak magnitude is impact time t*
+
+                window_labels = np.zeros(segments.shape[0], dtype=int)
+                step_size = window_size - overlap
+
+                for j in range(segments.shape[0]):
+                    window_start_idx = j * step_size
+                    window_end_idx = window_start_idx + window_size
+
+                    # Check for overlap with impact zone [t* - 0.5s, t* + 1.0s]
+                    if (window_end_idx > (impact_idx - impact_pre_samples)) and \
+                       (window_start_idx < (impact_idx + impact_post_samples)):
+                        window_labels[j] = 1
+                all_labels.append(window_labels)
+            else:
+                # ADL event: all windows are labeled 0
+                all_labels.append(np.full(segments.shape[0], 0, dtype=int))
 
     if not all_segments:
-        return np.empty((0, window_size, data_list[0].shape[1])), np.empty(0)
+        # Handle case where data_list might be empty or segments.shape[0] is always 0
+        # Ensure data_list[0].shape[1] is safely accessed
+        num_features = data_list[0].shape[1] if data_list else 0
+        return np.empty((0, window_size, num_features)), np.empty(0)
 
     return np.concatenate(all_segments, axis=0), np.concatenate(all_labels, axis=0)

@@ -17,6 +17,12 @@ def run_pipeline(cfg):
 
     # 2. Splits
     splits = split_data(metadata_df, cfg.data.split.val_size, seed)
+    
+    # Save split metadata to CSV files as per DATA_SPLITTING_GUIDE.md
+    splits_dir = out_dir / "splits"
+    splits_dir.mkdir(parents=True, exist_ok=True)
+    for split_name, split_df in splits.items():
+        split_df.to_csv(splits_dir / f"{split_name}.csv", index=False)
 
     # 3–4. Normalize
     normed = normalize_splits(splits)
@@ -35,4 +41,4 @@ def run_pipeline(cfg):
     print(f"Overlap (in time steps): {overlap}")
 
     # 5–6. Segment + serialize
-    serialize(normed, out_dir, window=window_size,overlap=overlap)
+    serialize(normed, out_dir, window=window_size, overlap=overlap, sampling_rate=cfg.data.sampling_rate)

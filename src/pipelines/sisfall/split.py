@@ -17,16 +17,24 @@ def split_data_custom(metadata_df: pd.DataFrame, val_size: float, seed: int) -> 
         dict: A dictionary with keys 'train', 'val', 'test', each containing a DataFrame
               with the corresponding split of the metadata.
     """
-    # Training set: All ADL trials from young adults
-    train_val_df = metadata_df[(metadata_df["group"] == "Adult") & (metadata_df["is_fall"] == 0)]
-    
-    # Split training data into training and validation sets
-    train_df, val_df = train_test_split(train_val_df, test_size=val_size, random_state=seed)
+    # Separate young and elderly participants
+    young_participants = metadata_df[metadata_df["group"] == "young"]
+    elderly_participants = metadata_df[metadata_df["group"] == "elderly"]
 
-    # Test set: All fall trials (young + elderly) + ADL data from elderly group
-    test_falls = metadata_df[metadata_df["is_fall"] == 1]
-    test_elderly_adl = metadata_df[(metadata_df["group"] == "Elderly") & (metadata_df["is_fall"] == 0)]
-    test_df = pd.concat([test_falls, test_elderly_adl])
+    # Separate ADL and Fall activities for young participants
+    young_adl = young_participants[young_participants["is_fall"] == 0]
+    young_fall = young_participants[young_participants["is_fall"] == 1]
+
+    # 1. Train set: 80% of young ADL files
+    train_adl, val_test_adl = train_test_split(young_adl, test_size=0.2, random_state=seed, stratify=young_adl['subject'])
+    train_df = train_adl
+
+    # 2. Validation set: Remaining 20% of young ADL files + 20% of young FALL files
+    val_fall, test_fall_remaining = train_test_split(young_fall, test_size=0.8, random_state=seed, stratify=young_fall['subject'])
+    val_df = pd.concat([val_test_adl, val_fall])
+
+    # 3. Test set: Remaining 80% of young FALL files + all elderly ADL/FALL files
+    test_df = pd.concat([test_fall_remaining, elderly_participants])
 
     return {
         "train": train_df.reset_index(drop=True),

@@ -26,6 +26,5 @@ def main(cfg: DictConfig):
     log.info(f"Training started...")
     trainer.fit(train_loader, val_loader)
 
-    
 if __name__ == "__main__":
     main()
