@@ -7,7 +7,7 @@ from sklearn.metrics import f1_score, precision_score, recall_score, confusion_m
 import logging
 
 from ..datasets.data_loader import get_dataloaders
-from select_threshold import calculate_reconstruction_errors 
+from .select_threshold import calculate_reconstruction_errors 
 from ..models.lstm_ae import LSTM_AE
 
 log = logging.getLogger(__name__)
