@@ -27,7 +27,7 @@ def main(cfg: DictConfig):
         model = LSTM_AE(**model_params)
         trainer_class = Trainer1
     elif model_name == "lstm_vae":
-        model_params = {k: v for k, v in cfg.model.items() if k != 'name'}
+        model_params = {k: v for k, v in cfg.model.items() if k not in ['name', 'beta']}
         model = LSTM_VAE(**model_params)
         trainer_class = VAETrainer
     else:

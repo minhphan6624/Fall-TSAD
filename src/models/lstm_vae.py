@@ -74,8 +74,7 @@ class LSTM_VAE(nn.Module):
         # We need to unsqueeze it to match the (num_layers, batch_size, hidden_dim) shape.
         decoder_hidden_state = decoder_hidden.unsqueeze(0).repeat(self.num_layers, 1, 1)
         
-        # The decoder also needs an input sequence. A common practice is to feed a zero tensor
-        # or the repeated latent vector. Let's repeat the transformed latent vector.
+        # Repeat the decoder hidden state for each time step
         decoder_input_seq = decoder_hidden.unsqueeze(1).repeat(1, seq_len, 1)
         
         # Decoder forward pass
