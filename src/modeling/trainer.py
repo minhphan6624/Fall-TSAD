@@ -1,15 +1,8 @@
 import torch
-import os
 import time
 from pathlib import Path
 from torch.utils.data import DataLoader
 import logging
-import os
-import time
-from pathlib import Path
-
-import torch
-from torch.utils.data import DataLoader
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)

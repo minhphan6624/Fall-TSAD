@@ -1,6 +1,6 @@
 from pathlib import Path
 from torch.utils.data import DataLoader
-from .SisFall_Dataset import SisFallDataset
+from .sisfall_dataset import SisFallDataset
 
 def get_dataloaders(cfg):
     train = SisFallDataset("train", Path(cfg.data.processed_dir))
