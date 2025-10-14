@@ -1,4 +1,5 @@
 # LSTM-VAE specific hyperparameters
+name: lstm_vae
 n_features: 6
 hidden_dim: 64
 latent_dim: 20 # Example latent dimension

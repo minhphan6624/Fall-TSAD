@@ -1,4 +1,5 @@
 # LSTM-AE specific hyperparameters
+name: lstm_ae
 n_features: 6
 hidden_dim: 64
 num_layers: 2
