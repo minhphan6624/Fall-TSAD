@@ -23,10 +23,12 @@ def main(cfg: DictConfig):
     # Model initialization based on model name
     model_name = cfg.model.name
     if model_name == "lstm_ae":
-        model = LSTM_AE(**cfg.model)
+        model_params = {k: v for k, v in cfg.model.items() if k != 'name'}
+        model = LSTM_AE(**model_params)
         trainer_class = Trainer1
     elif model_name == "lstm_vae":
-        model = LSTM_VAE(**cfg.model)
+        model_params = {k: v for k, v in cfg.model.items() if k != 'name'}
+        model = LSTM_VAE(**model_params)
         trainer_class = VAETrainer
     else:
         raise ValueError(f"Unknown model type: {model_name}")
