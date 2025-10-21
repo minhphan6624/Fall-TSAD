@@ -1,5 +1,5 @@
 from pathlib import Path
-from .build_metadata import build_metadata
+from .parse_filename import build_metadata
 from .split import split_data_custom as split_data
 from .normalize import normalize_splits
 from .serialize import serialize
@@ -18,7 +18,7 @@ def run_pipeline(cfg):
     # 2. Splits
     splits = split_data(metadata_df, cfg.data.split.val_size, seed)
     
-    # Save split metadata to CSV files as per DATA_SPLITTING_GUIDE.md
+    # Save split metadata to CSV 
     splits_dir = out_dir / "splits"
     splits_dir.mkdir(parents=True, exist_ok=True)
     for split_name, split_df in splits.items():

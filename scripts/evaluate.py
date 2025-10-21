@@ -6,13 +6,13 @@ from pathlib import Path
 from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix
 import logging
 
-from ..datasets.data_loader import get_dataloaders
+from ..src.modeling.data_loader import get_dataloaders
 from .select_threshold import calculate_reconstruction_errors 
-from ..models.lstm_ae import LSTM_AE
+from ..src.models.lstm_ae import LSTM_AE
 
 log = logging.getLogger(__name__)
 
-@hydra.main(config_path="../../configs", config_name="default", version_base=None)
+@hydra.main(config_path="../configs", config_name="default", version_base=None)
 def evaluate_model(cfg: DictConfig):
     """
     Main function to evaluate the model performance on the test set.
