@@ -53,9 +53,13 @@ def load_signal(file_path: Path) -> np.ndarray:
     gyro_data_degs = gyro_data * ITG3200_CONVERSION_FACTOR
     accel_2_data_g = accel_2_data * MMA8451Q_CONVERSION_FACTOR
 
+    # # Concatenate the converted data
+    # output = np.concatenate((accel_1_data_g, gyro_data_degs, accel_2_data_g), axis=1)
+
+    # return output
     return {
         "acc1": accel_1_data_g,
         "gyro": gyro_data_degs,
-        # "acc2": accel_2_data_g
+        "acc2": accel_2_data_g
     }
 
