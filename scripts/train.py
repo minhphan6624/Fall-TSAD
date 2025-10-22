@@ -4,7 +4,7 @@ from omegaconf import DictConfig
 from pathlib import Path
 import logging
 
-from src.datasets.data_loader import get_dataloaders
+from src.modeling.data_loader import get_dataloaders
 from src.modeling.trainer import Trainer1, VAETrainer # Import VAETrainer
 from src.models.lstm_ae import LSTM_AE
 from src.models.lstm_vae import LSTM_VAE # Import LSTM_VAE

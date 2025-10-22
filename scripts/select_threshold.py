@@ -7,9 +7,9 @@ from sklearn.metrics import f1_score
 import numpy as np
 import logging
 
-from ..datasets.data_loader import get_dataloaders
-from ..models.lstm_ae import LSTM_AE
-from ..models.lstm_vae import LSTM_VAE # Import LSTM_VAE
+from ..src.modeling.data_loader import get_dataloaders
+from ..src.models.lstm_ae import LSTM_AE
+from ..src.models.lstm_vae import LSTM_VAE 
 
 log = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ def find_optimal_threshold(errors, labels):
     return optimal_threshold, best_f1
 
 
-@hydra.main(config_path="../../configs", config_name="default", version_base=None)
+@hydra.main(config_path="../configs", config_name="default", version_base=None)
 def select_threshold(cfg: DictConfig):
     """
     Main function to select the anomaly threshold using the validation set.
