@@ -28,7 +28,7 @@ def process_trial(file_path):
 
         acc_data = normed['acc1']
         gyro_data = normed['gyro']
-        combined_data = np.hstack([acc_data, gyro_data])  # Combine acc and gyro
+        combined_data = np.hstack([acc_data, gyro_data]) 
 
         # Compute SMV from normalized accelerometer data
         smv = np.sqrt(np.sum(acc_data**2, axis=1))
@@ -48,6 +48,7 @@ def process_trial(file_path):
         print(f"Error processing {file_path.name}: {e}")
 
 def main():
+    # Process all trials for all participants in the dataset
     subjects = sorted(RAW_DIR.glob("SA*")) + sorted(RAW_DIR.glob("SE*"))
     for subject_dir in subjects:
         files = list(subject_dir.glob("*.txt"))

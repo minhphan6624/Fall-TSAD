@@ -3,13 +3,15 @@ import numpy as np
 WINDOW_SIZE = 200     # 1 s at 200 Hz
 STRIDE      = 100     # 50 % overlap
 
-def segment_and_label(data, smv, meta, window_size=200, stride=100):
+def segment_and_label(data, smv, meta, window_size=WINDOW_SIZE, stride=STRIDE):
     """
     Segment accelerometer data into windows and label them using SMV peaks.
     Only windows around the impact in fall trials are labelled 1.
     """
     impact_idx = np.argmax(smv)
-    fall_range = range(max(0, impact_idx - 200), min(len(smv), impact_idx + 400))
+
+    # -1s to +2s around impact
+    fall_range = range(max(0, impact_idx - 200), min(len(smv), impact_idx + 200))
 
     X, y = [], []
     # Slide a 1-second window through the signal with 0.5-s overlap.
