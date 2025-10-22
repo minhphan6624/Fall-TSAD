@@ -1,7 +1,7 @@
 import numpy as np
 from pathlib import Path
 
-WINDOW_DIR = Path("data/processed/sisfall/windows")
+IN_DIR = Path("data/processed/sisfall/windows")
 OUT_DIR = Path("data/processed/sisfall/final_tsad")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -15,7 +15,7 @@ X_train, y_train = [], []
 X_val, y_val = [], []
 X_test, y_test = [], []
 
-for file_path in WINDOW_DIR.glob("*.npz"):
+for file_path in IN_DIR.glob("*.npz"):
     data = np.load(file_path, allow_pickle=True)
     meta = data["meta"].item()
     subj = meta["subject"]

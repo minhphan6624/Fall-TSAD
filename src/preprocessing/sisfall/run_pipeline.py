@@ -36,7 +36,7 @@ def process_trial(file_path):
         # Segment & label
         X, y = segment_and_label(combined_data, smv, meta, window_size=200, stride=100)
 
-        #6. Save windows + labels
+        # Save windows + labels
         out_filename = f"{meta['activity']}_{meta['subject']}_{meta['trial']}.npz"
         np.savez_compressed(
             OUT_DIR / out_filename,
