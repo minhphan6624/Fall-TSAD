@@ -5,7 +5,8 @@ from torch.utils.data import Dataset, DataLoader
 
 class SisFallDataset(Dataset):
     def __init__(self, split: str, processed_dir: Path):
-        data = np.load(processed_dir / f"{split}.npz", allow_pickle=True)
+        data_file = Path(processed_dir / f"{split}.npz")
+        data = np.load(data_file, allow_pickle=True)
         self.X = torch.tensor(data["X"], dtype=torch.float32)
         self.y = torch.tensor(data["y"], dtype=torch.long)
 

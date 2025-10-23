@@ -16,8 +16,9 @@ class LSTMAETrainer:
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3)
         self.criterion = torch.nn.MSELoss()
         
+        run_dir.mkdir(parents=True, exist_ok=True)
         self.run_dir = run_dir
-        self.run_dir.mkdir(parents=True, exist_ok=True)
+        
 
     def _train_epoch(self, train_loader: DataLoader):
         self.model.train()
@@ -67,6 +68,7 @@ class LSTMAETrainer:
         best_val_loss = float('inf')
 
         for epoch in range(epochs):
+            print("Starting epoch: ", epoch+1)
             start = time.time()
             
             train_loss = self._train_epoch(train_loader)
