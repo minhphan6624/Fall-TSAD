@@ -4,33 +4,26 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 class SisFallDataset(Dataset):
-    """
-    Custom Dataset for loading time series data.
-    """
-
     def __init__(self, split: str, processed_dir: Path):
-        data = np.load(processed_dir / f"{split}_data.npy")
-        labels = np.load(processed_dir / f"{split}_labels.npy")
-
-        self.X = torch.tensor(data, dtype=torch.float32)
-        self.y = torch.tensor(labels, dtype=torch.long)
+        data = np.load(processed_dir / f"{split}.npz", allow_pickle=True)
+        self.X = torch.tensor(data["X"], dtype=torch.float32)
+        self.y = torch.tensor(data["y"], dtype=torch.long)
 
     def __len__(self):
         return len(self.X)
 
     def __getitem__(self, idx):
-        X = torch.tensor(self.X[idx], dtype=torch.float32)
+        X = self.X[idx]
         y = int(self.y[idx])
-
         return X, y
 
+def get_dataloaders(processed_dir: Path, batch_size: 64):
+    train = SisFallDataset("train", processed_dir)
+    val   = SisFallDataset("val", processed_dir)
+    test  = SisFallDataset("test", processed_dir)
 
-def get_dataloaders(cfg):
-    train = SisFallDataset("train", Path(cfg.data.processed_dir))
-    val   = SisFallDataset("val", Path(cfg.data.processed_dir))
-    test  = SisFallDataset("test", Path(cfg.data.processed_dir))
-
-    train_loader = DataLoader(train, batch_size=cfg.data.batch_size, shuffle=True)
-    val_loader   = DataLoader(val, batch_size=cfg.data.batch_size)
-    test_loader  = DataLoader(test, batch_size=cfg.data.batch_size)
+    train_loader = DataLoader(train, batch_size=batch_size, shuffle=True)
+    val_loader   = DataLoader(val, batch_size=batch_size, shuffle=False)
+    test_loader  = DataLoader(test, batch_size=batch_size, shuffle=False)
+    
     return train_loader, val_loader, test_loader
