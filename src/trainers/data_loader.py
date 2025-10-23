@@ -20,7 +20,6 @@ class SisFallDataset(Dataset):
 
     def __getitem__(self, idx):
         X = torch.tensor(self.X[idx], dtype=torch.float32)
-        # X = self.X[idx].detach().clone()
         y = int(self.y[idx])
 
         return X, y
