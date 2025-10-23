@@ -17,7 +17,7 @@ class SisFallDataset(Dataset):
         y = int(self.y[idx])
         return X, y
 
-def get_dataloaders(processed_dir: Path, batch_size: 64):
+def get_dataloaders(processed_dir: Path, batch_size=64):
     train = SisFallDataset("train", processed_dir)
     val   = SisFallDataset("val", processed_dir)
     test  = SisFallDataset("test", processed_dir)
@@ -25,5 +25,5 @@ def get_dataloaders(processed_dir: Path, batch_size: 64):
     train_loader = DataLoader(train, batch_size=batch_size, shuffle=True)
     val_loader   = DataLoader(val, batch_size=batch_size, shuffle=False)
     test_loader  = DataLoader(test, batch_size=batch_size, shuffle=False)
-    
+
     return train_loader, val_loader, test_loader

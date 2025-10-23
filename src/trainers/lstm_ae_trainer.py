@@ -2,21 +2,9 @@ import torch
 import time
 from pathlib import Path
 from torch.utils.data import DataLoader
-import logging
 import json
 
 from torch.utils.tensorboard import SummaryWriter
-
-
-for epoch in range(epochs):
-    ...
-    writer.add_scalar("Loss/train", train_loss, epoch)
-    writer.add_scalar("Loss/val", val_loss, epoch)
-writer.close()
-
-
-logging.basicConfig(level=logging.INFO)
-log = logging.getLogger(__name__)
 
 class LSTMAETrainer:
     def __init__(self, model, run_dir: Path):
@@ -67,9 +55,10 @@ class LSTMAETrainer:
 
             loss = self.criterion(outputs, data)
 
-            batch_size = data.size(0)
-            total_loss += loss.item() * batch_size
-            total_samples += batch_size
+            # Calculate per-sample loss
+            total_loss += loss.item() * len(data)
+            total_samples += len(data)
+
 
         return total_loss / max(1, total_samples)
 
