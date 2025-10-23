@@ -66,7 +66,6 @@ class LSTMAETrainer:
         best_val_loss = float('inf')
 
         for epoch in range(epochs):
-            print(f"Epoch {epoch+1}/{epochs}")
             start = time.time()
             
             train_loss = self._train_epoch(train_loader)
@@ -74,21 +73,24 @@ class LSTMAETrainer:
             elapsed = time.time() - start
 
             print(f"Epoch [{epoch+1}/{epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Time: {elapsed:.2f}s")
+            
+            # Model Checkpoint
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                torch.save(self.model.state_dict(), self.run_dir / "best.pt")
 
-            # Logging
+            # Save training logs
             record = {
                 "epoch": epoch,
                 "train_loss": train_loss,
                 "val_loss": val_loss,
                 "time": elapsed
             }
-            with open(self.run_dir / "metrics.json", 'a') as f:
+            with open(self.run_dir / "training_logs.json", 'a') as f:
                 f.write(f"{record}\n")
-
-        # Checkpoint
+        
         torch.save(self.model.state_dict(), self.run_dir / "last.pt")
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
-            torch.save(self.model.state_dict(), self.run_dir / "best_model.pt")
+
+            
 
     
