@@ -3,6 +3,17 @@ import time
 from pathlib import Path
 from torch.utils.data import DataLoader
 import logging
+import json
+
+from torch.utils.tensorboard import SummaryWriter
+
+
+for epoch in range(epochs):
+    ...
+    writer.add_scalar("Loss/train", train_loss, epoch)
+    writer.add_scalar("Loss/val", val_loss, epoch)
+writer.close()
+
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -36,9 +47,9 @@ class LSTMAETrainer:
             loss.backward()
             self.optimizer.step()
 
-            batch_size = data.size(0)
-            total_loss += loss.item() * batch_size       # sum of per-sample losses
-            total_samples += batch_size
+            # Calculate per-sample loss
+            total_loss += loss.item() * len(data)
+            total_samples += len(data)
 
         return total_loss / max(1, total_samples)  # true mean per sample
 
@@ -63,6 +74,7 @@ class LSTMAETrainer:
         return total_loss / max(1, total_samples)
 
     def fit(self, train_loader: DataLoader, val_loader: DataLoader, epochs: int = 50):
+        writer = SummaryWriter(self.run_dir)
         best_val_loss = float('inf')
 
         for epoch in range(epochs):
@@ -87,10 +99,14 @@ class LSTMAETrainer:
                 "time": elapsed
             }
             with open(self.run_dir / "training_logs.json", 'a') as f:
-                f.write(f"{record}\n")
+                json.dump(record, f)
+                f.write("\n")
+
+            writer.add_scalar("Loss/train", train_loss, epoch)
+            writer.add_scalar("Loss/val", val_loss, epoch)
         
         torch.save(self.model.state_dict(), self.run_dir / "last.pt")
-
+        writer.close()
             
 
     
