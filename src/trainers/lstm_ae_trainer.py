@@ -11,6 +11,7 @@ class LSTMAETrainer:
         device = torch.device("cuda" if torch.cuda.is_available() else
                             "mps" if torch.backends.mps.is_available() else "cpu")
         self.device = device
+        print(f"Using device: {self.device}")
         self.model = model.to(device)
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3)
@@ -18,7 +19,6 @@ class LSTMAETrainer:
         
         run_dir.mkdir(parents=True, exist_ok=True)
         self.run_dir = run_dir
-        
 
     def _train_epoch(self, train_loader: DataLoader):
         self.model.train()
@@ -60,7 +60,6 @@ class LSTMAETrainer:
             total_loss += loss.item() * len(data)
             total_samples += len(data)
 
-
         return total_loss / max(1, total_samples)
 
     def fit(self, train_loader: DataLoader, val_loader: DataLoader, epochs: int = 50):
@@ -89,7 +88,7 @@ class LSTMAETrainer:
                 "val_loss": val_loss,
                 "time": elapsed
             }
-            with open(self.run_dir / "training_logs.json", 'a') as f:
+            with open(self.run_dir / "training_logs.jsonl", 'a') as f:
                 json.dump(record, f)
                 f.write("\n")
 
