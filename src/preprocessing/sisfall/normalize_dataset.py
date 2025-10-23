@@ -4,6 +4,8 @@ from sklearn.preprocessing import RobustScaler
 
 IN_DIR = Path("data/processed/sisfall/final_tsad")
 OUT_DIR = Path("data/processed/sisfall/ready")
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+
 
 # Input file paths
 train_dir = IN_DIR / "train.npz"
@@ -18,7 +20,7 @@ X_train = train_data["X"]
 X_val = val_data["X"]
 X_test = test_data["X"]
 
-# # Calculate mean and std over training set
+# Calculate mean and std over training set ()
 # mean_train = np.mean(X_train, axis=(0,1)) # Shape (num_features, )
 # std_train = np.std(X_train, axis=(0,1)) # Shape (num_features, )
 
@@ -38,10 +40,15 @@ X_train_norm = normalize_dataset(X_train)
 X_val_norm = normalize_dataset(X_val)
 X_test_norm = normalize_dataset(X_test)
 
+print("Post-normalization check:")
+print("Train median per channel:", np.median(X_train_norm, axis=(0,1)))
+print("Train IQR per channel:", np.percentile(X_train_norm, 75, axis=(0,1)) - np.percentile(X_train_norm, 25, axis=(0,1)))
+
 # Save normalized datasets
 np.savez_compressed(OUT_DIR / "train.npz", X=X_train_norm, y=train_data["y"])
 np.savez_compressed(OUT_DIR / "val.npz",   X=X_val_norm,   y=val_data["y"])
 np.savez_compressed(OUT_DIR / "test.npz",  X=X_test_norm,  y=test_data["y"])
+
 
 # Save the RobustScaler for future use
 import joblib
