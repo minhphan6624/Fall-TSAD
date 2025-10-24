@@ -3,6 +3,15 @@ import numpy as np
 WINDOW_SIZE = 200     # 1 s at 200 Hz
 STRIDE      = 100     # 50 % overlap
 
+def label_window(start, end, fall_range):
+    overlap = sum(
+        max(0, min(end, f_end) - max(start, f_start))
+        for (f_start, f_end) in fall_range
+    )
+    window_length = end - start
+    return 1 if overlap / window_length >= 0.5 else 0
+
+
 def segment_and_label(data, smv, meta, window_size=WINDOW_SIZE, stride=STRIDE):
     """
     Segment accelerometer data into windows and label them using SMV peaks.
@@ -20,9 +29,13 @@ def segment_and_label(data, smv, meta, window_size=WINDOW_SIZE, stride=STRIDE):
         window = data[start:end]
 
         label = 0
-        # If it's a fall trial and window overlaps with fall range, label as 1
-        if meta["is_fall"] and any(i in fall_range for i in range(start, end)):
-            label = 1
+
+        if meta["is_fall"]:
+            label = label_window(start, end, fall_range)
+
+        # # If it's a fall trial and window overlaps with fall range, label as 1
+        # if meta["is_fall"] and any(i in fall_range for i in range(start, end)):
+        #     label = 1
 
         X.append(window)
         y.append(label)
