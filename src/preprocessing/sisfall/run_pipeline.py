@@ -42,7 +42,7 @@ def process_trial(file_path):
             OUT_DIR / out_filename,
             X=X, y=y, meta=meta
         )
-        # print(f"Saved {X.shape[0]} windows to {out_filename}")
+        print(f"Saved {X.shape[0]} windows to {out_filename}")
 
     except Exception as e:
         print(f"Error processing {file_path.name}: {e}")
