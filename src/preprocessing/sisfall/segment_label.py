@@ -10,8 +10,8 @@ def segment_and_label(data, smv, meta, window_size=WINDOW_SIZE, stride=STRIDE):
     """
     impact_idx = np.argmax(smv)
 
-    # -1s to +2s around impact
-    fall_range = range(max(0, impact_idx - 200), min(len(smv), impact_idx + 200))
+    # -0.5s to +0.5s around impact
+    fall_range = range(max(0, impact_idx - 100), min(len(smv), impact_idx + 100))
 
     X, y = [], []
     # Slide a 1-second window through the signal with 0.5-s overlap.
