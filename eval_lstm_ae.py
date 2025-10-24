@@ -9,7 +9,7 @@ from src.models.lstm_ae import LSTM_AE
 # ---- Configuration ----
 
 DATA_DIR = Path("data/processed/sisfall/ready")
-MODEL_PATH = Path("runs/lstm_ae/run_1/best.pt")
+MODEL_PATH = Path("runs/lstm_ae/best.pt")
 BATCH_SIZE = 32
 THRESHOLD_PERCENTILE = 85  # Percentile for thresholding
 

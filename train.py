@@ -1,4 +1,6 @@
 from pathlib import Path
+
+import torch
 from src.trainers.lstm_ae_trainer import LSTMAETrainer
 from src.trainers.data_loader import get_dataloaders
 from src.models.lstm_ae import LSTM_AE
@@ -6,7 +8,7 @@ from src.models.lstm_ae import LSTM_AE
 # Set basic config values
 DATA_DIR = "data/processed/sisfall/ready"
 BATCH_SIZE = 128
-EPOCHS = 50
+EPOCHS = 70
 RUN_DIR = Path("runs/lstm_ae")
 
 def main():
@@ -15,9 +17,13 @@ def main():
 
     # Model and trainer
     model = LSTM_AE(n_features=6, hidden_dim=64, num_layers=2, dropout=0.2)
-
-    trainer = LSTMAETrainer(model, run_dir=RUN_DIR)
     
+    learning_rate = 1e-3
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    criterion = torch.nn.MSELoss()
+
+    trainer = LSTMAETrainer(model, optimizer, criterion, run_dir=RUN_DIR)
+
     trainer.fit(train_loader, val_loader, epochs=EPOCHS)
 
 

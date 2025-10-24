@@ -1,13 +1,22 @@
-# 🧭 SisFall Data Splitting & Preprocessing Guide
+# SisFall Data Splitting & Preprocessing Guide
 **Project:** Fall Detection via Time-Series Anomaly Detection (TSAD)  
 **Goal:** Train only on *normal ADL* patterns (young participants) and detect *falls* as anomalies.  
 
 ---
 
-## 🎯 Overview
-This pipeline prepares the **SisFall dataset** for anomaly-based fall detection.  
----
-
+## How to run the pipeline
+From root:
+```python
+  python3 src/preprocessing/sisfall/run_pipeline.py
+```
+Then
+```python
+  python3 src/preprocessing/sisfall/split.py
+```
+FInally
+```python
+  python3 src/preprocessing/sisfall/normalize_dataset.py
+```
 ## 1️⃣ Dataset Splitting Strategy
 
 | Split | Contains |

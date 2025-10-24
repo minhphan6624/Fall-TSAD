@@ -1,0 +1,13 @@
+--- Evaluation Results ---
+[[57151  6594]
+ [  315  1772]]
+              precision    recall  f1-score   support
+
+         ADL       0.99      0.90      0.94     63745
+        Fall       0.21      0.85      0.34      2087
+
+    accuracy                           0.90     65832
+   macro avg       0.60      0.87      0.64     65832
+weighted avg       0.97      0.90      0.92     65832
+
+ROC AUC (using continuous errors): 0.9473
