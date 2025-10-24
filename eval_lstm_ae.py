@@ -1,7 +1,11 @@
 import torch
 import numpy as np
 from pathlib import Path
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, precision_recall_curve
+from sklearn.metrics import (
+    classification_report, confusion_matrix, 
+    roc_auc_score, precision_recall_curve,
+    f1_score
+)
 import matplotlib.pyplot as plt
 
 from src.models.lstm_ae import LSTM_AE
@@ -46,22 +50,24 @@ val_errors, y_val = cal_recon_errors(model, val_loader, DEVICE)
 test_errors, y_test = cal_recon_errors(model, test_loader, DEVICE)
 
 # --- Determine Threshold ---
-threshold = np.percentile(val_errors, THRESHOLD_PERCENTILE)
-print(f"Chosen threshold (85th percentile): {threshold:.6f}")
+# threshold = np.percentile(val_errors, THRESHOLD_PERCENTILE)
+# print(f"Chosen threshold (85th percentile): {threshold:.6f}")
+# y_pred = (test_errors > threshold).astype(int)
 
 # --- Tune threshold based on F1 score (optional) ---
-# from sklearn.metrics import f1_score
-# best_f1, best_t = 0, None
-# for t in np.linspace(min(val_errors), max(val_errors), 200):
-#     preds = (val_errors > t).astype(int)
-#     f1 = f1_score(y_val, preds)
-#     if f1 > best_f1:
-#         best_f1, best_t = f1, t
-# print("Best threshold:", best_t, "F1:", best_f1)
 
-y_pred = (test_errors > threshold).astype(int)
+thresholds = np.linspace(min(val_errors), max(val_errors), 100)
+best_f1, best_t = 0, None
 
-print(f"\n--- Evaluation Results ---")
+for t in thresholds:
+    preds = (val_errors > t).astype(int)
+    f1 = f1_score(y_val, preds)
+    if f1 > best_f1:
+        best_f1, best_t = f1, t
+print("Best threshold:", best_t, "F1:", best_f1)
+
+y_pred = (test_errors > best_t).astype(int)
+
 print(confusion_matrix(y_test, y_pred))
 print(classification_report(y_test, y_pred, target_names=["ADL", "Fall"]))
 
