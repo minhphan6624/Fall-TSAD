@@ -9,7 +9,7 @@ from src.models.lstm_ae import LSTM_AE
 # ---- Configuration ----
 
 DATA_DIR = Path("data/processed/sisfall/ready")
-MODEL_PATH = Path("runs/lstm_ae/best.pt")
+MODEL_PATH = Path("runs/lstm_ae/run_1/best.pt")
 BATCH_SIZE = 32
 THRESHOLD_PERCENTILE = 85  # Percentile for thresholding
 
@@ -68,6 +68,12 @@ print(classification_report(y_test, y_pred, target_names=["ADL", "Fall"]))
 auc = roc_auc_score(y_test, test_errors)
 print(f"ROC AUC (using continuous errors): {auc:.4f}")
 
+with open("runs/lstm_ae/evaluation_report.txt", "w") as f:
+    f.write(f"--- Evaluation Results ---\n")
+    f.write(f"{confusion_matrix(y_test, y_pred)}\n")
+    f.write(f"{classification_report(y_test, y_pred, target_names=['ADL', 'Fall'])}\n")
+    f.write(f"ROC AUC (using continuous errors): {auc:.4f}\n")
+
 # Precision-Recall Curve
 precision, recall, _ = precision_recall_curve(y_test, test_errors)
 plt.figure()
@@ -76,33 +82,3 @@ plt.xlabel("Recall")
 plt.ylabel("Precision")
 plt.title("Precision-Recall Curve")
 plt.savefig("runs/lstm_ae/precision_recall_curve.png", dpi=200) 
-
-# # ---  Visualize distributions ---
-# plt.figure(figsize=(8,4))
-# plt.hist(test_errors[y_test==0], bins=50, alpha=0.6, label="ADL")
-# plt.hist(test_errors[y_test==1], bins=50, alpha=0.6, label="Fall")
-# plt.axvline(threshold, color='red', linestyle='--', label='Threshold (95%)')
-# plt.legend()
-# plt.xscale('log')
-# plt.xlabel("Reconstruction Error (log scale)")
-# # plt.xlabel("Reconstruction Error")
-# plt.ylabel("Count")
-# plt.title("Reconstruction Error Distribution (Test Set)")
-# plt.tight_layout()
-# plt.savefig("runs/lstm_ae/error_distribution.png", dpi=200)
-plt.figure(figsize=(8, 4))
-
-# Clip to 99th percentile to avoid stretching
-max_x = np.percentile(test_errors, 99)
-plt.hist(test_errors[y_test==0][test_errors[y_test==0] < max_x],
-         bins=100, alpha=0.6, label="ADL", density=True)
-plt.hist(test_errors[y_test==1][test_errors[y_test==1] < max_x],
-         bins=100, alpha=0.6, label="Fall", density=True)
-plt.axvline(threshold, color='red', linestyle='--',
-            label=f'Threshold ({THRESHOLD_PERCENTILE}%)')
-plt.legend()
-plt.xlabel("Reconstruction Error")
-plt.ylabel("Density")
-plt.title("Reconstruction Error Distribution (Test Set)")
-plt.tight_layout()
-plt.savefig("runs/lstm_ae/error_distribution_fixed.png", dpi=200)

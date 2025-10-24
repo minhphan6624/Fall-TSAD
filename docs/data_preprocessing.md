@@ -6,17 +6,15 @@
 
 ## 🎯 Overview
 This pipeline prepares the **SisFall dataset** for anomaly-based fall detection.  
-It ensures **no leakage**, proper **normal-only training**, and a **partially labeled validation set** for threshold calibration.
-
 ---
 
 ## 1️⃣ Dataset Splitting Strategy
 
-| Split | Contains | Purpose |
-|:--|:--|:--|
-| **Train** | ADL (D01–D19) from **young** participants | Learn normal motion patterns |
-| **Validation** | ADL + small % FALLs from **young** participants | Threshold sweeping (F1 / FAR) |
-| **Test** | ADL + FALLs from **young + elderly** | Final performance & generalization |
+| Split | Contains |
+|:--|:--|
+| **Train** | ADL (D01–D19) from **young** participants (SA01-SA15)|
+| **Validation** | ADL from **young** participants (SA16-SA17) | 
+| **Test** | ADL + FALLs from **young + elderly** (SA18-SA23 + SE01-SE15)| 
 
 ### Notes
 - Split **by file**, not by window.  
@@ -29,34 +27,21 @@ It ensures **no leakage**, proper **normal-only training**, and a **partially la
 
 ## 2️⃣ Preprocessing Steps (in correct order)
 
-### Step 1 — Build Metadata
-Parse file names → create a table with:  
-`[path, code, subject, group, is_fall]`  
-- `group`: `"young"` for SAxx, `"elderly"` for SExx  
-- `is_fall`: `1` if code starts with `"F"`
+### Step 1 — Load Metadata from filename
+- Parse filename to extract **metadata**
+- Read and convert signal data to appropriate 
 
-### Step 2 — Split by File
-- **Train:** young ADL only.  
-- **Val:** young ADL + small % of young FALLs.  
-- **Test:** remaining young ADL/FALL + all elderly ADL/FALL.  
-- Save split lists (`train.csv`, `val.csv`, `test.csv`).
-
-### Step 3 — Load & Filter Signals
-- Use **ADXL345 accelerometer** (3 axes).  
+### Step 2 — Load & Filter Signals
+- Use **ADXL345 accelerometer** and **gyroscope**
+- Apply **4th-order Butterworth LPF (20 Hz)**.  (Currently not in use)
 - Sampling rate: **200 Hz**.  
-- Apply **4th-order Butterworth LPF (5 Hz)**.  
-- Optionally clip |acc| > 8 g.
 
-### Step 4 — Normalize
-- Use **RobustScaler (median/IQR)**.  
-- Fit on **train ADL** data only.  
-- Apply same transform to val/test.
+### Step 4 — per-sensor Normalization
+- Use Robust Scaler to normalize each sensor reading seperately to main 
 
-### Step 5 — Segment
-- **Window length:** 3 s (≈ 600 samples @ 200 Hz)  
-- **Overlap:** 50 % (≈ 1.5 s stride)  
-- Segment **within each file** separately.
-
+### Step 5 — Segment and label
+- **Window length:** 1 s (≈ 200 samples @ 200 Hz)  
+- **Overlap:** 50 % (100 sample step)  
 ---
 
 ## 3️⃣ Window Labeling
@@ -69,15 +54,18 @@ Parse file names → create a table with:
 ### Impact zone detection
 1. Compute magnitude `|acc| = √(ax² + ay² + az²)`  
 2. Find peak `t*` (impact).  
-3. Label as 1 if window overlaps `[t* − 0.5 s, t* + 1.0 s]`.  
+3. Windows from -0.5s to +0.5s around impact are labelled as fall.
 4. Others → label 0 (or discard).
 
 ---
 
 ## 4️⃣ Thresholding Strategy
+### Unsupervised
 
-After training your model (e.g., LSTM-AE):
+- Percentile cutoff: e.g. recon_error > 95% of recon_error dist --> anomalies
+- mean + k.std: e.g 
 
+### Supervised
 1. Compute reconstruction errors on **validation set (ADL + FALL)**.  
 2. Sweep thresholds τ:  
    - **Option A:** maximize F1 (precision–recall balance).  
@@ -94,42 +82,3 @@ After training your model (e.g., LSTM-AE):
 | **Event-level** | A fall is detected if *any* of its windows ≥ τ. |
 
 **Metrics:** Precision, Recall, F1, False-Alarm Rate.  
-Include **elderly ADL** in test to measure robustness.
-
----
-
-## ✅ Summary Checklist
-
-- [x] Split by **file** before any preprocessing  
-- [x] Train = **young ADL** only  
-- [x] Val = **young ADL + small FALL subset**  
-- [x] Test = **young + elderly ADL + FALL**  
-- [x] Fit scaler on train ADL only  
-- [x] Segment 3 s windows (50 % overlap)  
-- [x] Label falls ± 0.5 s/1 s around impact  
-- [x] Sweep threshold on validation (F1 or FAR)  
-- [x] Evaluate on test (window & event level)
-
----
-
-## 📁 Example file outputs
-```
-data/
-  processed/
-    sisfall/
-      metadata.csv
-      splits/
-        train.csv
-        val.csv
-        test.csv
-      train_data.npy
-      val_data.npy
-      test_data.npy
-```
-
----
-
-## 🧩 Notes
-- Always verify that train/val/test sets are **disjoint by file**.  
-- If using subject-wise disjoint split, make that clear in results.  
-- This pipeline works identically for other TSAD models (AE, VAE, MSCRED, TranAD, etc.).  
