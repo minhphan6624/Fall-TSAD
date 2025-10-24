@@ -7,16 +7,16 @@ import json
 from torch.utils.tensorboard import SummaryWriter
 
 class LSTMAETrainer:
-    def __init__(self, model, run_dir: Path):
+    def __init__(self, model, optimizer, criterion, run_dir: Path):
         device = torch.device("cuda" if torch.cuda.is_available() else
                             "mps" if torch.backends.mps.is_available() else "cpu")
         self.device = device
         print(f"Using device: {self.device}")
         self.model = model.to(device)
 
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3)
-        self.criterion = torch.nn.MSELoss()
-        
+        self.optimizer = optimizer
+        self.criterion = criterion
+
         run_dir.mkdir(parents=True, exist_ok=True)
         self.run_dir = run_dir
 

@@ -124,12 +124,9 @@ def select_threshold(cfg: DictConfig):
     if not model_path.exists():
         raise FileNotFoundError(f"Best model weights not found in {model_path}")
     model.load_state_dict(torch.load(model_path, map_location=device))
-    log.info(f"Loaded best model from {model_path}")
 
-    log.info("Calculating reconstruction errors on validation set...")
     val_errors, val_labels = calculate_errors_func(model, val_loader, device)
 
-    log.info("Finding optimal threshold...")
     optimal_threshold, best_f1 = find_optimal_threshold(val_errors, val_labels)
 
     # Save the optimal threshold within the experiment directory
