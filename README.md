@@ -1,51 +1,16 @@
 # Fall-TSAD: Time-Series Anomaly Detection for Fall Events
 
 ## Description
-This project implements a deep learning approach for time-series anomaly detection, specifically targeting the identification of fall events from sensor data.  The project is built with PyTorch and uses Hydra for flexible configuration management.
+This project implements a deep learning approach for time-series anomaly detection, specifically targeting the identification of fall events from sensor data. The project is built with PyTorch and uses Hydra for flexible configuration management.
 
 ## Project Structure
-```
-.
-├── .gitignore
-├── README.md
-├── requirements.txt
-├── configs/
-│   ├── default.yaml
-│   ├── data/
-│   │   ├── sisfall.yaml
-│   │   └── upfall.yaml
-│   ├── model/
-│   │   └── lstm_ae.yaml
-│   └── trainer/
-│       └── base.yaml
-├── notebooks/
-│   └── data_preprocessing.ipynb
-├── scripts/
-│   ├── preprocess.py
-│   └── train.py
-└── src/
-    ├── datasets/
-    │   ├── data_loader.py
-    │   └── sisfall_dataset.py
-    ├── modeling/
-    │   ├── evaluate.py
-    │   ├── select_threshold.py
-    │   └── trainer.py
-    ├── models/
-    │   └── lstm_ae.py
-    ├── pipelines/
-    │   └── sisfall/
-    │       ├── aa_run_pipeline.py
-    │       ├── build_metadata.py
-    │       ├── load_signal.py
-    │       ├── normalize.py
-    │       ├── segment_data.py
-    │       ├── serialize.py
-    │       └── split.py
-    ├── utils/
-    │   ├── registry.py
-    │   └── set_seed.py
-```
+The project is organized into several key directories:
+*   `src/`: Contains the core source code, including definitions for models (`src/models`), preprocessing logic (`src/preprocessing`), and training components (`src/trainers`).
+*   `scripts/`: Houses shell scripts to streamline common operations such as data preprocessing, model training, and evaluation.
+*   `notebooks/`: Includes Jupyter notebooks for exploratory data analysis (EDA) and other experimental work.
+*   `docs/`: Provides detailed documentation, including a guide on data preprocessing.
+*   `runs/`: Stores the results of experiments, including trained model checkpoints, evaluation reports, and training logs.
+*   Top-level files: `.gitignore`, `README.md`, `requirements.txt`, `eval_lstm_ae.py` (for evaluation), and `train_lstm_ae.py` (for training).
 
 ## Installation
 To set up the project environment and install the necessary dependencies, follow these steps:
@@ -77,40 +42,31 @@ To set up the project environment and install the necessary dependencies, follow
 
 ## Usage
 
-This project involves several stages: data preprocessing, model training, threshold selection, and model evaluation.
+This project involves a multi-stage pipeline for time-series anomaly detection, encompassing data preprocessing, model training, and evaluation. The primary scripts for these stages are located in the `scripts/` directory.
 
 ### 1. Data Preprocessing
-The `preprocess.py` script is used to prepare the raw sensor data for model training.
+The preprocessing pipeline prepares raw sensor data for model training. This involves steps like loading metadata, filtering signals, per-sensor normalization, and segmenting data into windows with appropriate labels. More details can be found in `docs/data_preprocessing.md`.
 
 To run the preprocessing pipeline:
 ```bash
-python scripts/preprocess.py
+./scripts/preprocess.sh
 ```
-You can specify different data configurations using Hydra (e.g., `python scripts/preprocess.py data=upfall`).
+You can specify different data configurations using Hydra (e.g., `./scripts/preprocess.sh data=upfall`).
 
 ### 2. Model Training
-The `train.py` script is used to train the LSTM Autoencoder model.
+The training script is used to train the LSTM Autoencoder model.
 
 To train the model with default configurations:
 ```bash
-python scripts/train.py
+./scripts/train.sh
 ```
 
-### 3. Threshold Selection
-After training, the `select_threshold.py` script helps in determining an optimal anomaly threshold.
-
-To select the threshold:
-```bash
-python src/modeling/select_threshold.py
-```
-(Note: This script might require specific arguments or configurations depending on its implementation. Refer to the script for details.)
-
-### 4. Model Evaluation
-The `evaluate.py` script is used to evaluate the trained model's performance.
+### 3. Model Evaluation
+After training, the evaluation script assesses the trained model's performance, often involving threshold selection and metric calculation at both window and event levels.
 
 To evaluate the model:
 ```bash
-python src/modeling/evaluate.py
+./scripts/evaluate.sh
 ```
 (Note: This script might require specific arguments or configurations, such as the path to the trained model and selected threshold. Refer to the script for details.)
 
@@ -122,13 +78,13 @@ The `configs/default.yaml` file specifies the default settings for the dataset, 
 **Example: Overriding model parameters**
 To change a model parameter (e.g., `latent_dim` for the `lstm_ae` model), you can run:
 ```bash
-python scripts/train.py model.latent_dim=16
+python train_lstm_ae.py model.latent_dim=16
 ```
 
 **Example: Using a different dataset configuration**
 If you have a `configs/data/upfall.yaml` configuration, you can use it by running:
 ```bash
-python scripts/train.py data=upfall
+python train_lstm_ae.py data=upfall
 ```
 
 You can combine multiple overrides as needed.

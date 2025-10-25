@@ -18,6 +18,11 @@ class LSTM_AE(nn.Module):
             bidirectional=False
         )
 
+        def encode(self, x):
+            _, (hidden_state, _) = self.encoder(x)
+            return hidden_state[-1]  # shape [batch, hidden_dim]
+
+
         # Decoder LSTM
         self.decoder = nn.LSTM(
             input_size=hidden_dim,
@@ -36,14 +41,13 @@ class LSTM_AE(nn.Module):
 
         # Encoder forward pass
         # Shape: (batch_size, sequence_length, hidden_dim)
-        encoder_output, (hidden_state, cell_state) = self.encoder(x)
+        _, (hidden_state, cell_state) = self.encoder(x)
 
-        # Prepare decoder input (repeat the last hidden state for each time step)
-        # Extract last time step's output -> add dimension for sequence length -> repeat for sequence length
-        decoder_input = encoder_output[:, -1, :].unsqueeze(1).repeat(1, x.shape[1], 1)
-        
-        # Decoder forward pass
+
+        decoder_input = torch.zeros_like(x)  # [batch, seq_len, n_features]
         decoder_output, _ = self.decoder(decoder_input, (hidden_state, cell_state))
+        
+        output = self.output_layer(decoder_output)
         
         # Project decoder output to original feature dimension
         output = self.output_layer(decoder_output)
