@@ -1,1 +1,1 @@
-python3 train.py
+python3 train_lstm_ae.py
