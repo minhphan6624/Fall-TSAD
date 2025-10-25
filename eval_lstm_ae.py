@@ -3,12 +3,13 @@ import numpy as np
 from pathlib import Path
 from sklearn.metrics import (
     classification_report, confusion_matrix, 
-    roc_auc_score, precision_recall_curve,
+    roc_auc_score, precision_recall_curve, roc_curve,
     f1_score
 )
 import matplotlib.pyplot as plt
 
 from src.models.lstm_ae import LSTM_AE
+from src.trainers.data_loader import get_dataloaders
 
 # ---- Configuration ----
 
@@ -42,17 +43,15 @@ def cal_recon_errors(model, loader, device):
             labels.extend(y.cpu().numpy())
     return np.array(errors), np.array(labels)
 
-# --- Get dataloaders ---
-from src.trainers.data_loader import get_dataloaders
+# --- Calculate Reconstruction Errors ---
 _, val_loader, test_loader = get_dataloaders(DATA_DIR, BATCH_SIZE)
 
-# --- Calculate Reconstruction Errors ---
 val_errors, y_val = cal_recon_errors(model, val_loader, DEVICE)
 test_errors, y_test = cal_recon_errors(model, test_loader, DEVICE)
 
 # --- Determine Threshold ---
 threshold = np.percentile(val_errors, THRESHOLD_PERCENTILE)
-print(f"Chosen threshold (85th percentile): {threshold:.6f}")
+print(f"Chosen threshold (90th percentile): {threshold:.6f}")
 y_pred = (test_errors > threshold).astype(int)
 
 # --- Tune threshold based on F1 score (optional) ---
@@ -73,9 +72,8 @@ print(confusion_matrix(y_test, y_pred))
 print(classification_report(y_test, y_pred, target_names=["ADL", "Fall"]))
 
 auc = roc_auc_score(y_test, test_errors)
-print(f"ROC AUC (using continuous errors): {auc:.4f}")
-
 precision, recall, _ = precision_recall_curve(y_test, test_errors)
+print(f"ROC AUC (using continuous errors): {auc:.4f}")
 print(f"Precision-Recall AUC: {np.trapezoid(precision, recall):.4f}")
 
 output_dir = Path("runs/lstm_ae")
@@ -94,3 +92,12 @@ plt.xlabel("Recall")
 plt.ylabel("Precision")
 plt.title("Precision-Recall Curve")
 plt.savefig("runs/lstm_ae/precision_recall_curve.png", dpi=200) 
+
+# ROC Curve
+plt.figure()
+fpr, tpr, _ = roc_curve(y_test, test_errors)
+plt.plot(fpr, tpr, marker='.')
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.title("ROC Curve")
+plt.savefig("runs/lstm_ae/roc_curve.png", dpi=200)

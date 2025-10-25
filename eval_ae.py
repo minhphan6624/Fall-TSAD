@@ -9,7 +9,7 @@ from sklearn.metrics import (
 )
 import matplotlib.pyplot as plt
 
-from ..src import Autoencoder
+from src.models.autoencoder import Autoencoder
 from src.trainers.data_loader import get_dataloaders
 from src.utils.set_seed import set_seed
 
