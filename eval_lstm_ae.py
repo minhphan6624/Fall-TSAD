@@ -78,7 +78,9 @@ print(f"ROC AUC (using continuous errors): {auc:.4f}")
 precision, recall, _ = precision_recall_curve(y_test, test_errors)
 print(f"Precision-Recall AUC: {np.trapezoid(precision, recall):.4f}")
 
-with open("runs/lstm_ae/evaluation_report.txt", "w") as f:
+output_dir = Path("runs/lstm_ae")
+out_filename = output_dir / "evaluation_report.txt"
+with open(out_filename, "w") as f:
     f.write(f"--- Evaluation Results ---\n")
     f.write(f"{confusion_matrix(y_test, y_pred)}\n")
     f.write(f"{classification_report(y_test, y_pred, target_names=['ADL', 'Fall'])}\n")

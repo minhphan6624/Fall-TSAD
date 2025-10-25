@@ -19,9 +19,9 @@ def segment_and_label(data, smv, meta, window_size=WINDOW_SIZE, stride=STRIDE):
     """
     impact_idx = np.argmax(smv)
 
-    # -0.75s to +0.75s around impact
-    start = max(0, impact_idx - 150)
-    end = min(len(smv), impact_idx + 150)
+    # -1s to +1s around impact
+    start = max(0, impact_idx - 200)
+    end = min(len(smv), impact_idx + 200)
     fall_range = range(start, end)
 
     X, y = [], []
