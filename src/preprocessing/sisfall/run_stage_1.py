@@ -4,19 +4,11 @@ import numpy as np
 from sklearn.preprocessing import RobustScaler
 
 from load_signal import load_signal
-# from filter import butter_lowpass_filters
-from normalize_sensor import normalize_sensor
 from segment_label import segment_and_label
 
 RAW_DIR = Path("data/raw/sisfall/")
 OUT_DIR = Path("data/processed/sisfall/windows")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
-
-from scipy.signal import butter, filtfilt
-# Low-pass filter
-def butter_lowpass_filter(data, cutoff=5, fs=200, order=4):
-    b, a = butter(order, cutoff/(fs/2), btype='low', analog=False)
-    return filtfilt(b, a, data, axis=0)
 
 # Filename pattern: D01_SA01_R01.txt
 _NAME_RE = re.compile(r"^(?P<code>[DF]\d{2})_(?P<subject>S[AE]\d{2})_(?P<trial>R\d{2})\.txt$")
@@ -42,6 +34,24 @@ def parse_filename(name: str) -> dict:
         "is_fall": int(is_fall)
     }
 
+from scipy.signal import butter, filtfilt
+# ----- Low-pass filter ----- 
+def butter_lowpass_filter(data, cutoff=10, fs=200, order=4):
+    b, a = butter(order, cutoff/(fs/2), btype='low', analog=False)
+    return filtfilt(b, a, data, axis=0)
+
+# --- Per-sensor normalization ---
+def normalize_sensor(data: np.ndarray, scaler):
+    """
+    Apply per-axis RobustScaler normalization to 3-axis data.
+    Each axis is scaled independently.
+    """
+    scaled = np.zeros_like(data)
+
+    for i in range(data.shape[1]):
+        scaled[:, i] = scaler.fit_transform(data[:, i].reshape(-1, 1)).flatten()
+    return scaled
+
 def process_trial(file_path):
     """Process a single trial file: load, normalize, and save."""
     try:
@@ -51,13 +61,19 @@ def process_trial(file_path):
         signals = load_signal(file_path)
 
         # Normalize per-sensor (using RobustScaler)
-        normed = {
-            name: normalize_sensor(data, scaler=RobustScaler())
+        # normed = {
+        #     name: normalize_sensor(data, scaler=RobustScaler())
+        #     for name, data in signals.items()
+        # }
+
+        # Apply low-pass filter to data
+        filtered = {
+            name: butter_lowpass_filter(data)
             for name, data in signals.items()
         }
 
-        acc_data = normed['acc1']
-        combined_data = np.hstack([v for v in normed.values()])    
+        acc_data = filtered['acc1']
+        combined_data = np.hstack([v for v in filtered.values()])
 
         # Compute SMV from normalized accelerometer data
         smv = np.sqrt(np.sum(acc_data**2, axis=1))

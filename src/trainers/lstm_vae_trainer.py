@@ -4,9 +4,6 @@ from pathlib import Path
 from torch.utils.data import DataLoader
 import logging
 
-logging.basicConfig(level=logging.INFO)
-log = logging.getLogger(__name__)
-
 class VAETrainer:
     def __init__(self, model, cfg, run_dir: Path):
         self.cfg = cfg
@@ -27,13 +24,15 @@ class VAETrainer:
         self.beta = cfg.model.beta # KL divergence weight
 
     def fit(self, train_loader: DataLoader, val_loader: DataLoader):
-        ''' Full training loop '''
         for epoch in range(self.cfg.trainer.epochs):
-            log.info(f"Epoch {epoch+1}/{self.cfg.trainer.epochs}")
+            
+            print(f"Epoch {epoch+1}/{self.cfg.trainer.epochs}")
             start = time.time()
+            
             train_loss = self._train_epoch(train_loader)
             val_loss = self._validate_epoch(val_loader)
             elapsed = time.time() - start
+
             print(f"Epoch [{epoch+1}/{self.cfg.trainer.epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Time: {elapsed:.2f}s")
 
             # Logging
@@ -53,7 +52,6 @@ class VAETrainer:
             torch.save(self.model.state_dict(), self.run_dir / "best_model.pt")
 
     def _train_epoch(self, train_loader: DataLoader):
-        ''' Train for one epoch '''
         self.model.train()
 
         total_loss = 0.0
@@ -80,7 +78,6 @@ class VAETrainer:
 
     @torch.no_grad()
     def _validate_epoch(self, val_loader: DataLoader):
-        ''' Validate for one epoch '''
         self.model.eval()
 
         total_loss = 0.0

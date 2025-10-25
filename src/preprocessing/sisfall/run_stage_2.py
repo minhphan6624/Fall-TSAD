@@ -1,6 +1,6 @@
 import numpy as np
 from pathlib import Path
-from sklearn.preprocessing import RobustScaler
+from sklearn.preprocessing import RobustScaler, StandardScaler
 import joblib
 
 # Define input and output directories
@@ -49,9 +49,8 @@ assert np.all(y_train == 0), "Found fall windows in training set!"
 assert np.all(y_val == 0), "Found fall windows in validation set!"
 
 print("Starting data normalization...")
-# Apply RobustScaler on training set
-scaler = RobustScaler()
-X_train_flat = X_train.reshape(-1, X_train.shape[-1])  # combine windows
+scaler = StandardScaler()
+X_train_flat = X_train.reshape(-1, X_train.shape[-1])
 scaler.fit(X_train_flat)
 
 # Normalize a dataset using the fitted scaler
@@ -66,17 +65,41 @@ X_val_norm = normalize_dataset(X_val)
 X_test_norm = normalize_dataset(X_test)
 
 print("Post-normalization check:")
-print("Train median per channel:", np.median(X_train_norm, axis=(0,1)))
-print("Train IQR per channel:", np.percentile(X_train_norm, 75, axis=(0,1)) - np.percentile(X_train_norm, 25, axis=(0,1)))
+print("Train mean per channel:", X_train_norm.mean(axis=(0,1)))
+print("Train std per channel:", X_train_norm.std(axis=(0,1)))
 
 # Save normalized datasets
 np.savez_compressed(OUT_DIR_NORM / "train.npz", X=X_train_norm, y=y_train, subjects=train_subjects)
 np.savez_compressed(OUT_DIR_NORM / "val.npz",   X=X_val_norm,   y=y_val,   subjects=val_subjects)
 np.savez_compressed(OUT_DIR_NORM / "test.npz",  X=X_test_norm,  y=y_test,  subjects=test_subjects)
 
-# Save the RobustScaler for future use
-scaler_path = OUT_DIR_NORM / "robust_scaler.save"
+# Save normalization parameters
+scaler_path = OUT_DIR_NORM / "scaler.save"
 joblib.dump(scaler, scaler_path)
-print("Normalization complete. Scaler saved to:", scaler_path)
 
 print("TSAD dataset preprocessing (split and normalize) completed and saved to:", OUT_DIR_NORM)
+
+# # Apply RobustScaler on training set
+# scaler = RobustScaler()
+# X_train_flat = X_train.reshape(-1, X_train.shape[-1])  # combine windows
+# scaler.fit(X_train_flat)
+
+# # Normalize a dataset using the fitted scaler
+# def normalize_dataset(X):
+#     original_shape = X.shape
+#     X_flat = X.reshape(-1, X.shape[-1])
+#     X_scaled = scaler.transform(X_flat).reshape(original_shape)
+#     return X_scaled
+
+# X_train_norm = normalize_dataset(X_train)
+# X_val_norm = normalize_dataset(X_val)
+# X_test_norm = normalize_dataset(X_test)
+
+# print("Post-normalization check:")
+# print("Train median per channel:", np.median(X_train_norm, axis=(0,1)))
+# print("Train IQR per channel:", np.percentile(X_train_norm, 75, axis=(0,1)) - np.percentile(X_train_norm, 25, axis=(0,1)))
+
+# # Save the RobustScaler for future use
+# scaler_path = OUT_DIR_NORM / "robust_scaler.save"
+# joblib.dump(scaler, scaler_path)
+# print("Normalization complete. Scaler saved to:", scaler_path)
