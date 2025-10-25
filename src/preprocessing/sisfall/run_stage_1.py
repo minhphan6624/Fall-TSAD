@@ -1,9 +1,9 @@
 from pathlib import Path
+import re
 import numpy as np
 from sklearn.preprocessing import RobustScaler
 
 from load_signal import load_signal
-from parse_filename import parse_filename
 # from filter import butter_lowpass_filters
 from normalize_sensor import normalize_sensor
 from segment_label import segment_and_label
@@ -11,6 +11,36 @@ from segment_label import segment_and_label
 RAW_DIR = Path("data/raw/sisfall/")
 OUT_DIR = Path("data/processed/sisfall/windows")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+from scipy.signal import butter, filtfilt
+# Low-pass filter
+def butter_lowpass_filter(data, cutoff=5, fs=200, order=4):
+    b, a = butter(order, cutoff/(fs/2), btype='low', analog=False)
+    return filtfilt(b, a, data, axis=0)
+
+# Filename pattern: D01_SA01_R01.txt
+_NAME_RE = re.compile(r"^(?P<code>[DF]\d{2})_(?P<subject>S[AE]\d{2})_(?P<trial>R\d{2})\.txt$")
+
+def parse_filename(name: str) -> dict:
+    """ Parse a file and extract the important metadata """
+    m = _NAME_RE.match(name)
+    if not m:
+        raise ValueError(f"Invalid filename: {name}")
+    
+    # Extract metadata from regex groups
+    activity = m.group("code")
+    subject = m.group("subject")    
+    trial = m.group("trial")
+    is_fall = activity.startswith("F")
+    group = "young" if subject.startswith("SA") else "elderly"
+
+    return {
+        "activity": activity,
+        "subject": subject,
+        "group": group,
+        "trial": trial,
+        "is_fall": int(is_fall)
+    }
 
 def process_trial(file_path):
     """Process a single trial file: load, normalize, and save."""
