@@ -83,7 +83,7 @@ class LSTMAETrainer:
 
             # Save training logs
             record = {
-                "epoch": epoch,
+                "epoch": epoch+1,
                 "train_loss": train_loss,
                 "val_loss": val_loss,
                 "time": elapsed

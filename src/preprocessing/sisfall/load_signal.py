@@ -55,7 +55,6 @@ def load_signal(file_path: Path) -> np.ndarray:
 
     return {
         "acc1": accel_1_data_g,
-        "gyro": gyro_data_degs,
+        # "gyro": gyro_data_degs,
         # "acc2": accel_2_data_g
     }
-

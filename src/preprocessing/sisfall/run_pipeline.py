@@ -27,14 +27,14 @@ def process_trial(file_path):
         }
 
         acc_data = normed['acc1']
-        gyro_data = normed['gyro']
-        combined_data = np.hstack([acc_data, gyro_data]) 
+        # gyro_data = normed['gyro']
+        # combined_data = np.hstack([acc_data, gyro_data]) 
 
         # Compute SMV from normalized accelerometer data
         smv = np.sqrt(np.sum(acc_data**2, axis=1))
 
         # Segment & label
-        X, y = segment_and_label(combined_data, smv, meta, window_size=200, stride=100)
+        X, y = segment_and_label(acc_data, smv, meta, window_size=200, stride=100)
 
         # Save windows + labels
         out_filename = f"{meta['activity']}_{meta['subject']}_{meta['trial']}.npz"
