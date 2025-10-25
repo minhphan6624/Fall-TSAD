@@ -16,7 +16,7 @@ THRESHOLD_PERCENTILE = 85  # Percentile for thresholding
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")  
 
 # --- Load Model ---
-model = LSTM_AE(n_features=6, hidden_dim=64, num_layers=2, dropout=0.2)
+model = LSTM_AE(n_features=3, hidden_dim=64, num_layers=2, dropout=0.2)
 model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
 model.to(DEVICE)
 model.eval()

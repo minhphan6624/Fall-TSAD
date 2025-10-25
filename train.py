@@ -16,11 +16,12 @@ def main():
     train_loader, val_loader, test_loader = get_dataloaders(Path(DATA_DIR), BATCH_SIZE)
 
     # Model and trainer
-    model = LSTM_AE(n_features=6, hidden_dim=64, num_layers=2, dropout=0.2)
+    model = LSTM_AE(n_features=3, hidden_dim=64, num_layers=2, dropout=0.2)
     
     learning_rate = 1e-3
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    criterion = torch.nn.MSELoss()
+    # criterion = torch.nn.MSELoss()
+    criterion = torch.nn.L1Loss()
 
     trainer = LSTMAETrainer(model, optimizer, criterion, run_dir=RUN_DIR)
 
