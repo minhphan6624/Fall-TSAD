@@ -19,9 +19,9 @@ def segment_and_label(data, smv, meta, window_size=WINDOW_SIZE, stride=STRIDE):
     """
     impact_idx = np.argmax(smv)
 
-    # -1s to +1s around impact
-    start = max(0, impact_idx - 200)
-    end = min(len(smv), impact_idx + 200)
+    # -0.5s to +0.5s around impact
+    start = max(0, impact_idx - 100)
+    end = min(len(smv), impact_idx + 100)
     fall_range = range(start, end)
 
     X, y = [], []
@@ -31,6 +31,12 @@ def segment_and_label(data, smv, meta, window_size=WINDOW_SIZE, stride=STRIDE):
         window = data[start:end]
 
         label = 0
+        
+        # # Label the window if it has any overlap with the fall range
+        # if meta["is_fall"] and (start < fall_range.stop and end > fall_range.start):
+        #     label = 1
+        
+        # Label the window if it overlaps with the fall range by at least 30%
         if meta["is_fall"]:
             label = label_window(start, end, fall_range, 0.3)
 
