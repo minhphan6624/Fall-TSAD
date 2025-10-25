@@ -20,7 +20,6 @@ def main():
     
     learning_rate = 1e-3
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    # criterion = torch.nn.MSELoss()
     criterion = torch.nn.L1Loss()
 
     trainer = LSTMAETrainer(model, optimizer, criterion, run_dir=RUN_DIR)
