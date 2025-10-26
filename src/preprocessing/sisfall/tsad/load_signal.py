@@ -41,7 +41,7 @@ def load_signal(file_path: Path) -> np.ndarray:
 
     arr = df.to_numpy(dtype=np.float32) # Convert all data to float32 numpy array
     if arr.shape[1] < 9:
-        raise ValueError(f"Data file {file_path} has less than 6 columns.")
+        raise ValueError(f"Data file {file_path} has less than 9 columns.")
     
     # Separate sensor data
     accel_1_data = arr[:, ACC_1_SLICE]
