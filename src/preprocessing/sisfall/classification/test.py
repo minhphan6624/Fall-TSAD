@@ -7,7 +7,7 @@ from load_signal import load_signal
 
 # === CONFIG ===
 DATA_DIR = Path("data/raw/sisfall")
-SAMPLE_FILE = DATA_DIR / "SA01" / "F01_SA01_R01.txt"  # <-- pick any fall file
+SAMPLE_FILE = DATA_DIR / "SA01" / "D01_SA01_R01.txt"  # <-- pick any fall file
 FS = 200  # Hz
 WINDOW_SIZE = 200
 STRIDE = 100
@@ -48,4 +48,4 @@ plt.xlabel("Time (s)")
 plt.ylabel("Acceleration magnitude (g)")
 plt.legend()
 plt.tight_layout()
-plt.show()
+plt.savefig("sisfall_fall_window_labeling.png", dpi=300)

@@ -4,8 +4,8 @@ from sklearn.preprocessing import RobustScaler, StandardScaler
 import joblib
 
 # Define input and output directories
-IN_DIR_SPLIT = Path("data/processed/sisfall/windows")
-OUT_DIR_NORM = Path("data/processed/sisfall/final_tsad")
+IN_DIR_SPLIT = Path("data/processed/sisfall/tsad/windows")
+OUT_DIR_NORM = Path("data/processed/sisfall/tsad/final")
 OUT_DIR_NORM.mkdir(parents=True, exist_ok=True)
 
 # Subject groups for splitting (based on SisFall participant IDs)
