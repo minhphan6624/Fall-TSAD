@@ -1,5 +1,0 @@
-epochs: 50
-learning_rate: 0.001
-optimizer: 'Adam'
-loss_fn: 'MSELoss'
-patience: 7

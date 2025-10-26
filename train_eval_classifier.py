@@ -23,8 +23,8 @@ train_loader, val_loader, test_loader = get_dataloaders(processed_dir=Path(DATA_
 from src.models.lstm_classifier import LSTMClassifier
 from src.models.cnn1d import CNN1D
 
-# model = LSTMClassifier(input_size=9)
-model = CNN1D(in_channels=9)
+# model = LSTMClassifier(input_size=3)
+model = CNN1D(in_channels=3)
 model.to(DEVICE)
 
 # --- Handle imbalance with weighted loss ---

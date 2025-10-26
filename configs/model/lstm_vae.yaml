@@ -1,8 +1,0 @@
-# LSTM-VAE specific hyperparameters
-name: lstm_vae
-n_features: 6
-hidden_dim: 64
-latent_dim: 20 # Example latent dimension
-num_layers: 2
-dropout: 0.2
-beta: 1.0 # Weight for KL divergence loss
