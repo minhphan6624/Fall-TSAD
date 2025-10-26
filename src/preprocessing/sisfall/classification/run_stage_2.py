@@ -1,0 +1,103 @@
+import numpy as np
+from pathlib import Path
+from sklearn.preprocessing import RobustScaler, StandardScaler
+import joblib
+
+# Define input and output directories
+IN_DIR_SPLIT = Path("data/processed/sisfall/classification/windows")
+OUT_DIR_NORM = Path("data/processed/sisfall/classification/final")
+OUT_DIR_NORM.mkdir(parents=True, exist_ok=True)
+
+# Subject groups for splitting (based on SisFall participant IDs)
+train_subjects = [f"SA{i:02d}" for i in range(1, 16)]  # SA01–SA15
+val_subjects   = [f"SA{i:02d}" for i in range(16, 18)]  # SA16–SA17
+test_subjects  = [f"SA{i:02d}" for i in range(18, 24)] \
+                + [f"SE{i:02d}" for i in range(1, 16)]  # SA18–SA23 + SE01–SE15
+
+X_train, y_train = [], []
+X_val, y_val = [], []
+X_test, y_test = [], []
+
+print("Starting data splitting...")
+for file_path in IN_DIR_SPLIT.glob("*.npz"):
+    data = np.load(file_path, allow_pickle=True)
+    meta = data["meta"].item()
+    subj = meta["subject"]
+    X, y = data["X"], data["y"]
+
+    if subj in train_subjects:
+        X_train.append(X); y_train.append(y)
+    elif subj in val_subjects:
+        X_val.append(X); y_val.append(y)
+    elif subj in test_subjects:
+        X_test.append(X); y_test.append(y)
+
+def stack(arr_list): return np.concatenate(arr_list, axis=0) if len(arr_list) else np.array([])
+
+X_train, y_train = stack(X_train), stack(y_train)
+X_val, y_val = stack(X_val), stack(y_val)
+X_test, y_test = stack(X_test), stack(y_test)
+
+def count_falls(y):
+    return (y==1).sum(), (y==0).sum()
+
+for split_name, y_split in zip(["Train", "Val", "Test"], [y_train, y_val, y_test]):
+    falls, adl = count_falls(y_split)
+    print(f"{split_name}: {falls} Falls, {adl} ADL, ratio={falls/(falls+adl):.4f}")
+
+print("Data splitting complete.")
+print("Train:", X_train.shape, y_train.shape)
+print("Val:", X_val.shape, y_val.shape)
+print("Test:", X_test.shape, y_test.shape)
+
+# assert np.all(y_train == 0), "Found fall windows in training set!"
+# assert np.all(y_val == 0), "Found fall windows in validation set!"
+
+print("Starting data normalization...")
+scaler = StandardScaler()
+X_train_flat = X_train.reshape(-1, X_train.shape[-1])
+scaler.fit(X_train_flat)
+
+# Normalize a dataset using the fitted scaler
+def normalize_dataset(X):
+    original_shape = X.shape
+    X_flat = X.reshape(-1, X.shape[-1])
+    X_scaled = scaler.transform(X_flat).reshape(original_shape)
+    return X_scaled
+
+X_train_norm = normalize_dataset(X_train)
+X_val_norm = normalize_dataset(X_val)
+X_test_norm = normalize_dataset(X_test)
+
+print("Post-normalization check:")
+print("Train mean per channel:", X_train_norm.mean(axis=(0,1)))
+print("Train std per channel:", X_train_norm.std(axis=(0,1)))
+
+import numpy as np
+
+def balance_training_data(X, y, ratio=3, seed=42):
+    np.random.seed(seed)
+    idx_fall = np.where(y == 1)[0]
+    idx_adl  = np.where(y == 0)[0]
+    n_keep_adl = min(len(idx_adl), ratio * len(idx_fall))
+    idx_keep_adl = np.random.choice(idx_adl, size=n_keep_adl, replace=False)
+    idx_final = np.concatenate([idx_fall, idx_keep_adl])
+    np.random.shuffle(idx_final)
+    return X[idx_final], y[idx_final]
+
+X_train_bal, y_train_bal = balance_training_data(X_train_norm, y_train, ratio=3)
+print(f"Balanced train set: {np.sum(y_train_bal==1)} Falls, {np.sum(y_train_bal==0)} ADL")
+
+
+# Save normalized datasets
+np.savez_compressed(OUT_DIR_NORM / "train.npz", X=X_train_norm, y=y_train, subjects=train_subjects)
+np.savez_compressed(OUT_DIR_NORM / "val.npz",   X=X_val_norm,   y=y_val,   subjects=val_subjects)
+np.savez_compressed(OUT_DIR_NORM / "test.npz",  X=X_test_norm,  y=y_test,  subjects=test_subjects)
+
+# Save normalization parameters
+scaler_path = OUT_DIR_NORM / "scaler.save"
+joblib.dump(scaler, scaler_path)
+
+print("TSAD dataset preprocessing (split and normalize) completed and saved to:", OUT_DIR_NORM)
+
+
