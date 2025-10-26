@@ -10,7 +10,7 @@ OUT_DIR_NORM.mkdir(parents=True, exist_ok=True)
 
 # Subject groups for splitting (based on SisFall participant IDs)
 train_subjects = [f"SA{i:02d}" for i in range(1, 16)]  # SA01–SA15
-val_subjects   = [f"SA{i:02d}" for i in range(16, 18)] # SA16–SA17
+val_subjects   = [f"SA{i:02d}" for i in range(16, 18)]  # SA16–SA17
 test_subjects  = [f"SA{i:02d}" for i in range(18, 24)] \
                 + [f"SE{i:02d}" for i in range(1, 16)]  # SA18–SA23 + SE01–SE15
 

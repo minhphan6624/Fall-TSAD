@@ -12,16 +12,21 @@ from src.models.lstm_ae import LSTM_AE
 from src.trainers.data_loader import get_dataloaders
 
 # ---- Configuration ----
-
-DATA_DIR = Path("data/processed/sisfall/final_tsad")
+DATA_DIR = Path("data/processed/sisfall/tsad/final")
 MODEL_PATH = Path("runs/lstm_ae/best.pt")
 BATCH_SIZE = 32
 THRESHOLD_PERCENTILE = 90  # Percentile for thresholding
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")  
 
+# --- Model config ---
+INPUT_DIM = 3
+HIDDEN_DIM = 64
+NUM_LAYERS = 1
+DROPOUT = 0.2
+
 # --- Load Model ---
-model = LSTM_AE(n_features=6, hidden_dim=64, num_layers=2, dropout=0.2)
+model = LSTM_AE(input_dim=INPUT_DIM, hidden_dim=HIDDEN_DIM, num_layers=NUM_LAYERS, dropout=DROPOUT)
 model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
 model.to(DEVICE)
 model.eval()

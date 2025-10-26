@@ -60,12 +60,6 @@ def process_trial(file_path):
         meta = parse_filename(file_path.name)
         signals = load_signal(file_path)
 
-        # Normalize per-sensor (using RobustScaler)
-        # normed = {
-        #     name: normalize_sensor(data, scaler=RobustScaler())
-        #     for name, data in signals.items()
-        # }
-
         # Apply low-pass filter to data
         filtered = {
             name: butter_lowpass_filter(data)
