@@ -18,6 +18,10 @@ def segment_and_label(data, smv, meta, window_size=WINDOW_SIZE, stride=STRIDE):
     Only windows around the impact in fall trials are labelled 1.
     """
     impact_idx = np.argmax(smv)
+    
+    if len(data) < window_size:
+        return np.empty((0, window_size, data.shape[1])), np.empty((0,))
+
 
     # -0.5s to +0.5s around impact
     start = max(0, impact_idx - 100)
