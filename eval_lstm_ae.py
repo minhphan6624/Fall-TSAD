@@ -105,4 +105,56 @@ plt.plot(fpr, tpr, marker='.')
 plt.xlabel("False Positive Rate")
 plt.ylabel("True Positive Rate")
 plt.title("ROC Curve")
-plt.savefig("runs/lstm_ae/roc_curve.png", dpi=200)
+plt.savefig(output_dir / "roc_curve.png", dpi=200)
+
+# --- Plot Reconstruction Examples ---
+def plot_reconstruction_examples(model, dataloader, device, output_dir, num_examples=5):
+    model.eval()
+    with torch.no_grad():
+        # Get some samples from the test set
+        data_iter = iter(dataloader)
+        X_samples, y_samples = [], []
+        for _ in range(num_examples):
+            X, y = next(data_iter)
+            X_samples.append(X[0])
+            y_samples.append(y[0])
+        
+        X_samples = torch.stack(X_samples).to(device)
+        recons_samples = model(X_samples)
+
+        X_samples = X_samples.cpu().numpy()
+        recons_samples = recons_samples.cpu().numpy()
+        y_samples = np.array(y_samples)
+
+        plt.figure(figsize=(15, 5 * num_examples))
+        for i in range(num_examples):
+            plt.subplot(num_examples, 1, i + 1)
+            plt.plot(X_samples[i, :, 0], label='Original AccX')
+            plt.plot(recons_samples[i, :, 0], label='Recon AccX', linestyle='--')
+            plt.title(f"Sample {i+1} (Label: {y_samples[i]})")
+            plt.legend()
+        plt.tight_layout()
+        plt.savefig(output_dir / "reconstruction_examples.png", dpi=200)
+        print(f"Reconstruction examples saved to {output_dir / 'reconstruction_examples.png'}")
+
+# --- Plot Reconstruction Error Distribution ---
+def plot_error_distribution(errors, labels, output_dir):
+    plt.figure(figsize=(10, 6))
+    
+    adl_errors = errors[labels == 0]
+    fall_errors = errors[labels == 1]
+
+    plt.hist(adl_errors, bins=50, alpha=0.5, label='ADL Errors', color='blue')
+    plt.hist(fall_errors, bins=50, alpha=0.5, label='Fall Errors', color='red')
+    
+    plt.xlabel("Reconstruction Error (MAE)")
+    plt.ylabel("Frequency")
+    plt.title("Reconstruction Error Distribution")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(output_dir / "error_distribution.png", dpi=200)
+    print(f"Error distribution plot saved to {output_dir / 'error_distribution.png'}")
+
+# Call the new plotting functions
+plot_reconstruction_examples(model, test_loader, DEVICE, output_dir)
+plot_error_distribution(test_errors, y_test, output_dir)

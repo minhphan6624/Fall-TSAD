@@ -39,7 +39,7 @@ def main(args):
     # --- 1. Load Data ---
     data_dir = Path(args.data_dir)
     
-    # Get dataloaders (train_loader is needed for thresholding on ADL data)
+    # Get dataloaders 
     train_loader, val_loader, test_loader = get_dataloaders(data_dir, args.batch_size)
 
     # Determine input_dim for the Autoencoder from a sample batch
@@ -55,13 +55,13 @@ def main(args):
 
     # --- 3. Calculate Reconstruction Errors ---
     # Calculate errors on training ADL data to determine a robust threshold
-    train_adl_errors, _ = cal_recon_errors(model, train_loader, DEVICE)
+    val_errors, _ = cal_recon_errors(model, val_loader, DEVICE)
     test_errors, y_test = cal_recon_errors(model, test_loader, DEVICE)
 
     # --- 4. Determine Threshold ---
     # Use only ADL data from training set to determine threshold
-    threshold = np.percentile(train_adl_errors, args.threshold_percentile)
-    print(f"Chosen threshold ({args.threshold_percentile}th percentile of training ADL errors): {threshold:.6f}")
+    threshold = np.percentile(val_errors, args.threshold_percentile)
+    print(f"Chosen threshold ({args.threshold_percentile}th percentile of validation ADL errors): {threshold:.6f}")
     y_pred = (test_errors > threshold).astype(int)
 
     # --- 5. Calculate and Report Metrics ---
@@ -106,10 +106,62 @@ def main(args):
     plt.savefig(pr_curve_path, dpi=200) 
     print(f"Precision-Recall curve saved to: {pr_curve_path}")
 
+    # --- Plot Reconstruction Examples ---
+    def plot_reconstruction_examples(model, dataloader, device, output_dir, num_examples=5):
+        model.eval()
+        with torch.no_grad():
+            # Get some samples from the test set
+            data_iter = iter(dataloader)
+            X_samples, y_samples = [], []
+            for _ in range(num_examples):
+                X, y = next(data_iter)
+                X_samples.append(X[0])
+                y_samples.append(y[0])
+            
+            X_samples = torch.stack(X_samples).to(device)
+            recons_samples = model(X_samples)
+
+            X_samples = X_samples.cpu().numpy()
+            recons_samples = recons_samples.cpu().numpy()
+            y_samples = np.array(y_samples)
+
+            plt.figure(figsize=(15, 5 * num_examples))
+            for i in range(num_examples):
+                plt.subplot(num_examples, 1, i + 1)
+                plt.plot(X_samples[i, :, 0], label='Original AccX')
+                plt.plot(recons_samples[i, :, 0], label='Recon AccX', linestyle='--')
+                plt.title(f"Sample {i+1} (Label: {y_samples[i]})")
+                plt.legend()
+            plt.tight_layout()
+            plt.savefig(output_dir / "reconstruction_examples.png", dpi=200)
+            print(f"Reconstruction examples saved to {output_dir / 'reconstruction_examples.png'}")
+
+    # --- Plot Reconstruction Error Distribution ---
+    def plot_error_distribution(errors, labels, output_dir):
+        plt.figure(figsize=(10, 6))
+        
+        adl_errors = errors[labels == 0]
+        fall_errors = errors[labels == 1]
+
+        plt.hist(adl_errors, bins=50, alpha=0.5, label='ADL Errors', color='blue')
+        plt.hist(fall_errors, bins=50, alpha=0.5, label='Fall Errors', color='red')
+        
+        plt.xlabel("Reconstruction Error (MAE)")
+        plt.ylabel("Frequency")
+        plt.title("Reconstruction Error Distribution")
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(output_dir / "error_distribution.png", dpi=200)
+        print(f"Error distribution plot saved to {output_dir / 'error_distribution.png'}")
+
+    # Call the new plotting functions
+    plot_reconstruction_examples(model, test_loader, DEVICE, output_dir)
+    plot_error_distribution(test_errors, y_test, output_dir)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate a trained Autoencoder model for anomaly detection.")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility.")
-    parser.add_argument("--data_dir", type=str, default="data/processed/sisfall/final_tsad",
+    parser.add_argument("--data_dir", type=str, default="data/processed/sisfall/tsad/final",
                         help="Directory containing processed data (train.npz, val.npz, test.npz).")
     parser.add_argument("--model_path", type=str, 
                         default="runs/autoencoder/ae_latent32_lr0.001/best.pt",
