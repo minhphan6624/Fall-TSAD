@@ -49,7 +49,7 @@ def load_signal(file_path: Path):
 
     return {
         "acc1": acc_1_data_g,
+        "gyr": gyr_data_degs
         # "acc2": acc_2_data_g,
-        # "gyr": gyr_data_degs
     }
 
