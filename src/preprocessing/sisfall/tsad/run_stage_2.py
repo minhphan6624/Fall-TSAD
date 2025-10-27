@@ -3,6 +3,15 @@ from pathlib import Path
 from sklearn.preprocessing import RobustScaler, StandardScaler
 import joblib
 
+# -- Per-axis normalization --
+def per_axis(data: np.ndarray, scaler):
+    scaled = np.zeros_like(data)
+
+    for i in range(data.shape[1]):
+        scaled[:, i] = scaler.fit_transform(data[:, i].reshape(-1, 1)).flatten()
+    return scaled
+
+
 # Define input and output directories
 IN_DIR_SPLIT = Path("data/processed/sisfall/tsad/windows")
 OUT_DIR_NORM = Path("data/processed/sisfall/tsad/final")
@@ -79,27 +88,4 @@ joblib.dump(scaler, scaler_path)
 
 print("TSAD dataset preprocessing (split and normalize) completed and saved to:", OUT_DIR_NORM)
 
-# # Apply RobustScaler on training set
-# scaler = RobustScaler()
-# X_train_flat = X_train.reshape(-1, X_train.shape[-1])  # combine windows
-# scaler.fit(X_train_flat)
 
-# # Normalize a dataset using the fitted scaler
-# def normalize_dataset(X):
-#     original_shape = X.shape
-#     X_flat = X.reshape(-1, X.shape[-1])
-#     X_scaled = scaler.transform(X_flat).reshape(original_shape)
-#     return X_scaled
-
-# X_train_norm = normalize_dataset(X_train)
-# X_val_norm = normalize_dataset(X_val)
-# X_test_norm = normalize_dataset(X_test)
-
-# print("Post-normalization check:")
-# print("Train median per channel:", np.median(X_train_norm, axis=(0,1)))
-# print("Train IQR per channel:", np.percentile(X_train_norm, 75, axis=(0,1)) - np.percentile(X_train_norm, 25, axis=(0,1)))
-
-# # Save the RobustScaler for future use
-# scaler_path = OUT_DIR_NORM / "robust_scaler.save"
-# joblib.dump(scaler, scaler_path)
-# print("Normalization complete. Scaler saved to:", scaler_path)

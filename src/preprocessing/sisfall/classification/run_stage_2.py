@@ -3,6 +3,18 @@ from pathlib import Path
 from sklearn.preprocessing import RobustScaler, StandardScaler
 import joblib
 
+# --- Per-axis normalization ---
+def normalize_axis(data: np.ndarray, scaler):
+    """
+    Apply per-axis normalization to 3-axis data.
+    Each axis is scaled independently.
+    """
+    scaled = np.zeros_like(data)
+
+    for i in range(data.shape[1]):
+        scaled[:, i] = scaler.fit_transform(data[:, i].reshape(-1, 1)).flatten()
+    return scaled
+
 # Define input and output directories
 IN_DIR_SPLIT = Path("data/processed/sisfall/classification/windows")
 OUT_DIR_NORM = Path("data/processed/sisfall/classification/final")
@@ -50,9 +62,6 @@ print("Train:", X_train.shape, y_train.shape)
 print("Val:", X_val.shape, y_val.shape)
 print("Test:", X_test.shape, y_test.shape)
 
-# assert np.all(y_train == 0), "Found fall windows in training set!"
-# assert np.all(y_val == 0), "Found fall windows in validation set!"
-
 print("Starting data normalization...")
 scaler = StandardScaler()
 X_train_flat = X_train.reshape(-1, X_train.shape[-1])
@@ -75,6 +84,7 @@ print("Train std per channel:", X_train_norm.std(axis=(0,1)))
 
 import numpy as np
 
+# Balance the training data to have a 1:3 ratio of Falls to ADL
 def balance_training_data(X, y, ratio=3, seed=42):
     np.random.seed(seed)
     idx_fall = np.where(y == 1)[0]
@@ -87,7 +97,6 @@ def balance_training_data(X, y, ratio=3, seed=42):
 
 X_train_bal, y_train_bal = balance_training_data(X_train_norm, y_train, ratio=3)
 print(f"Balanced train set: {np.sum(y_train_bal==1)} Falls, {np.sum(y_train_bal==0)} ADL")
-
 
 # Save normalized datasets
 np.savez_compressed(OUT_DIR_NORM / "train.npz", X=X_train_norm, y=y_train, subjects=train_subjects)

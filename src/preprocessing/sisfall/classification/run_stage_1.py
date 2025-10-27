@@ -33,18 +33,10 @@ def parse_filename(name: str):
     }
 
 from scipy.signal import butter, filtfilt
-
+# -- Low-pass filter --
 def butter_lowpass_filter(data, cutoff=5, fs=200, order=4):
     b, a = butter(order, cutoff/(fs/2), btype='low', analog=False)
     return filtfilt(b, a, data, axis=0)
-
-def normalize_sensor(data: np.ndarray, scaler):
-    scaled = np.zeros_like(data)
-
-    for i in range(data.shape[1]):
-        scaled[:, i] = scaler.fit_transform(data[:, i].reshape(-1, 1)).flatten()
-    return scaled
-
 
 def process_file(file_path):
     try:

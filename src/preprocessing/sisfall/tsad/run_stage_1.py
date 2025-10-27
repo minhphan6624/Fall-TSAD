@@ -40,22 +40,8 @@ def butter_lowpass_filter(data, cutoff=5, fs=200, order=4):
     b, a = butter(order, cutoff/(fs/2), btype='low', analog=False)
     return filtfilt(b, a, data, axis=0)
 
-# --- Per-sensor normalization ---
-def normalize_sensor(data: np.ndarray, scaler):
-    """
-    Apply per-axis RobustScaler normalization to 3-axis data.
-    Each axis is scaled independently.
-    """
-    scaled = np.zeros_like(data)
-
-    for i in range(data.shape[1]):
-        scaled[:, i] = scaler.fit_transform(data[:, i].reshape(-1, 1)).flatten()
-    return scaled
-
 def process_file(file_path):
-    """Process a single trial file: load, normalize, and save."""
     try:
-
         # Load metadata and signals (converted)
         meta = parse_filename(file_path.name)
         signals = load_signal(file_path)
@@ -70,10 +56,7 @@ def process_file(file_path):
         
         smv = butter_lowpass_filter(smv.reshape(-1, 1)).flatten()
         
-        acc_data = filtered['acc1']
         combined_data = np.hstack([v for v in filtered.values()])
-
-        # smv = np.sqrt(np.sum(acc_data**2, axis=1))
 
         # Segment & label
         X, y = segment_and_label(combined_data, smv, meta, window_size=200, stride=100)
@@ -90,7 +73,6 @@ def process_file(file_path):
         print(f"Error processing {file_path.name}: {e}")
 
 def main():
-    # Process all trials for all participants in the dataset
     subjects = sorted(RAW_DIR.glob("SA*")) + sorted(RAW_DIR.glob("SE*"))
     for subject_dir in subjects:
         files = list(subject_dir.glob("*.txt"))
