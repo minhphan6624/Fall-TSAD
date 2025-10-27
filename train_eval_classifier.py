@@ -27,16 +27,10 @@ train_loader, val_loader, test_loader = get_dataloaders(processed_dir=Path(DATA_
 from src.models.lstm_classifier import LSTMClassifier
 from src.models.cnn1d import CNN1D
 
-model = LSTMClassifier(input_size=3)
-# model = CNN1D(in_channels=3)
+model = LSTMClassifier(input_size=6)
+# model = CNN1D(in_channels=6)
 model.to(DEVICE)
 
-# --- Handle imbalance with weighted loss ---
-# train_ds = train_loader.dataset
-# y_train = train_ds.y 
-# n_fall = np.sum(y_train == 1)
-# n_adl  = np.sum(y_train == 0)
-# weights = torch.tensor([1.0, n_adl / n_fall], dtype=torch.float32).to(DEVICE)
 criterion = nn.CrossEntropyLoss(weight=None)
 
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)

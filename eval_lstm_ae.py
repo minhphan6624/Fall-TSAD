@@ -20,9 +20,9 @@ THRESHOLD_PERCENTILE = 90  # Percentile for thresholding
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")  
 
 # --- Model config ---
-INPUT_DIM = 3
+INPUT_DIM = 6
 HIDDEN_DIM = 64
-NUM_LAYERS = 1
+NUM_LAYERS = 2
 DROPOUT = 0.2
 
 # --- Load Model ---

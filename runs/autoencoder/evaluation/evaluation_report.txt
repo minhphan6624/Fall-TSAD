@@ -1,22 +1,22 @@
 --- Evaluation Results ---
 Model Path: runs/autoencoder/ae_latent32_lr0.001/best.pt
-Data Directory: data/processed/sisfall/final_tsad
+Data Directory: data/processed/sisfall/tsad/final
 Latent Dimension: 32
 Hidden Dimensions: [128, 64]
 Threshold Percentile: 95
-Chosen Threshold: 4.739793
+Chosen Threshold: 0.694685
 
-[[60889  2431]
- [ 1220  1292]]
+[[57944  6414]
+ [  287  1187]]
 
               precision    recall  f1-score   support
 
-         ADL       0.98      0.96      0.97     63320
-        Fall       0.35      0.51      0.41      2512
+         ADL       1.00      0.90      0.95     64358
+        Fall       0.16      0.81      0.26      1474
 
-    accuracy                           0.94     65832
-   macro avg       0.66      0.74      0.69     65832
-weighted avg       0.96      0.94      0.95     65832
+    accuracy                           0.90     65832
+   macro avg       0.58      0.85      0.60     65832
+weighted avg       0.98      0.90      0.93     65832
 
-ROC AUC (using continuous errors): 0.9226
-Precision-Recall AUC: -0.4034
+ROC AUC (using continuous errors): 0.9440
+Precision-Recall AUC: -0.3215

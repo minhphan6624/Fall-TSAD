@@ -51,7 +51,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a standard Autoencoder model.")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility.")
-    parser.add_argument("--data_dir", type=str, default="data/processed/sisfall/final_tsad",
+    parser.add_argument("--data_dir", type=str, default="data/processed/sisfall/tsad/final",
                         help="Directory containing processed data (train.npz, val.npz).")
     parser.add_argument("--run_dir", type=str, default="runs/autoencoder",
                         help="Directory to save model checkpoints and logs.")

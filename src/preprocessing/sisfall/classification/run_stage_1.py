@@ -44,16 +44,14 @@ def process_file(file_path):
         meta = parse_filename(file_path.name)
         signals = load_signal(file_path)
 
-        # Compute SMV from accelerometer data
-        smv = np.sqrt(np.sum(signals['acc1']**2, axis=1))
-
         # Apply low-pass filter to data
         filtered = {
             name: butter_lowpass_filter(data)
             for name, data in signals.items()
         }
 
-        smv = butter_lowpass_filter(smv)
+        # Calculate SMV (Signal Magnitude Vector)
+        smv = np.sqrt(np.sum(filtered['acc1']**2, axis=1))
 
         combined_data = np.hstack([v for v in filtered.values()])
 
