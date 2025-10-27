@@ -1,0 +1,18 @@
+--- Evaluation Results ---
+Confusion Matrix:
+[[63474   268]
+ [  349  1741]]
+
+Classification Report:
+              precision    recall  f1-score   support
+
+         ADL     0.9945    0.9958    0.9952     63742
+        Fall     0.8666    0.8330    0.8495      2090
+
+    accuracy                         0.9906     65832
+   macro avg     0.9306    0.9144    0.9223     65832
+weighted avg     0.9905    0.9906    0.9905     65832
+
+
+ROC AUC: 0.9859
+Precision-Recall AUC: -0.9082

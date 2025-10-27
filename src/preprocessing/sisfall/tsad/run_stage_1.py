@@ -36,7 +36,7 @@ def parse_filename(name: str) -> dict:
 
 from scipy.signal import butter, filtfilt
 # ----- Low-pass filter ----- 
-def butter_lowpass_filter(data, cutoff=10, fs=200, order=4):
+def butter_lowpass_filter(data, cutoff=5, fs=200, order=4):
     b, a = butter(order, cutoff/(fs/2), btype='low', analog=False)
     return filtfilt(b, a, data, axis=0)
 
@@ -60,17 +60,20 @@ def process_file(file_path):
         meta = parse_filename(file_path.name)
         signals = load_signal(file_path)
 
+        smv = np.sqrt(np.sum(signals['acc1']**2, axis=1))
+
         # Apply low-pass filter to data
         filtered = {
             name: butter_lowpass_filter(data)
             for name, data in signals.items()
         }
-
+        
+        smv = butter_lowpass_filter(smv.reshape(-1, 1)).flatten()
+        
         acc_data = filtered['acc1']
         combined_data = np.hstack([v for v in filtered.values()])
 
-        # Compute SMV from normalized accelerometer data
-        smv = np.sqrt(np.sum(acc_data**2, axis=1))
+        # smv = np.sqrt(np.sum(acc_data**2, axis=1))
 
         # Segment & label
         X, y = segment_and_label(combined_data, smv, meta, window_size=200, stride=100)
