@@ -6,7 +6,7 @@ import json
 
 from torch.utils.tensorboard import SummaryWriter
 
-class Trainer: # Renamed from LSTMAETrainer
+class Trainer: 
     def __init__(self, model, optimizer, criterion, run_dir: Path):
         device = torch.device("cuda" if torch.cuda.is_available() else
                             "mps" if torch.backends.mps.is_available() else "cpu")
