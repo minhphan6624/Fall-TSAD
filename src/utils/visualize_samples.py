@@ -6,8 +6,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from parse_filename import parse_filename
-
+from ..preprocessing.sisfall_v2.build_index import parse_filename
 
 RAW_ROOT = Path("data/raw/sisfall")
 OUT_DIR = Path("figures/sisfall")

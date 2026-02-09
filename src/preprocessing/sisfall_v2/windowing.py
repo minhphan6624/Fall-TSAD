@@ -49,7 +49,7 @@ def window_signal(
         empty = np.empty((0, window_size, signal.shape[1]), dtype=np.float32)
         return empty, start_indices
 
-    # Concatenate the windows
+    # Concatenate the windows vertically
     windows = np.stack(
         [signal[s : s + window_size] for s in start_indices],
         axis=0,
