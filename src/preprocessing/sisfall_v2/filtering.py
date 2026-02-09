@@ -4,11 +4,8 @@ import numpy as np
 from scipy.signal import butter, filtfilt
 
 
-def butter_lowpass_filter(
-    data: np.ndarray,
-    fs_hz: float = 200.0,
-    cutoff_hz: float = 5.0,
-    order: int = 4,
+def butter_lowpass_filter( data: np.ndarray, fs_hz = 200.0,
+    cutoff_hz: float = 5.0, order: int = 4,
 ) -> np.ndarray:
     
     if data.ndim != 2:

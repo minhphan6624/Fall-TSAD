@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable
 
 import pandas as pd
 
@@ -12,7 +11,6 @@ OUT_PATH = Path("data/interim/sisfall_v2/splits.csv")
 
 TRAIN_SUBJECTS = {f"SA{idx:02d}" for idx in range(1, 16)}
 VAL_SUBJECTS = {f"SA{idx:02d}" for idx in range(16, 18)}
-
 
 def assign_split(subject: str) -> str:
     if subject in TRAIN_SUBJECTS:

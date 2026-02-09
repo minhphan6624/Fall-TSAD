@@ -5,16 +5,13 @@ import re
 
 import pandas as pd
 
-from .parse_filename import parse_filename
-
-
 RAW_ROOT = Path("data/raw/sisfall")
 OUT_PATH = Path("data/interim/sisfall/index.csv")
 
 _NAME_RE = re.compile(r"^(?P<code>[DF]\d{2})_(?P<subject>S[AE]\d{2})_(?P<trial>R\d{2})\.txt$")
 
 def parse_filename(filename: str):
-    ''' Parse the name of a trial file'''
+    ''' Extract the trial details from the filename'''
     m = _NAME_RE.match(filename)
     if not m:
         raise ValueError(f"Invalid filename {filename}")
@@ -46,11 +43,7 @@ def build_index(raw_root: Path = RAW_ROOT, out_path: Path = OUT_PATH) -> pd.Data
         if file_path.name.lower() == "readme.txt":
             continue
 
-        try:
-            meta = parse_filename(file_path.name)
-        except ValueError:
-            continue
-        
+        meta = parse_filename(file_path.name)        
         meta.update(
             {
                 "path": str(file_path),

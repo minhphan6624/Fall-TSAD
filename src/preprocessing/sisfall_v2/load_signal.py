@@ -29,7 +29,7 @@ ACC_2_SLICE = slice(6, 9)
 def load_signal(file_path: Path):
     df = pd.read_csv(file_path, sep=",", header=None, engine="python", skipinitialspace=True)
 
-    # The last column might contain a trailing semicolon, remove it
+    # Remove the trailing comma if present
     if df.iloc[:, -1].dtype == "object":
         df.iloc[:, -1] = df.iloc[:, -1].str.replace(";", "", regex=False)
 
