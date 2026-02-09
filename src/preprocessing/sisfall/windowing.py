@@ -20,11 +20,9 @@ def _get_window_indices(num_samples: int, window_size: int, stride: int) -> np.n
     return np.arange(0, num_samples - window_size + 1, stride, dtype=np.int64)
 
 
-def window_signal(
-    signal: np.ndarray,
-    fs_hz: int = FS_HZ,
-    window_seconds: float = WINDOW_SECONDS,
-    overlap: float = OVERLAP,
+def segment_signal(
+    signal: np.ndarray, fs_hz: int = FS_HZ,
+    window_seconds: float = WINDOW_SECONDS, overlap: float = OVERLAP,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Convert one trial signal into fixed-size sliding windows.
@@ -82,7 +80,7 @@ def build_window_metadata(
             {
                 "window_local_idx": local_idx,
                 
-                "file_path": str(file_path) if file_path is not None else str(file_meta.get("split")),
+                "file_path": str(file_path) if file_path is not None else str(file_meta.get("path", "")),
                 "subject": file_meta.get("subject"),
                 "activity": file_meta.get("activity"),
                 "trial": int(file_meta.get("trial", -1)),

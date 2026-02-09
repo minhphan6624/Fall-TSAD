@@ -10,7 +10,7 @@ from .build_splits import build_splits
 from .filtering import butter_lowpass_filter
 from .load_signal import load_signal
 
-from .windowing import FS_HZ, OVERLAP, WINDOW_SECONDS, build_window_metadata, window_signal
+from .windowing import FS_HZ, OVERLAP, WINDOW_SECONDS, build_window_metadata, segment_signal
 
 INTERIM_DIR = Path("data/interim/sisfall")
 INDEX_PATH = INTERIM_DIR / "index.csv"
@@ -22,12 +22,14 @@ def _save_split_outputs(
     metadata_frames: list[pd.DataFrame], out_dir: Path,
 ) -> tuple[Path, Path]:
 
+    # Concatenate all the window df for a split
     if windows:
         x = np.concatenate(windows, axis=0).astype(np.float32, copy=False)
     else:
         window_size = int(round(FS_HZ * WINDOW_SECONDS))
         x = np.empty((0, window_size, 3), dtype=np.float32)
 
+    # Concatenate all the metadata df for a split
     if metadata_frames:
         meta = pd.concat(metadata_frames, ignore_index=True)
     else:
@@ -63,7 +65,7 @@ def run_pipeline(
     overlap: float = OVERLAP,
 ) -> dict[str, dict[str, int | str]]:
     
-    # Force v2 paths for index/splits artifacts.
+    # Create index + add splits into 
     index_df = build_index(raw_root=raw_root, out_path=INDEX_PATH)
     splits_df = build_splits(index_path=INDEX_PATH, out_path=SPLITS_PATH)
 
@@ -89,10 +91,12 @@ def run_pipeline(
                 "split": row.split,
             }
             
+            # Convert + butterworth filter
             signal = load_signal(file_path)["acc1"]
             signal = butter_lowpass_filter(signal, fs_hz=fs_hz, cutoff_hz=5.0, order=4)
             
-            windows, start_indices = window_signal(
+            # Segment signal into windows
+            windows, start_indices = segment_signal(
                 signal=signal,
                 fs_hz=fs_hz,
                 window_seconds=window_seconds,

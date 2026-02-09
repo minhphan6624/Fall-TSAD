@@ -5,8 +5,8 @@ from pathlib import Path
 import pandas as pd
 
 
-INDEX_PATH = Path("data/interim/sisfall_v2/index.csv")
-OUT_PATH = Path("data/interim/sisfall_v2/splits.csv")
+INDEX_PATH = Path("data/interim/sisfall/index.csv")
+OUT_PATH = Path("data/interim/sisfall/splits.csv")
 
 
 TRAIN_SUBJECTS = {f"SA{idx:02d}" for idx in range(1, 16)}

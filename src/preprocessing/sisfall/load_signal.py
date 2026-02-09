@@ -27,15 +27,20 @@ GYR_SLICE = slice(3, 6)
 ACC_2_SLICE = slice(6, 9)
 
 def load_signal(file_path: Path):
-    df = pd.read_csv(file_path, sep=",", header=None, engine="python", skipinitialspace=True)
+    df = pd.read_csv(file_path, sep=",", header=None, dtype=str,
+                     skipinitialspace=True)
 
     # Remove the trailing comma if present
-    if df.iloc[:, -1].dtype == "object":
-        df.iloc[:, -1] = df.iloc[:, -1].str.replace(";", "", regex=False)
+    # if df.iloc[:, -1].dtype == "object":
+    #     df.iloc[:, -1] = df.iloc[:, -1].str.replace(";", "", regex=False)
+
+    # Normalize tokens: remove whitespace and trailing ";" if present (another approach)
+    df = df.apply(lambda col: col.str.strip().str.rstrip(";"))
 
     # Ensure all columns are numeric after stripping
     df = df.apply(pd.to_numeric, errors="raise")
     arr = df.to_numpy(dtype=np.float32)
+
     if arr.shape[1] < 9:
         raise ValueError(f"Data file {file_path} has less than 9 columns")
     
@@ -45,6 +50,4 @@ def load_signal(file_path: Path):
     # Apply unit conversion
     acc_1_data_g = acc_1_data * ACC_1_CONVERSION_FACTOR
 
-    return {
-        "acc1": acc_1_data_g
-    }
+    return { "acc1": acc_1_data_g}

@@ -1,6 +1,6 @@
 # SisFall v2 Preprocessing Pipeline
 
-This document describes the current preprocessing flow implemented under `src/preprocessing/sisfall_v2`.
+This document describes the current preprocessing flow implemented under `src/preprocessing/sisfall`.
 
 ## Goal
 
@@ -29,7 +29,7 @@ Labeling and normalization by model type are intentionally deferred to later sta
 
 ### 1. Build Index
 
-Module: `src/preprocessing/sisfall_v2/build_index.py`
+Module: `src/preprocessing/sisfall/build_index.py`
 
 - Scans all SisFall trial files (`*.txt`, excluding `Readme.txt`)
 - Parses filename metadata:
@@ -38,11 +38,11 @@ Module: `src/preprocessing/sisfall_v2/build_index.py`
   - `path` (absolute/relative file path in workspace)
   - `n_samples` (line count)
 - Writes:
-  - `data/interim/sisfall_v2/index.csv`
+  - `data/interim/sisfall/index.csv`
 
 ### 2. Build Splits
 
-Module: `src/preprocessing/sisfall_v2/splits.py`
+Module: `src/preprocessing/sisfall/build_splits.py`
 
 Subject-wise split policy:
 
@@ -52,11 +52,11 @@ Subject-wise split policy:
 
 Output:
 
-- `data/interim/sisfall_v2/splits.csv`
+- `data/interim/sisfall/splits.csv`
 
 ### 3. Load and Convert Signal
 
-Module: `src/preprocessing/sisfall_v2/load_signal.py`
+Module: `src/preprocessing/sisfall/load_signal.py`
 
 - Reads each trial CSV-like text row
 - Cleans trailing `;` in last column
@@ -77,7 +77,7 @@ Returned key:
 
 ### 4. Filtering
 
-Module: `src/preprocessing/sisfall_v2/filtering.py`
+Module: `src/preprocessing/sisfall/filtering.py`
 
 - Applies a 4th-order Butterworth low-pass filter
 - Cutoff frequency: `5 Hz`
@@ -86,7 +86,7 @@ Module: `src/preprocessing/sisfall_v2/filtering.py`
 
 ### 5. Windowing
 
-Module: `src/preprocessing/sisfall_v2/windowing.py`
+Module: `src/preprocessing/sisfall/windowing.py`
 
 Constants:
 
@@ -121,15 +121,15 @@ Window metadata schema (lean):
 
 ### 6. Pipeline Orchestration
 
-Module: `src/preprocessing/sisfall_v2/pipeline.py`
+Module: `src/preprocessing/sisfall/pipeline.py`
 
 `run_pipeline(...)` executes all previous steps and writes split artifacts.
 
 Per split outputs:
 
-- `data/interim/sisfall_v2/windows_train.npz`
-- `data/interim/sisfall_v2/windows_val.npz`
-- `data/interim/sisfall_v2/windows_test.npz`
+- `data/interim/sisfall/windows_train.npz`
+- `data/interim/sisfall/windows_val.npz`
+- `data/interim/sisfall/windows_test.npz`
 
 Each `.npz` contains:
 
@@ -137,14 +137,14 @@ Each `.npz` contains:
 
 Metadata outputs:
 
-- `data/interim/sisfall_v2/window_meta_train.csv`
-- `data/interim/sisfall_v2/window_meta_val.csv`
-- `data/interim/sisfall_v2/window_meta_test.csv`
+- `data/interim/sisfall/window_meta_train.csv`
+- `data/interim/sisfall/window_meta_val.csv`
+- `data/interim/sisfall/window_meta_test.csv`
 
 Also produced:
 
-- `data/interim/sisfall_v2/index.csv`
-- `data/interim/sisfall_v2/splits.csv`
+- `data/interim/sisfall/index.csv`
+- `data/interim/sisfall/splits.csv`
 
 ## Design Notes
 
