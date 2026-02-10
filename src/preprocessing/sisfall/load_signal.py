@@ -30,10 +30,6 @@ def load_signal(file_path: Path):
     df = pd.read_csv(file_path, sep=",", header=None, dtype=str,
                      skipinitialspace=True)
 
-    # Remove the trailing comma if present
-    # if df.iloc[:, -1].dtype == "object":
-    #     df.iloc[:, -1] = df.iloc[:, -1].str.replace(";", "", regex=False)
-
     # Normalize tokens: remove whitespace and trailing ";" if present (another approach)
     df = df.apply(lambda col: col.str.strip().str.rstrip(";"))
 

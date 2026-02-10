@@ -59,7 +59,3 @@ def build_index(raw_root, out_path) -> pd.DataFrame:
     df.to_csv(out_path, index=False)
     
     return df
-
-
-if __name__ == "__main__":
-    build_index()

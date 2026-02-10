@@ -36,10 +36,10 @@ WINDOW_META_COLUMNS = [
 ]
 
 # ----- Helpers to save data -----
-def _save_interim_ouputs(
+def _save_interim_outputs(
     split: str, windows: list[np.ndarray],
-    metadata_frames: list[pd.DataFrame], out_dir: Path,
-) -> tuple[np.ndarray, pd.DataFrame, Path, Path]:
+    metadata_frames: list[pd.DataFrame], out_dir: Path
+):
 
     # Concatenate all the window df for a split
     if windows:
@@ -61,11 +61,11 @@ def _save_interim_ouputs(
     np.savez_compressed(x_path, X=x)
     meta.to_csv(meta_path, index=False)
 
-    print(f"Saved interm data")
+    print(f"Saved interm data for {split} set")
     
     return x, meta
 
-def _save_normalizer(task: str, mean: np.ndarray, std: np.ndarray, out_dir: Path) -> Path:
+def _save_normalizer(task: str, mean: np.ndarray, std: np.ndarray, out_dir: Path):
     task_dir = out_dir / task
     task_dir.mkdir(parents=True, exist_ok=True)
     
@@ -88,7 +88,7 @@ def _save_final_output(
     np.savez_compressed(x_path, X=x.astype(np.float32, copy=False), y=y.astype(np.int8, copy=False))
     meta.to_csv(meta_path, index=False)
 
-    print(f"Saved final processed output for {task} at {task_dir}")
+    print(f"Saved final processed output for {split} set of {task} task at {task_dir}")
 
 
 # ----- Main pipeline entrypoint -----
@@ -98,7 +98,7 @@ def run_pipeline(
     fs_hz: int = FS_HZ,
     window_seconds: float = WINDOW_SECONDS,
     overlap: float = OVERLAP,
-) -> dict[str, dict[str, int | str]]:
+):
     
     # Create index + add splits into 
     index_df = build_index(raw_root=raw_root, out_path=INDEX_PATH)
@@ -173,7 +173,7 @@ def run_pipeline(
             split_meta.append(meta_df)
             file_count += 1
 
-        split_x, split_meta_df = _save_interim_ouputs( split, split_windows, split_meta, out_dir)
+        split_x, split_meta_df = _save_interim_outputs( split, split_windows, split_meta, out_dir)
         split_data[split] = {"x": split_x, "meta": split_meta_df}
         
         print(f"Processed {split} set: {file_count} files, skipped: {skipped_short}, num_windows: {split_x.shape[0]}")
@@ -212,9 +212,8 @@ def run_pipeline(
         y_tsad = meta["label_tsad"].to_numpy(dtype=np.int8)
         _save_final_output("tsad", split, x_tsad, y_tsad, meta, PROCESSED_DIR)
 
-        print(f"Classifications total windows: {x_cls.shape[0]}")
-        print(f"TSAD total windows: {x_tsad.shape[0]}")
-
+        print(f"Classifications total windows for {split} set: {x_cls.shape[0]}")
+        print(f"TSAD total windows for {split} set: {x_tsad.shape[0]}")
 
 if __name__ == "__main__":
     run_pipeline()
