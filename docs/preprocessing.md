@@ -8,16 +8,15 @@ Build split-aware, windowed acceleration data from raw SisFall trials using one 
 
 ## Scope (current)
 
-Implemented up to window generation:
+Implemented through impact-aware window labeling:
 
 1. File indexing and metadata extraction
 2. Subject-wise split assignment
 3. Signal loading and unit conversion
 4. Low-pass filtering
 5. Sliding-window segmentation
-6. Persisting per-split windows and window metadata
-
-Labeling and normalization by model type are intentionally deferred to later stages.
+6. Impact-aware labeling for classification and TSAD
+7. Persisting per-split windows and window metadata
 
 ## Data Source
 
@@ -119,6 +118,28 @@ Window metadata schema (lean):
 - `start_idx`
 - `end_idx`
 
+### 6. Impact-Aware Labeling
+
+Modules:
+
+- `src/preprocessing/sisfall/labeling.py`
+- integrated in `src/preprocessing/sisfall/pipeline.py`
+
+Method:
+
+- Impact point per file = index of maximum acceleration magnitude
+  - `impact_idx = argmax(sqrt(ax^2 + ay^2 + az^2))`
+- Impact region is centered around impact with `0.5s` half-width
+  - region: `[impact_idx - 0.5s, impact_idx + 0.5s]`
+- Window is labeled positive if overlap with region is at least `30%`
+
+Output labels:
+
+- `label_cls`: classification label (`1`=fall-impact window, `0`=non-fall window)
+- `label_tsad`: TSAD anomaly label (`1`=anomalous impact window, `0`=normal window)
+- `impact_index`: impact sample index for the source file (`-1` for ADL files)
+- `tsad_train_eligible`: `1` only for ADL windows in train split (strict TSAD normal-only training mask)
+
 ### 6. Pipeline Orchestration
 
 Module: `src/preprocessing/sisfall/pipeline.py`
@@ -141,6 +162,11 @@ Metadata outputs:
 - `data/interim/sisfall/window_meta_val.csv`
 - `data/interim/sisfall/window_meta_test.csv`
 
+Metadata includes:
+
+- base provenance fields (`file_path`, `subject`, `activity`, `trial`, `split`, window indices)
+- impact-aware labels (`label_cls`, `label_tsad`, `impact_index`, `tsad_train_eligible`)
+
 Also produced:
 
 - `data/interim/sisfall/index.csv`
@@ -154,6 +180,6 @@ Also produced:
 
 ## Next Stage (planned)
 
-1. TSAD labeling (train on ADL windows only)
-2. Classification labeling (fall vs ADL)
-3. Per-branch normalization fit on train split only
+1. Branch-specific normalization fit on train split only
+2. Final processed exports for classification and TSAD loaders
+3. Validation scripts for leakage and label distribution checks

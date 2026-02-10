@@ -8,6 +8,7 @@ import pandas as pd
 from .build_index import RAW_ROOT, build_index
 from .build_splits import build_splits
 from .filtering import butter_lowpass_filter
+from .labeling import find_impact_index, impact_window_labels
 from .load_signal import load_signal
 
 from .windowing import FS_HZ, OVERLAP, WINDOW_SECONDS, build_window_metadata, segment_signal
@@ -44,6 +45,10 @@ def _save_split_outputs(
                 "split",
                 "start_idx",
                 "end_idx",
+                "label_cls",
+                "label_tsad",
+                "impact_index",
+                "tsad_train_eligible",
             ]
         )
 
@@ -107,6 +112,18 @@ def run_pipeline(
                 skipped_short += 1
                 continue
 
+            window_size = int(round(fs_hz * window_seconds))
+            impact_index = find_impact_index(signal) if row.is_fall == 1 else None # Look for impact point if it is a fall signal
+            labels = impact_window_labels(
+                start_indices=start_indices,
+                window_size=window_size,
+                n_samples=signal.shape[0],
+                is_fall_file=bool(row.is_fall),
+                impact_index=impact_index,
+                fs_hz=fs_hz,
+            )
+
+            # Build metadata for a single window
             meta_df = build_window_metadata(
                 start_indices=start_indices,
                 file_meta=file_meta,
@@ -115,6 +132,10 @@ def run_pipeline(
                 split=row.split,
                 file_path=str(file_path),
             )
+            meta_df["label_cls"] = labels.astype(np.int8)
+            meta_df["label_tsad"] = labels.astype(np.int8)
+            meta_df["impact_index"] = -1 if impact_index is None else int(impact_index)
+            meta_df["tsad_train_eligible"] = np.int8(1 if (row.split == "train" and row.is_fall == 0) else 0)
 
             split_windows.append(windows)
             split_meta.append(meta_df)
