@@ -34,7 +34,7 @@ def impact_window_labels(
     start_indices: np.ndarray,
     window_size: int,
     n_samples: int,
-    is_fall_file: bool,
+    is_fall: bool,
     impact_index: int | None,
     fs_hz: int,
     impact_half_window_seconds: float = IMPACT_HALF_WINDOW_SECONDS,
@@ -61,7 +61,7 @@ def impact_window_labels(
         raise ValueError("impact_half_window_seconds must be non-negative")
 
     labels = np.zeros(start_indices.shape[0], dtype=np.int8)
-    if not is_fall_file:
+    if not is_fall:
         return labels
     if impact_index is None:
         raise ValueError("impact_index is required for fall files")
@@ -75,9 +75,9 @@ def impact_window_labels(
         reg_end = min(n_samples, reg_start + 1)
 
     # Main labelling logic
-    for i, s in enumerate(start_indices.tolist()):
-        e = s + window_size
-        frac = _overlap_fraction(s, e, reg_start, reg_end)
+    for i, start in enumerate(start_indices.tolist()):
+        end = start + window_size
+        frac = _overlap_fraction(start, end, reg_start, reg_end)
         labels[i] = 1 if frac >= overlap_threshold else 0
 
     return labels

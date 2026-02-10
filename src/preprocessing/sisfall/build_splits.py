@@ -24,10 +24,6 @@ def build_splits(index_path: Path = INDEX_PATH, out_path: Path = OUT_PATH) -> pd
     df = pd.read_csv(index_path)
     df["split"] = df["subject"].map(assign_split)
 
-    if df["split"].isna().any():
-        missing = df[df["split"].isna()]["subject"].unique()
-        raise ValueError(f"Unassigned subjects: {missing}")
-
     out_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(out_path, index=False)
     return df

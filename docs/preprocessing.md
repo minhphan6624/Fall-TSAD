@@ -8,7 +8,7 @@ Build split-aware, windowed acceleration data from raw SisFall trials using one 
 
 ## Scope (current)
 
-Implemented through impact-aware window labeling:
+Implemented through branch-specific normalization:
 
 1. File indexing and metadata extraction
 2. Subject-wise split assignment
@@ -17,6 +17,7 @@ Implemented through impact-aware window labeling:
 5. Sliding-window segmentation
 6. Impact-aware labeling for classification and TSAD
 7. Persisting per-split windows and window metadata
+8. Branch-specific z-score normalization and processed exports
 
 ## Data Source
 
@@ -140,7 +141,7 @@ Output labels:
 - `impact_index`: impact sample index for the source file (`-1` for ADL files)
 - `tsad_train_eligible`: `1` only for ADL windows in train split (strict TSAD normal-only training mask)
 
-### 6. Pipeline Orchestration
+### 7. Pipeline Orchestration
 
 Module: `src/preprocessing/sisfall/pipeline.py`
 
@@ -172,6 +173,45 @@ Also produced:
 - `data/interim/sisfall/index.csv`
 - `data/interim/sisfall/splits.csv`
 
+### 8. Branch-Specific Z-Score Normalization
+
+Module:
+
+- `src/preprocessing/sisfall/normalization.py`
+- integrated in `src/preprocessing/sisfall/pipeline.py`
+
+Rules:
+
+- **Classification normalizer fit**: all train windows
+- **TSAD normalizer fit**: only rows where `tsad_train_eligible == 1`
+- Stats are per-channel (`x,y,z`) z-score parameters from train data only:
+  - `mean_c = mean(X_train[:,:,c])`
+  - `std_c = std(X_train[:,:,c])`
+- Val/test are transformed using the corresponding train-fitted stats.
+
+Processed outputs:
+
+- `data/processed/sisfall/classification/normalizer.npz` (`mean`, `std`)
+- `data/processed/sisfall/classification/windows_train.npz`
+- `data/processed/sisfall/classification/windows_val.npz`
+- `data/processed/sisfall/classification/windows_test.npz`
+- `data/processed/sisfall/classification/window_meta_train.csv`
+- `data/processed/sisfall/classification/window_meta_val.csv`
+- `data/processed/sisfall/classification/window_meta_test.csv`
+
+- `data/processed/sisfall/tsad/normalizer.npz` (`mean`, `std`)
+- `data/processed/sisfall/tsad/windows_train.npz`
+- `data/processed/sisfall/tsad/windows_val.npz`
+- `data/processed/sisfall/tsad/windows_test.npz`
+- `data/processed/sisfall/tsad/window_meta_train.csv`
+- `data/processed/sisfall/tsad/window_meta_val.csv`
+- `data/processed/sisfall/tsad/window_meta_test.csv`
+
+Each processed `.npz` stores:
+
+- `X`: normalized windows `(N, 200, 3)`
+- `y`: task label vector (`label_cls` for classification, `label_tsad` for tsad)
+
 ## Design Notes
 
 - Splitting is file-level and subject-wise before any model-specific processing to avoid leakage.
@@ -180,6 +220,6 @@ Also produced:
 
 ## Next Stage (planned)
 
-1. Branch-specific normalization fit on train split only
-2. Final processed exports for classification and TSAD loaders
-3. Validation scripts for leakage and label distribution checks
+1. Validation scripts for leakage, label distribution, and shape consistency
+2. Dataset loader utilities that consume processed task artifacts directly
+3. Optional robust-scaling comparison against z-score for TSAD

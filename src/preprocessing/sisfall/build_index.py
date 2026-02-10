@@ -5,9 +5,6 @@ import re
 
 import pandas as pd
 
-RAW_ROOT = Path("data/raw/sisfall")
-OUT_PATH = Path("data/interim/sisfall/index.csv")
-
 _NAME_RE = re.compile(r"^(?P<code>[DF]\d{2})_(?P<subject>S[AE]\d{2})_(?P<trial>R\d{2})\.txt$")
 
 def parse_filename(filename: str):
@@ -36,7 +33,7 @@ def _count_lines(path: Path) -> int:
         return sum(1 for _ in f)
 
 
-def build_index(raw_root: Path = RAW_ROOT, out_path: Path = OUT_PATH) -> pd.DataFrame:
+def build_index(raw_root, out_path) -> pd.DataFrame:
     records = []
 
     for file_path in raw_root.rglob("*.txt"):
