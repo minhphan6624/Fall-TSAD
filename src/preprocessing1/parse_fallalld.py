@@ -49,20 +49,13 @@ def parse_filename(filename: str) -> dict[str, str | int]:
         "is_fall": int(activity_id in FALL_ACTIVITY_IDS),
     }
 
-
-def load_fallalld_acc(path: Path) -> np.ndarray:
-    acc = np.genfromtxt(path, delimiter=",")
-    if acc.ndim != 2 or acc.shape[1] != 3:
-        raise ValueError(f"FallAllD accelerometer file must have shape (T, 3), got {acc.shape} for {path}")
-    return acc.astype(np.float32, copy=False)
-
-
 def iter_fallalld_rows(raw_root: Path) -> list[dict]:
+    ''' Loop through each trial file to create a row'''
     rows: list[dict] = []
 
     for file_path in sorted(raw_root.glob(f"*_{WAIST_DEVICE_CODE}_*_A.dat")):
         meta = parse_filename(file_path.name)
-        acc = load_fallalld_acc(file_path)
+        acc = np.genfromtxt(file_path, delimiter=',').astype(np.float32, copy=False)
 
         rows.append(
             make_trial_row(
@@ -79,17 +72,14 @@ def iter_fallalld_rows(raw_root: Path) -> list[dict]:
 
     return rows
 
-
-def build_fallalld_df(raw_root: Path = RAW_ROOT) -> pd.DataFrame:
-    return build_trial_df(iter_fallalld_rows(raw_root))
-
-
 def main() -> None:
-    df = build_fallalld_df(RAW_ROOT)
+
+    df = build_trial_df(iter_fallalld_rows(RAW_ROOT))
+
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     df.to_pickle(OUT_PATH)
+    
     print(f"Saved {len(df)} FallAllD trials to {OUT_PATH}")
-
 
 if __name__ == "__main__":
     main()

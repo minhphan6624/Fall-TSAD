@@ -35,7 +35,6 @@ ACC_2_CONVERSION_FACTOR = (2 * MMA8451Q_RANGE) / (2**MMA8451Q_RESOLUTION)
 
 _NAME_RE = re.compile(r"^(?P<activity>[DF]\d{2})_(?P<subject>S[AE]\d{2})_(?P<trial>R\d{2})\.txt$")
 
-
 def parse_filename(filename: str) -> dict[str, str | int]:
     match = _NAME_RE.match(filename)
     if match is None:
@@ -52,8 +51,8 @@ def parse_filename(filename: str) -> dict[str, str | int]:
         "is_fall": int(activity_id.startswith("F")),
     }
 
-
 def load_sisfall_acc(path: Path) -> np.ndarray:
+    ''' Load the readings only for the first accelerometer '''
     df = pd.read_csv(path, sep=",", header=None, dtype=str, skipinitialspace=True)
     df = df.apply(lambda col: col.str.strip().str.rstrip(";"))
     df = df.apply(pd.to_numeric, errors="raise")
@@ -67,6 +66,7 @@ def load_sisfall_acc(path: Path) -> np.ndarray:
 
 
 def iter_sisfall_rows(raw_root: Path) -> list[dict]:
+    ''' Loop through each trial file to create a row'''
     rows: list[dict] = []
 
     for file_path in sorted(raw_root.rglob("*.txt")):
@@ -92,12 +92,8 @@ def iter_sisfall_rows(raw_root: Path) -> list[dict]:
 
     return rows
 
-
-def build_sisfall_df(raw_root: Path = RAW_ROOT) -> pd.DataFrame:
-    return build_trial_df(iter_sisfall_rows(raw_root))
-
 def main() -> None:
-    df = build_sisfall_df(RAW_ROOT)
+    df = build_trial_df(iter_sisfall_rows(RAW_ROOT))
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     df.to_pickle(OUT_PATH)

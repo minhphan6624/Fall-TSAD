@@ -70,6 +70,8 @@ def make_trial_row(
     }
 
 def build_trial_df(rows: list[dict]) -> pd.DataFrame:
+    ''' Build a df given a list of rows extracted from the datasets'''
+    
     for row in rows:
         validate_trial_row(row)
 
