@@ -4,7 +4,6 @@ from pathlib import Path
 import re
 
 import numpy as np
-import pandas as pd
 
 from common import INTERIM_DIR, RAW_DIR, build_trial_df, make_trial_row
 
