@@ -72,7 +72,7 @@ They should be considered only if the study explicitly wants a third category be
 
 Until then, they are better treated as optional follow-up experiments rather than part of the initial benchmark core.
 
-## Fairness Rules Across Categories
+## Fairness Rules Across 
 
 To keep the comparison defensible:
 
