@@ -1,0 +1,2 @@
+dataset,display_name,n_trials,n_fall,n_non_fall,sampling_rate_hz,duration_min_sec,duration_median_sec,duration_max_sec,n_subjects,n_activities,amplitude_note
+fallalld,FallAllD,1798,466,1332,238.0,20.0,20.0,20.0,14,67,raw amplitudes are preserved; do not compare absolute scale across datasets
