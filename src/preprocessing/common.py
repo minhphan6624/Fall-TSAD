@@ -9,6 +9,13 @@ RAW_DIR = DATA_DIR / "raw"
 INTERIM_DIR = DATA_DIR / "interim"
 PROCESSED_DIR = DATA_DIR / "processed"
 
+INTERIM_PICKLE_NAMES = {
+    "sisfall": "SisFall.pkl",
+    "fallalld": "FallAllD.pkl",
+    "umafall": "UMAFall.pkl",
+    "upfall": "UP-FALL.pkl",
+}
+
 TRIAL_COLUMNS = [
     "dataset",
     "subject_id",
