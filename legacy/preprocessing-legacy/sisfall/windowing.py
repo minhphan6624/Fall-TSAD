@@ -81,6 +81,7 @@ def build_window_metadata(
                 "window_local_idx": local_idx,
                 
                 "file_path": str(file_path) if file_path is not None else str(file_meta.get("path", "")),
+                
                 "subject": file_meta.get("subject"),
                 "activity": file_meta.get("activity"),
                 "trial": int(file_meta.get("trial", -1)),

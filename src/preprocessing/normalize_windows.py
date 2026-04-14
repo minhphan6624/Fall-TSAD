@@ -27,6 +27,7 @@ def fit_zscore_stats(X: np.ndarray, metadata_df: pd.DataFrame, mode: str) -> dic
     mean = train_values.mean(axis=(0, 1))
     std = train_values.std(axis=(0, 1))
     std = np.where(std == 0.0, 1.0, std)
+    # std = np.maximum(std, np.float32(1e-8))
     
     return mean.astype(np.float32), std.astype(np.float32)
 

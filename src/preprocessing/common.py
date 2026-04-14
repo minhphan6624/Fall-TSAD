@@ -17,7 +17,6 @@ INTERIM_PICKLE_NAMES = {
 }
 
 TRIAL_COLUMNS = [
-    "dataset",
     "subject_id",
     "trial_id",
     "activity_id",
@@ -41,7 +40,6 @@ def validate_acc_array(acc: np.ndarray) -> None:
 
 def validate_trial_row(row: dict) -> None:
     required = [
-        "dataset",
         "subject_id",
         "trial_id",
         "activity_id",
@@ -59,13 +57,12 @@ def validate_trial_row(row: dict) -> None:
 
 # Create a row for a trial
 def make_trial_row(
-    dataset: str, subject_id: str,
+    subject_id: str,
     trial_id: str, activity_id: str,
     is_fall: int | bool, acc: np.ndarray,
     raw_file: str | Path, sampling_rate_hz: int | float,
 ) -> dict:
     return {
-        "dataset": dataset,
         "subject_id": subject_id,
         "trial_id": trial_id,
         "activity_id": activity_id,
