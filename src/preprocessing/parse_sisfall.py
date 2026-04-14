@@ -9,7 +9,6 @@ import pandas as pd
 
 from common import INTERIM_DIR, RAW_DIR, build_trial_df, make_trial_row
 
-DATASET_NAME = "sisfall"
 RAW_ROOT = RAW_DIR / "sisfall"
 OUT_PATH = INTERIM_DIR / "sisfall" / "SisFall.pkl"
 SISFALL_FS_HZ = 200
@@ -79,7 +78,6 @@ def iter_sisfall_rows(raw_root: Path) -> list[dict]:
 
         rows.append(
             make_trial_row(
-                dataset=DATASET_NAME,
                 subject_id=str(meta["subject_id"]),
                 trial_id=str(meta["trial_id"]),
                 activity_id=str(meta["activity_id"]),
