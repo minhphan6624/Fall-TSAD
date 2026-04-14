@@ -19,7 +19,7 @@ Avoid adding models only because they are fashionable or because they differ by 
 
 ## Classification Baselines
 
-- Feature-based classical baseline such as Random Forest, XGBoost or OCSVM
+- Feature-based classical baseline: Random Forest or XGBoost 
 - 1D CNN classifier
 - LSTM classifier
 
@@ -33,11 +33,9 @@ This set is enough to compare classical supervised learning against common deep 
 
 ## TSAD Baselines
 
-Recommended initial TSAD set:
-
-- dense autoencoder
-- LSTM autoencoder
-- VAE, if the implementation is stable enough to train and evaluate fairly
+- Dense AE
+- LSTM-AE
+- VAE/LSTM-VAE
 
 Rationale:
 
@@ -47,13 +45,10 @@ Rationale:
 
 ## Transformer-Based TSAD
 
-Transformer-based TSAD models are not excluded, but they should be treated as advanced comparison models rather than first-wave baselines.
-
-Current recommendation:
+Transformer-based TSAD models are not excluded, but they are advanced comparison models rather than first-wave baselines.
 
 - add a transformer TSAD model only after the shared benchmark pipeline is stable
-- if only one is added, prefer `TranAD` as the first transformer-style extension
-- treat `Anomaly Transformer` as a later extension rather than a core baseline
+- Focus on TranAD first, then Anomaly Transformer
 
 Reasoning:
 

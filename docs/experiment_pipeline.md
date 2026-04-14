@@ -64,7 +64,7 @@ Recommended behavior:
 
 Per-window metadata should include at least:
 
-- `dataset`
+- `window_id`
 - `subject_id`
 - `trial_id`
 - `activity_id`
