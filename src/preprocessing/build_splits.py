@@ -9,12 +9,16 @@ import pandas as pd
 DEFAULT_SEED = 7
 DEFAULT_SPLIT_RATIOS = (0.70, 0.15, 0.15)
 
-# ----- Helpers ------
-def attach_splits(trials_df: pd.DataFrame, subject_splits: pd.DataFrame) -> pd.DataFrame:
-    ''' Add the split column to the original df '''
-    return trials_df.merge(subject_splits[["subject_id", "split"]], on="subject_id", how="left")
+def compute_target_sizes(n_subjects: int) -> tuple[int, int]:
+    ''' COmpute the number of subjects needed for each split based on a split ratio'''
+    n_val = max(1, int(round(n_subjects * DEFAULT_SPLIT_RATIOS[1])))
+    n_test = max(1, int(round(n_subjects * DEFAULT_SPLIT_RATIOS[2])))
+    
+    if n_val + n_test >= n_subjects:
+        n_test = max(1, n_subjects - n_val - 1)
+    
+    return n_val, n_test
 
-# ---------------------
 
 def build_subject_summary(trials_df: pd.DataFrame) -> pd.DataFrame:
     ''' Build a summary df for each subject in the dataset'''
@@ -30,18 +34,6 @@ def build_subject_summary(trials_df: pd.DataFrame) -> pd.DataFrame:
     summary["has_fall"] = summary["n_fall_trials"] > 0
     
     return summary.sort_values("subject_id").reset_index(drop=True)
-
-
-def compute_target_sizes(n_subjects: int) -> tuple[int, int]:
-    ''' COmpute the number of subjects needed for each split'''
-    n_val = max(1, int(round(n_subjects * DEFAULT_SPLIT_RATIOS[1])))
-    n_test = max(1, int(round(n_subjects * DEFAULT_SPLIT_RATIOS[2])))
-    
-    if n_val + n_test >= n_subjects:
-        n_test = max(1, n_subjects - n_val - 1)
-    
-    return n_val, n_test
-
 
 def build_subject_splits(
     summary_df: pd.DataFrame,
@@ -69,6 +61,7 @@ def build_subject_splits(
 
     n_val, n_test = compute_target_sizes(len(summary_df))
 
+    # Keep adding subjects to val and test split until it reaches the number needed
     while len(val_subjects) < n_val and remaining:
         val_subjects.append(remaining.pop(0))
     while len(test_subjects) < n_test and remaining:
@@ -100,17 +93,19 @@ def build_split_artifacts(
     trials_df: pd.DataFrame,
     seed: int = DEFAULT_SEED,
     manual_split_csv: Path | None = None,
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+):
+    ''' High-level script to perform all 3 processes'''  
     
+    # --- Creating summary and split
     subject_summary = build_subject_summary(trials_df)
     
     subject_splits = build_subject_splits(
-        summary_df=subject_summary,
-        seed=seed,
+        summary_df=subject_summary, seed=seed,
         manual_split_csv=manual_split_csv,
     )
 
-    trials_with_split = attach_splits(trials_df, subject_splits)
+    # Merge
+    trials_with_split = trials_df.merge(subject_splits[["subject_id", "split"]], on="subject_id", how="left")
     
     return subject_summary, subject_splits, trials_with_split
 
@@ -121,7 +116,9 @@ def save_split_artifacts(
     trials_with_split: pd.DataFrame,
     out_dir: Path,
 ):
+    
     out_dir.mkdir(parents=True, exist_ok=True)
+    
     subject_summary.to_csv(out_dir / "subject_summary.csv", index=False)
     subject_splits.to_csv(out_dir / "subject_splits.csv", index=False)
     trials_with_split.to_pickle(out_dir / "trials_with_split.pkl")
