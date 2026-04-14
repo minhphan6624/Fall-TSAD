@@ -64,9 +64,10 @@ def load_sisfall_acc(path: Path) -> np.ndarray:
     return acc.astype(np.float32, copy=False)
 
 
-def iter_sisfall_rows(raw_root: Path) -> list[dict]:
+def iter_sisfall_rows(raw_root: Path) -> tuple[list[dict], int]:
     ''' Loop through each trial file to create a row'''
     rows: list[dict] = []
+    skipped_subject_mismatch = 0
 
     for file_path in sorted(raw_root.rglob("*.txt")):
         
@@ -74,6 +75,10 @@ def iter_sisfall_rows(raw_root: Path) -> list[dict]:
             continue
 
         meta = parse_filename(file_path.name)
+        if file_path.parent.name != meta["subject_id"]:
+            skipped_subject_mismatch += 1
+            continue
+
         acc = load_sisfall_acc(file_path)
 
         rows.append(
@@ -88,15 +93,18 @@ def iter_sisfall_rows(raw_root: Path) -> list[dict]:
             )
         )
 
-    return rows
+    return rows, skipped_subject_mismatch
 
 def main() -> None:
-    df = build_trial_df(iter_sisfall_rows(RAW_ROOT))
+    rows, skipped_subject_mismatch = iter_sisfall_rows(RAW_ROOT)
+    df = build_trial_df(rows)
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     df.to_pickle(OUT_PATH)
     
     print(f"Saved {len(df)} SisFall trials to {OUT_PATH}")
+    if skipped_subject_mismatch:
+        print(f"Skipped {skipped_subject_mismatch} SisFall files with subject-folder/filename mismatches")
 
 if __name__ == "__main__":
     main()

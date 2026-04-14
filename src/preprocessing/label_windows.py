@@ -68,11 +68,16 @@ def label_windows(trials_df: pd.DataFrame, window_meta_df: pd.DataFrame) -> pd.D
     for row in trials_df.itertuples(index=False):
         label_info = compute_trial_label_info(pd.Series(row._asdict()))
         label_info["subject_id"] = row.subject_id
+        label_info["activity_id"] = row.activity_id
         label_info["trial_id"] = row.trial_id
         computed_rows.append(label_info)
 
     label_info_df = pd.DataFrame(computed_rows)
-    labeled = window_meta_df.merge(label_info_df, on=["subject_id", "trial_id"], how="left")
+    labeled = window_meta_df.merge(
+        label_info_df,
+        on=["subject_id", "activity_id", "trial_id"],
+        how="left",
+    )
 
 
     fall_overlap_ratio = labeled.apply(
