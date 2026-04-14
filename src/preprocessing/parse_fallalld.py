@@ -7,7 +7,6 @@ import numpy as np
 
 from common import INTERIM_DIR, RAW_DIR, build_trial_df, make_trial_row
 
-DATASET_NAME = "fallalld"
 RAW_ROOT = RAW_DIR / "FallAllD"
 OUT_PATH = INTERIM_DIR / "fallalld" / "FallAllD.pkl"
 
@@ -58,7 +57,6 @@ def iter_fallalld_rows(raw_root: Path) -> list[dict]:
 
         rows.append(
             make_trial_row(
-                dataset=DATASET_NAME,
                 subject_id=str(meta["subject_id"]),
                 trial_id=str(meta["trial_id"]),
                 activity_id=str(meta["activity_id"]),

@@ -7,7 +7,6 @@ import numpy as np
 
 from common import RAW_DIR, INTERIM_DIR, build_trial_df, make_trial_row
 
-DATASET_NAME = "umafall"
 RAW_ROOT = RAW_DIR / "UMAFall"
 OUT_PATH = INTERIM_DIR / "umafall" / "UMAFall.pkl"
 
@@ -75,7 +74,6 @@ def iter_umafall_rows(raw_root: Path) -> tuple[list[dict], int]:
 
         rows.append(
             make_trial_row(
-                dataset=DATASET_NAME,
                 subject_id=str(meta["subject_id"]),
                 trial_id=str(meta["trial_id"]),
                 activity_id=str(meta["activity_id"]),

@@ -8,7 +8,6 @@ import numpy as np
 
 from common import RAW_DIR, INTERIM_DIR, build_trial_df, make_trial_row
 
-DATASET_NAME = "upfall"
 RAW_PATH = RAW_DIR / "UP-FALL.csv"
 OUT_PATH = INTERIM_DIR / "upfall" / "UP-FALL.pkl"
 
@@ -88,7 +87,6 @@ def load_upfall_trials(path: Path) -> list[dict]:
 
         rows.append(
             make_trial_row(
-                dataset=DATASET_NAME,
                 subject_id=subject_id,
                 trial_id=trial_id,
                 activity_id=activity_id,
