@@ -1,91 +1,482 @@
 # Model Selection Notes
 
-This document summarizes the current model-selection decisions for the fall-detection benchmark comparing time-series anomaly detection (TSAD) and supervised classification.
+This document summarizes the model choices for the fall-detection benchmark comparing time-series anomaly detection (TSAD) methods against supervised classification methods on triaxial accelerometer windows.
 
-## Selection Principle
+The primary benchmark uses all datasets downsampled to 20 Hz. The secondary benchmark uses each dataset at its native sampling rate and is reported separately as a sensitivity analysis.
 
-The study should start with a small, defensible baseline set rather than a large collection of loosely related models.
+## Benchmark Assumptions
 
-Models should be chosen to cover clearly different inductive biases while keeping implementation and tuning effort comparable across categories.
+The primary benchmark fixes the input resolution before model selection:
 
-Include models that:
+- sampling rate: 20 Hz
+- window duration: 2 seconds
+- channels: 3 accelerometer axes
+- raw-window input shape: `40 x 3`
+- flattened raw-window input size: `120`
 
-- Are realistic to train on all four datasets
-- Rre compatible with the same shared preprocessing pipeline
-- Represent genuinely different modeling families
-- can be tuned under a comparable validation budget
+Window duration should be defined in seconds rather than samples. This keeps the physical time span consistent when comparing downsampled and native-rate experiments.
 
-Avoid adding models only because they are fashionable or because they differ by a small architectural variant.
+The same subject-disjoint splits, windowing policy, labeling rule, and evaluation protocol should be used for classification and TSAD. The learning setup differs:
 
-## Classification Baselines
+- classification models train on fall and non-fall windows
+- TSAD models train on normal windows only
 
-- Feature-based classical baseline: Random Forest or XGBoost 
-- 1D CNN classifier
-- LSTM classifier
+## Core Classification Models
+
+The primary classification benchmark should include:
+
+- feature-threshold or signal-threshold baseline
+- Random Forest on engineered features
+- XGBoost on the same engineered features
+- 1D CNN classifier on raw normalized windows
+- LSTM classifier on raw normalized windows
+
+The feature-threshold baseline can be added after the main model pipeline is stable. It is useful because fall detection has strong acceleration-magnitude heuristics, and the learned models should be compared against a simple impact-based rule.
+
+### Engineered Features for RF and XGBoost
+
+Random Forest and XGBoost should use the same feature table. Recommended features include per-axis and vector-magnitude statistics:
+
+- mean, standard deviation, minimum, maximum, range, median
+- IQR, RMS, energy, peak absolute value
+- skewness and kurtosis
+- peak vector magnitude
+- time index of peak
+- jerk mean, standard deviation, and maximum
+- pre-peak versus post-peak mean difference
+- axis correlations
+- optional simple frequency-band energy
+
+The exact feature set can be refined later, but RF and XGBoost should receive identical features so the comparison reflects the learning algorithm rather than feature availability.
+
+### Random Forest
+
+Purpose: robust classical supervised baseline.
+
+Input:
+
+```text
+n_windows x n_features
+```
+
+Recommended default:
+
+```python
+RandomForestClassifier(
+    n_estimators=300,
+    max_depth=None,
+    min_samples_leaf=1,
+    max_features="sqrt",
+    class_weight="balanced",
+    random_state=seed,
+    n_jobs=-1,
+)
+```
+
+Small tuning grid:
+
+```text
+n_estimators: [300]
+max_depth: [5, 10, 20, None]
+min_samples_leaf: [1, 2, 5]
+max_features: ["sqrt", 0.5]
+```
+
+### XGBoost
+
+Purpose: stronger engineered-feature classifier. XGBoost is worth including even with a single triaxial sensor because the model operates on the engineered window-feature table, not directly on the number of sensors.
+
+Input:
+
+```text
+n_windows x n_features
+```
+
+Recommended default:
+
+```python
+XGBClassifier(
+    n_estimators=300,
+    max_depth=3,
+    learning_rate=0.05,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    objective="binary:logistic",
+    eval_metric="logloss",
+    scale_pos_weight=normal_count / fall_count,
+    random_state=seed,
+)
+```
+
+Small tuning grid:
+
+```text
+max_depth: [3, 4, 5]
+learning_rate: [0.03, 0.05, 0.1]
+n_estimators: [100, 300, 500]
+subsample: [0.8, 1.0]
+colsample_bytree: [0.8, 1.0]
+```
+
+Use validation-set early stopping if the implementation supports it cleanly. Because fall datasets are usually small, XGBoost should only be tuned on the subject-disjoint validation split.
+
+### 1D CNN Classifier
+
+Purpose: discriminative raw-window temporal baseline.
+
+Input:
+
+```text
+40 x 3
+```
+
+Recommended default:
+
+```text
+Conv1D(32, kernel_size=5, padding="same")
+BatchNorm
+ReLU
+MaxPool1D(pool_size=2)
+
+Conv1D(64, kernel_size=3, padding="same")
+BatchNorm
+ReLU
+GlobalAveragePooling1D
+
+Dense(64)
+Dropout(0.3)
+Dense(1, activation="sigmoid")
+```
 
 Rationale:
 
-- the classical baseline provides a non-deep reference point
-- the 1D CNN provides a strong discriminative temporal baseline
-- the LSTM provides a sequence-modeling baseline
+- at 20 Hz, kernel size 5 spans 0.25 seconds
+- at 20 Hz, kernel size 3 spans 0.15 seconds
+- global average pooling avoids hard-coding a flattened temporal size
+- the model is small enough for limited fall-detection datasets
 
-This set is enough to compare classical supervised learning against common deep discriminative approaches without over-expanding the study.
+Small tuning grid:
 
-## TSAD Baselines
+```text
+filters: [(16, 32), (32, 64), (64, 128)]
+first kernel size: [3, 5, 7]
+dropout: [0.2, 0.3, 0.5]
+dense units: [32, 64]
+learning_rate: [1e-3, 3e-4]
+```
 
-- Dense AE
-- LSTM-AE
-- VAE/LSTM-VAE
+### LSTM Classifier
 
-Rationale:
+Purpose: recurrent raw-window sequence baseline.
 
-- these are standard reconstruction-based anomaly-detection baselines
-- they are easier to position and interpret on wearable accelerometer windows
-- they fit the current project scope better than more specialized long-horizon industrial TSAD models
+Input:
 
-## Transformer-Based TSAD
+```text
+40 x 3
+```
 
-Transformer-based TSAD models are not excluded, but they are advanced comparison models rather than first-wave baselines.
+Recommended default:
 
-- add a transformer TSAD model only after the shared benchmark pipeline is stable
-- Focus on TranAD first, then Anomaly Transformer
+```text
+LSTM(64, return_sequences=False)
+Dropout(0.3)
+Dense(32, activation="relu")
+Dropout(0.2)
+Dense(1, activation="sigmoid")
+```
+
+Smaller fallback:
+
+```text
+LSTM(32, return_sequences=False)
+Dropout(0.3)
+Dense(1, activation="sigmoid")
+```
+
+Small tuning grid:
+
+```text
+hidden units: [32, 64]
+dropout: [0.2, 0.3, 0.5]
+dense units: [0, 32]
+learning_rate: [1e-3, 3e-4]
+```
+
+Avoid stacked LSTMs for the first benchmark unless the single-layer model clearly underfits.
+
+## Core TSAD Models
+
+The primary TSAD benchmark should include:
+
+- Isolation Forest on engineered features
+- Dense autoencoder on flattened raw windows
+
+- LSTM autoencoder on raw windows
+
+Conv1D autoencoder on raw windows, VAE, LSTM-VAE, TranAD, and Anomaly Transformer are optional follow-up models rather than core first-wave baselines.
+
+For every TSAD model:
+
+- train only on normal training windows
+- compute continuous anomaly scores for validation and test windows
+- report AUROC and AUPRC from continuous scores
+- choose operating thresholds using validation data only
+- report thresholded Precision, Recall, F1, Sensitivity, and Specificity on the test split
+
+### Isolation Forest
+
+Purpose: non-deep TSAD baseline.
+
+Input:
+
+```text
+n_normal_train_windows x n_features
+```
+
+Use the same engineered feature family as RF and XGBoost. The anomaly score is the negative Isolation Forest decision score.
+
+Recommended default:
+
+```python
+IsolationForest(
+    n_estimators=300,
+    contamination="auto",
+    max_samples="auto",
+    max_features=1.0,
+    random_state=seed,
+    n_jobs=-1,
+)
+```
+
+Small tuning grid:
+
+```text
+n_estimators: [200, 300, 500]
+max_samples: ["auto", 0.5, 0.8]
+```
+
+The operating threshold should be selected on the validation split rather than assumed from the contamination parameter.
+
+### Dense Autoencoder
+
+Purpose: simple neural reconstruction baseline.
+
+Input:
+
+```text
+flattened 40 x 3 window = 120
+```
+
+Recommended default:
+
+```text
+Input(120)
+Dense(128), ReLU
+Dropout(0.1)
+Dense(64), ReLU
+Dense(16), ReLU
+Dense(64), ReLU
+Dense(128), ReLU
+Dense(120), linear output
+```
+
+Loss:
+
+```text
+MSE reconstruction loss
+```
+
+Anomaly score:
+
+```text
+mean squared reconstruction error over time and axes
+```
+
+Small tuning grid:
+
+```text
+latent_dim: [8, 16, 32]
+hidden sizes: [[64], [128, 64]]
+dropout: [0.0, 0.1, 0.2]
+learning_rate: [1e-3, 3e-4]
+```
+
+The Dense AE ignores temporal order after flattening, so it should be treated as a simple baseline rather than the expected best neural TSAD model.
+
+### Conv1D Autoencoder
+
+Purpose: convolutional reconstruction baseline aligned with the 1D CNN classifier.
+
+Input:
+
+```text
+40 x 3
+```
+
+Recommended default:
+
+```text
+Conv1D(32, kernel_size=5, padding="same")
+ReLU
+MaxPool1D(pool_size=2)       # 40 -> 20
+
+Conv1D(64, kernel_size=3, padding="same")
+ReLU
+MaxPool1D(pool_size=2)       # 20 -> 10
+
+Conv1D(64, kernel_size=3, padding="same")
+ReLU
+
+UpSampling1D(size=2)         # 10 -> 20
+Conv1D(32, kernel_size=3, padding="same")
+ReLU
+
+UpSampling1D(size=2)         # 20 -> 40
+Conv1D(3, kernel_size=3, padding="same")
+Linear output
+```
+
+Loss:
+
+```text
+MSE reconstruction loss
+```
+
+Anomaly score:
+
+```text
+mean squared reconstruction error over time and axes
+```
+
+This model is often a useful middle ground between Dense AE and LSTM-AE because it captures local temporal patterns while remaining small and fast.
+
+### LSTM Autoencoder
+
+Purpose: sequence reconstruction baseline that preserves temporal ordering.
+
+Input:
+
+```text
+40 x 3
+```
+
+Recommended default:
+
+```text
+LSTM(64, return_sequences=False)
+Dropout(0.2)
+Dense(32), ReLU
+RepeatVector(40)
+LSTM(64, return_sequences=True)
+TimeDistributed(Dense(3))
+```
+
+Smaller fallback:
+
+```text
+LSTM(32, return_sequences=False)
+Dense(16), ReLU
+RepeatVector(40)
+LSTM(32, return_sequences=True)
+TimeDistributed(Dense(3))
+```
+
+Loss:
+
+```text
+MSE reconstruction loss
+```
+
+Anomaly score:
+
+```text
+mean squared reconstruction error over time and axes
+```
+
+Small tuning grid:
+
+```text
+lstm_units: [32, 64]
+latent_dim: [16, 32]
+dropout: [0.0, 0.2, 0.3]
+learning_rate: [1e-3, 3e-4]
+```
+
+## Optional TSAD Models
+
+### VAE
+
+Input:
+
+```text
+flattened 40 x 3 window = 120
+```
+
+Reference architecture:
+
+```text
+Input(120)
+Dense(128), ReLU
+Dense(64), ReLU
+z_mean(16), z_log_var(16)
+Sampling
+Dense(64), ReLU
+Dense(128), ReLU
+Dense(120), linear output
+```
+
+Use reconstruction error as the first anomaly score for consistency with the other autoencoders. Negative ELBO can be evaluated later if probabilistic scoring becomes part of the study.
+
+### LSTM-VAE
+
+Reference architecture:
+
+```text
+LSTM(64, return_sequences=False)
+z_mean(16), z_log_var(16)
+Sampling
+RepeatVector(40)
+LSTM(64, return_sequences=True)
+TimeDistributed(Dense(3))
+```
+
+This model is optional because it adds tuning complexity and may behave inconsistently on small fall datasets.
+
+### Transformer-Based TSAD
+
+Transformer-based TSAD models are not excluded, but they should be treated as advanced comparison models rather than first-wave baselines.
+
+Recommended order:
+
+1. TranAD
+2. Anomaly Transformer
 
 Reasoning:
 
 - the fall datasets are relatively small and low-dimensional compared with many industrial multivariate TSAD benchmarks
-- transformer TSAD models add tuning sensitivity and can be harder to interpret fairly in a first-pass benchmark
-- they are better framed as extension models once the benchmark protocol is already working
+- the primary 20 Hz setting produces short sequences such as `40 x 3`
+- transformer TSAD models add tuning sensitivity
+- they are harder to interpret fairly before the benchmark protocol is stable
 
-## Representation Learning Models
+Use default published architectures first and tune minimally.
 
-Representation-learning approaches are valid, but they broaden the scope of the study.
+## Secondary Native-Rate Benchmark
 
-They should be considered only if the study explicitly wants a third category beyond:
+The secondary benchmark keeps each dataset at its native sampling rate and uses the same window duration in seconds. This means the raw input length changes by dataset:
 
-- supervised classification
-- reconstruction-based TSAD
+```text
+20 Hz, 2 s    -> 40 x 3
+200 Hz, 2 s   -> 400 x 3
+238 Hz, 2 s   -> 476 x 3
+```
 
-Until then, they are better treated as optional follow-up experiments rather than part of the initial benchmark core.
+This benchmark should be reported separately because native sampling rate can affect model performance. A model may improve because it receives higher-resolution temporal detail, not because it is generally better.
 
-## Fairness Rules Across 
+Architecture guidance for the secondary benchmark:
 
-To keep the comparison defensible:
+- CNN and Conv1D-AE should use global pooling or sequence-length-tolerant layers where possible
+- LSTM and LSTM-AE can support variable sequence lengths but may require padding or dataset-specific batching
+- Dense AE and VAE are less convenient because flattened input size changes with sampling rate
+- RF, XGBoost, and Isolation Forest should use duration-based, rate-aware engineered features
 
-- use the same input channels
-- use the same subject split logic
-- use the same window generation
-- use the same normalization pipeline unless a deviation is justified and documented
-- keep tuning effort comparable across model families
-- report results under the same evaluation protocol
-
-## Current Recommended Initial Roster
-
-Minimal benchmark roster:
-
-- Classification: classical baseline, 1D CNN, LSTM classifier
-- TSAD: autoencoder, LSTM autoencoder, optional VAE
-
-Optional extension (after the pipeline is stable)
-
-- TSAD: TranAD, Anomaly Transformer
-
+The primary 20 Hz benchmark remains the main fair model-family comparison.

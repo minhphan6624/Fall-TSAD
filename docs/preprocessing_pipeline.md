@@ -11,6 +11,10 @@ Raw-to-interim parsers:
 - `src/preprocessing/parse_umafall.py`
 - `src/preprocessing/parse_upfall.py`
 
+Raw-to-interim all-dataset entrypoint:
+
+- `python3 -m src.preprocessing.parse_all`
+
 Shared interim-to-processed entrypoint:
 
 - `python3 -m src.preprocessing.run_pipeline --dataset <dataset>`

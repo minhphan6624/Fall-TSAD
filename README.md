@@ -52,6 +52,11 @@ Raw-to-interim parsers:
 - `src/preprocessing/parse_umafall.py`
 - `src/preprocessing/parse_upfall.py`
 
+Raw-to-interim all-dataset entrypoint:
+```bash
+python3 -m src.preprocessing.parse_all
+```
+
 Shared interim-to-processed entrypoint:
 ```bash
 python3 -m src.preprocessing.run_pipeline --dataset sisfall
@@ -59,10 +64,7 @@ python3 -m src.preprocessing.run_pipeline --dataset sisfall
 
 Typical preprocessing workflow:
 ```bash
-python3 src/preprocessing/parse_sisfall.py
-python3 src/preprocessing/parse_fallalld.py
-python3 src/preprocessing/parse_umafall.py
-python3 src/preprocessing/parse_upfall.py
+python3 -m src.preprocessing.parse_all
 
 python3 -m src.preprocessing.run_pipeline --dataset sisfall
 python3 -m src.preprocessing.run_pipeline --dataset fallalld
