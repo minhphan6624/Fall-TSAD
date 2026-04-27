@@ -24,8 +24,8 @@ def fit_zscore_stats(X: np.ndarray, metadata_df: pd.DataFrame, mode: str) -> dic
         raise ValueError(f"No eligible training windows found to fit {mode} normalization.")
 
     train_values = X[mask]
-    mean = train_values.mean(axis=(0, 1))
-    std = train_values.std(axis=(0, 1))
+    mean = train_values.mean(axis=(0, 1), dtype=np.float64)
+    std = train_values.std(axis=(0, 1), dtype=np.float64)
     std = np.where(std == 0.0, 1.0, std)
     # std = np.maximum(std, np.float32(1e-8))
     
