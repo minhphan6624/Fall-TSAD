@@ -1,17 +1,37 @@
+import torch
 import torch.nn as nn
 
+
 class LSTMClassifier(nn.Module):
-    def __init__(self, input_size=9, hidden_size=128, num_layers=1, num_classes=2):
+    """Primary-benchmark LSTM classifier for raw accelerometer windows."""
+
+    def __init__(
+        self, input_size: int = 3, hidden_size: int = 64, 
+        dense_units: int = 32, num_layers: int = 1, 
+        dropout: float = 0.3, dense_dropout: float = 0.2,
+    ) -> None:
         super().__init__()
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, bidirectional=False)
-        self.fc = nn.Sequential(
-            nn.Linear(hidden_size, 128),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(128, num_classes)
+
+        lstm_dropout = dropout if num_layers > 1 else 0.0
+        
+        self.lstm = nn.LSTM(
+            input_size=input_size,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            dropout=lstm_dropout,
+            batch_first=True,
+            bidirectional=False,
         )
 
-    def forward(self, x):
-        out, _ = self.lstm(x)        # (B, 200, 2*hidden)
-        out = out[:, -1, :]          # last time step
-        return self.fc(out)
+        self.head = nn.Sequential(
+            nn.Dropout(dropout),
+            nn.Linear(hidden_size, dense_units),
+            nn.ReLU(),
+            nn.Dropout(dense_dropout),
+            nn.Linear(dense_units, 1),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        _, (hidden, _) = self.lstm(x)
+        last_hidden = hidden[-1]
+        return self.head(last_hidden)
