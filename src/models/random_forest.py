@@ -9,17 +9,10 @@ def build_random_forest(
 ):
     """Build the primary-benchmark Random Forest classifier.
 
-    Expected input is an engineered feature matrix with shape
-    ``(n_windows, n_features)``.
+    Expected input: engineered feature matrix with shape (n_windows, n_features).
     """
 
-    try:
-        from sklearn.ensemble import RandomForestClassifier
-    except ImportError as exc:
-        raise ImportError(
-            "scikit-learn is required for Random Forest models. "
-            "Install the project requirements before training this model."
-        ) from exc
+    from sklearn.ensemble import RandomForestClassifier
 
     return RandomForestClassifier(
         n_estimators=n_estimators,

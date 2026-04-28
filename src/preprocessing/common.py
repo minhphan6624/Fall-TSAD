@@ -14,31 +14,14 @@ INTERIM_PICKLE_NAMES = {
     "fallalld": "FallAllD.pkl",
     "umafall": "UMAFall.pkl",
     "upfall": "UP-FALL.pkl",
-    "sisfall_20hz": "SisFall_20hz.pkl",
-    "fallalld_20hz": "FallAllD_20hz.pkl",
-    "umafall_20hz": "UMAFall_20hz.pkl",
-    "upfall_20hz": "UP-FALL_20hz.pkl",
 }
 
-NATIVE_DATASETS = ("sisfall", "fallalld", "umafall", "upfall")
-
-TRIAL_COLUMNS = [
-    "subject_id",
-    "trial_id",
-    "activity_id",
-    "is_fall",
-    "sampling_rate_hz",
-    "n_samples",
-    "acc",
-    "raw_file",
-]
+TRIAL_COLUMNS = [ "subject_id", "trial_id", "activity_id", "is_fall",
+                 "sampling_rate_hz", "n_samples", "acc", "raw_file",]
 
 # Create a row for a trial
-def make_trial_row(
-    subject_id: str,
-    trial_id: str, activity_id: str,
-    is_fall: int | bool, acc: np.ndarray,
-    raw_file: str | Path, 
+def make_trial_row( subject_id: str, trial_id: str, activity_id: str,
+    is_fall: int | bool, acc: np.ndarray, raw_file: str | Path, 
     sampling_rate_hz: int | float,
 ) -> dict:
     return {

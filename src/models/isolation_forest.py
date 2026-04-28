@@ -7,19 +7,12 @@ def build_isolation_forest(
     n_jobs: int = -1,
 ):
     """
-    Build the primary-benchmark Isolation Forest TSAD baseline.
+    Build the Isolation Forest TSAD baseline.
 
-    Expected TRAINING input: engineered features from normal training windows
-    Shape: (n_normal_train_windows, n_features).
+    Expected TRAINING input: engineered features from normal training windows with shapes (n_windows, n_features).
     """
 
-    try:
-        from sklearn.ensemble import IsolationForest
-    except ImportError as exc:
-        raise ImportError(
-            "scikit-learn is required for Isolation Forest models. "
-            "Install the project requirements before training this model."
-        ) from exc
+    from sklearn.ensemble import IsolationForest
 
     return IsolationForest(
         n_estimators=n_estimators,

@@ -8,13 +8,7 @@ def build_xgboost_classifier(
     random_state: int | None = None,
     n_jobs: int = -1,
 ):
-    try:
-        from xgboost import XGBClassifier
-    except ImportError as exc:
-        raise ImportError(
-            "xgboost is required for XGBoost models. Install the project "
-            "requirements before training this model."
-        ) from exc
+    from xgboost import XGBClassifier
 
     return XGBClassifier(
         n_estimators=n_estimators,

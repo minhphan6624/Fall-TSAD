@@ -20,13 +20,14 @@ PARSER_MODULES = {
     "fallalld": "parse_fallalld",
     "umafall": "parse_umafall",
     "upfall": "parse_upfall",
-}
+}   
 
 
-def parse_args() -> argparse.Namespace:
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Parse raw datasets into the common interim trial pickle format."
     )
+
     parser.add_argument(
         "--datasets",
         nargs="+",
@@ -34,19 +35,14 @@ def parse_args() -> argparse.Namespace:
         default=list("sisfall", "fallalld", "umafall", "upfall"),
         help="Datasets to parse. Defaults to all four datasets.",
     )
-    return parser.parse_args()
+    
+    args = parser.parsge_args()
 
-
-def run_parsers(datasets: list[str]) -> None:
-    for dataset in datasets:
+    for dataset in args.datasets:
         print(f"\n=== Parsing {dataset} ===", flush=True)
         parser_module = importlib.import_module(PARSER_MODULES[dataset])
         parser_module.main()
 
-
-def main() -> None:
-    args = parse_args()
-    run_parsers(datasets=args.datasets)
     print("\nParsing completed successfully.")
 
 
