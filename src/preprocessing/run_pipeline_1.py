@@ -10,6 +10,7 @@ from pathlib import Path
 #   python3 src/preprocessing/parse_all.py
 # and:
 #   python3 -m src.preprocessing.parse_all
+
 PREPROCESSING_DIR = Path(__file__).resolve().parent
 if str(PREPROCESSING_DIR) not in sys.path:
     sys.path.insert(0, str(PREPROCESSING_DIR))
@@ -21,8 +22,6 @@ PARSER_MODULES = {
     "upfall": "parse_upfall",
 }
 
-DEFAULT_DATASET_ORDER = ("sisfall", "fallalld", "umafall", "upfall")
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -31,8 +30,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--datasets",
         nargs="+",
-        choices=DEFAULT_DATASET_ORDER,
-        default=list(DEFAULT_DATASET_ORDER),
+        choices=("sisfall", "fallalld", "umafall", "upfall"),
+        default=list("sisfall", "fallalld", "umafall", "upfall"),
         help="Datasets to parse. Defaults to all four datasets.",
     )
     return parser.parse_args()
