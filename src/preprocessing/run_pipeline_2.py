@@ -11,13 +11,18 @@ from src.preprocessing.build_splits import (
     build_split_artifacts,
     save_split_artifacts,
 )
-from src.preprocessing.common import INTERIM_PICKLE_NAMES, INTERIM_DIR, PROCESSED_DIR
+from src.preprocessing.common import INTERIM_DIR, PROCESSED_DIR
 from src.preprocessing.label_windows import label_windows
 from src.preprocessing.normalize_windows import apply_zscore, fit_zscore_stats
+from src.preprocessing.resampling import resample_trials_df
 from src.preprocessing.window_trials import DEFAULT_OVERLAP, DEFAULT_WINDOW_SECONDS, generate_windows
 
-
-# DEFAULT_SPLITS = ("train", "val", "test")
+INTERIM_PICKLE_NAMES = {
+    "sisfall": "SisFall.pkl",
+    "fallalld": "FallAllD.pkl",
+    "umafall": "UMAFall.pkl",
+    "upfall": "UP-FALL.pkl",
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -52,6 +57,22 @@ def parse_args() -> argparse.Namespace:
         default=DEFAULT_OVERLAP,
         help="Fractional window overlap in [0, 1).",
     )
+    parser.add_argument(
+        "--target-sampling-rate-hz",
+        type=float,
+        default=None,
+        help="Optional target sampling rate. If provided, trial acc arrays are resampled before windowing.",
+    )
+    parser.add_argument(
+        "--allow-upsample",
+        action="store_true",
+        help="Allow upsampling when the target sampling rate is higher than a trial's source rate.",
+    )
+    parser.add_argument(
+        "--output-dataset",
+        default=None,
+        help="Optional processed output dataset name. Useful for variants such as sisfall_20hz.",
+    )
     return parser.parse_args()
 
 
@@ -85,12 +106,25 @@ def run_pipeline(
     manual_split_csv: Path | None = None,
     window_seconds: float = DEFAULT_WINDOW_SECONDS,
     overlap: float = DEFAULT_OVERLAP,
+    target_sampling_rate_hz: float | None = None,
+    allow_upsample: bool = False,
+    output_dataset: str | None = None,
 ) -> Path:
     interim_path = INTERIM_DIR / dataset / INTERIM_PICKLE_NAMES[dataset]
-    dataset_dir = PROCESSED_DIR / dataset
+    dataset_dir = PROCESSED_DIR / (output_dataset or dataset)
 
-    # ----- Step 1: Subject Splitting -----
+    # ----- Step 1: Load trial-level interim data -----
     trials_df = pd.read_pickle(interim_path)
+
+    # ----- Step 2: Optional trial-level resampling -----
+    if target_sampling_rate_hz is not None:
+        trials_df = resample_trials_df(
+            trials_df=trials_df,
+            target_hz=target_sampling_rate_hz,
+            allow_upsample=allow_upsample,
+        )
+
+    # ----- Step 3: Subject Splitting -----
     subject_summary, subject_splits, trials_with_split = build_split_artifacts(
         trials_df=trials_df,
         seed=seed,
@@ -98,14 +132,14 @@ def run_pipeline(
     )
     save_split_artifacts(subject_summary, subject_splits, trials_with_split, dataset_dir)
 
-    # ----- Step 2: Windowing -----
+    # ----- Step 4: Windowing -----
     X_raw, window_meta = generate_windows(
         trials_df=trials_with_split,
         window_seconds=window_seconds,
         overlap=overlap,
     )
 
-    # ----- Step 3: Labelling -----
+    # ----- Step 5: Labelling -----
     labeled_meta = label_windows(trials_df=trials_with_split, 
                                  window_meta_df=window_meta)
     
@@ -117,7 +151,7 @@ def run_pipeline(
     np.savez_compressed(raw_dir / "windows_all.npz", X=X_raw)
     labeled_meta.to_csv(raw_dir / "window_meta_all.csv", index=False)
 
-    # ----- Step 4: Preform training mode-based normalization -----
+    # ----- Step 6: Preform training mode-based normalization -----
     for mode in ("classification", "tsad"):
 
         mean, std = fit_zscore_stats(X_raw, labeled_meta, mode=mode)
@@ -154,6 +188,9 @@ def main() -> None:
         manual_split_csv=args.manual_split_csv,
         window_seconds=args.window_seconds,
         overlap=args.overlap,
+        target_sampling_rate_hz=args.target_sampling_rate_hz,
+        allow_upsample=args.allow_upsample,
+        output_dataset=args.output_dataset,
     )
 
     print(f"Saved processed artifacts for {args.dataset} to {out_dir}")
