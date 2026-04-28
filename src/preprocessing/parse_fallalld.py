@@ -35,7 +35,7 @@ def parse_filename(filename: str) -> dict[str, str | int]:
     trial_id = match.group("trial")
 
     if device_code != WAIST_DEVICE_CODE:
-        raise ValueError(f"Expected waist device {WAIST_DEVICE_CODE}, got {device_code} in {filename}")
+        raise ValueError(f"Expected waist device D3, got {device_code} in {filename}")
 
     if activity_id not in VALID_ACTIVITY_IDS:
         raise ValueError(f"Unsupported FallAllD activity ID: {activity_id}")

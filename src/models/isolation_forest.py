@@ -6,10 +6,11 @@ def build_isolation_forest(
     random_state: int | None = None,
     n_jobs: int = -1,
 ):
-    """Build the primary-benchmark Isolation Forest TSAD baseline.
+    """
+    Build the primary-benchmark Isolation Forest TSAD baseline.
 
-    Expected training input is engineered features from normal training windows
-    only, with shape ``(n_normal_train_windows, n_features)``.
+    Expected TRAINING input: engineered features from normal training windows
+    Shape: (n_normal_train_windows, n_features).
     """
 
     try:

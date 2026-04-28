@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 class LSTMClassifier(nn.Module):
-    """Primary-benchmark LSTM classifier for raw accelerometer windows."""
+    """LSTM classifier for raw accelerometer windows."""
 
     def __init__(
         self, input_size: int = 3, hidden_size: int = 64, 
@@ -34,4 +34,5 @@ class LSTMClassifier(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         _, (hidden, _) = self.lstm(x)
         last_hidden = hidden[-1]
+        
         return self.head(last_hidden)

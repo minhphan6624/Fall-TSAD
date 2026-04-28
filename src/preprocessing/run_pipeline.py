@@ -17,10 +17,7 @@ from src.preprocessing.normalize_windows import apply_zscore, fit_zscore_stats
 from src.preprocessing.window_trials import DEFAULT_OVERLAP, DEFAULT_WINDOW_SECONDS, generate_windows
 
 
-DEFAULT_SPLITS = ("train", "val", "test")
-
-def default_interim_path(dataset: str) -> Path:
-    return INTERIM_DIR / dataset / INTERIM_PICKLE_NAMES[dataset]
+# DEFAULT_SPLITS = ("train", "val", "test")
 
 
 def parse_args() -> argparse.Namespace:
@@ -89,7 +86,7 @@ def run_pipeline(
     window_seconds: float = DEFAULT_WINDOW_SECONDS,
     overlap: float = DEFAULT_OVERLAP,
 ) -> Path:
-    interim_path = default_interim_path(dataset)
+    interim_path = INTERIM_DIR / dataset / INTERIM_PICKLE_NAMES[dataset]
     dataset_dir = PROCESSED_DIR / dataset
 
     # ----- Step 1: Subject Splitting -----
@@ -136,7 +133,7 @@ def run_pipeline(
             mode=np.asarray(mode),
         )
 
-        for split_name in DEFAULT_SPLITS:
+        for split_name in ("train", "val", "test"):
             export_mode_split(
                 out_dir=mode_dir,
                 split_name=split_name,

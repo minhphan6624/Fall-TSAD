@@ -8,12 +8,6 @@ def build_xgboost_classifier(
     random_state: int | None = None,
     n_jobs: int = -1,
 ):
-    """Build the primary-benchmark XGBoost classifier.
-
-    Expected input is the same engineered feature matrix used by the Random
-    Forest classifier.
-    """
-
     try:
         from xgboost import XGBClassifier
     except ImportError as exc:
