@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from pathlib import Path
 
 import numpy as np
@@ -22,6 +20,7 @@ def compute_target_sizes(n_subjects: int) -> tuple[int, int]:
 
 def build_subject_summary(trials_df: pd.DataFrame) -> pd.DataFrame:
     ''' Build a summary df for each subject in the dataset'''
+    
     summary = (
         trials_df.groupby("subject_id", sort=True)
         .agg(

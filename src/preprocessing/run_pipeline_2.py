@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import argparse
 from pathlib import Path
 
@@ -26,23 +24,22 @@ INTERIM_PICKLE_NAMES = {
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the preprocessing pipeline for a dataset.")
+    parser = argparse.ArgumentParser(
+        description="Run the preprocessing pipeline for a dataset.")
+    
     parser.add_argument(
-        "--dataset",
-        required=True,
+        "--dataset", required=True,
         choices=sorted(INTERIM_PICKLE_NAMES.keys()),
         help="Dataset name to process using the repo's standard directory layout.",
     )
     parser.add_argument(
-        "--seed",
-        type=int,
+        "--seed", type=int,
         default=DEFAULT_SEED,
         help="Random seed used by the subject split builder.",
     )
     parser.add_argument(
         "--manual-split-csv",
-        type=Path,
-        default=None,
+        type=Path, default=None,
         help="Optional manual split CSV. Omit to use automatic subject-wise splits.",
     )
     parser.add_argument(
@@ -76,13 +73,8 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def export_mode_split(
-    out_dir: Path,
-    split_name: str,
-    X: np.ndarray,
-    metadata_df: pd.DataFrame,
-    mode: str,
-) -> None:
+def export_mode_split( out_dir: Path, mode: str, split_name: str, 
+    X: np.ndarray, metadata_df: pd.DataFrame):
     ''' Export the final output of the preprocessing pipeline based on the learning mode '''
 
     split_meta = metadata_df[metadata_df["split"] == split_name].copy()
@@ -101,8 +93,7 @@ def export_mode_split(
 
 
 def run_pipeline(
-    dataset: str,
-    seed: int = DEFAULT_SEED,
+    dataset: str, seed: int = DEFAULT_SEED,
     manual_split_csv: Path | None = None,
     window_seconds: float = DEFAULT_WINDOW_SECONDS,
     overlap: float = DEFAULT_OVERLAP,

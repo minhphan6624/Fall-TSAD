@@ -27,27 +27,17 @@ The primary classification benchmark should include:
 
 - feature-threshold or signal-threshold baseline
 - Random Forest on engineered features
-- XGBoost on the same engineered features
+- XGBoost/SVM on the same engineered features
 - 1D CNN classifier on raw normalized windows
 - LSTM classifier on raw normalized windows
 
 The feature-threshold baseline can be added after the main model pipeline is stable. It is useful because fall detection has strong acceleration-magnitude heuristics, and the learned models should be compared against a simple impact-based rule.
 
-### Engineered Features for RF and XGBoost
+### Engineered Features for feature-based models
 
-Random Forest and XGBoost should use the same feature table. Recommended features include per-axis and vector-magnitude statistics:
+Random Forest, XGBoost, and Isolation Forest should use the same engineered feature table so the comparison reflects the learning algorithm rather than feature availability.
 
-- mean, standard deviation, minimum, maximum, range, median
-- IQR, RMS, energy, peak absolute value
-- skewness and kurtosis
-- peak vector magnitude
-- time index of peak
-- jerk mean, standard deviation, and maximum
-- pre-peak versus post-peak mean difference
-- axis correlations
-- optional simple frequency-band energy
-
-The exact feature set can be refined later, but RF and XGBoost should receive identical features so the comparison reflects the learning algorithm rather than feature availability.
+The current feature definitions are documented in `docs/features.md` and implemented in `src/training/window_features.py`.
 
 ### Random Forest
 
@@ -85,6 +75,10 @@ max_features: ["sqrt", 0.5]
 ### XGBoost
 
 Purpose: stronger engineered-feature classifier. XGBoost is worth including even with a single triaxial sensor because the model operates on the engineered window-feature table, not directly on the number of sensors.
+
+However, can consider switching to svm
+
+It is only an extension anyways
 
 Input:
 
@@ -169,13 +163,7 @@ learning_rate: [1e-3, 3e-4]
 
 Purpose: recurrent raw-window sequence baseline.
 
-Input:
-
-```text
-40 x 3
-```
-
-Recommended default:
+Default arch:
 
 ```text
 LSTM(64, return_sequences=False)
@@ -202,18 +190,17 @@ dense units: [0, 32]
 learning_rate: [1e-3, 3e-4]
 ```
 
-Avoid stacked LSTMs for the first benchmark unless the single-layer model clearly underfits.
+If single-layer LSTM underfits, used stacked LSTM, otherwise don't
 
 ## Core TSAD Models
 
-The primary TSAD benchmark should include:
+Primary:
 
 - Isolation Forest on engineered features
+- LSTM autoencoder on raw windows
 - Dense autoencoder on flattened raw windows
 
-- LSTM autoencoder on raw windows
-
-Conv1D autoencoder on raw windows, VAE, LSTM-VAE, TranAD, and Anomaly Transformer are optional follow-up models rather than core first-wave baselines.
+AFter the main TSAD are working, add Conv-AE and TranAD 
 
 For every TSAD model:
 
@@ -227,15 +214,11 @@ For every TSAD model:
 
 Purpose: non-deep TSAD baseline.
 
-Input:
-
-```text
-n_normal_train_windows x n_features
-```
+Input: engineered features (decided later)
 
 Use the same engineered feature family as RF and XGBoost. The anomaly score is the negative Isolation Forest decision score.
 
-Recommended default:
+Default setup:
 
 ```python
 IsolationForest(
@@ -261,11 +244,7 @@ The operating threshold should be selected on the validation split rather than a
 
 Purpose: simple neural reconstruction baseline.
 
-Input:
-
-```text
-flattened 40 x 3 window = 120
-```
+Input: raw window 
 
 Recommended default:
 
@@ -280,19 +259,11 @@ Dense(128), ReLU
 Dense(120), linear output
 ```
 
-Loss:
+Loss: MSE reconstruction loss
 
-```text
-MSE reconstruction loss
-```
+Anomaly score: mean squared reconstruction error over time and axes
 
-Anomaly score:
-
-```text
-mean squared reconstruction error over time and axes
-```
-
-Small tuning grid:
+Tuning grid:
 
 ```text
 latent_dim: [8, 16, 32]
@@ -307,11 +278,7 @@ The Dense AE ignores temporal order after flattening, so it should be treated as
 
 Purpose: convolutional reconstruction baseline aligned with the 1D CNN classifier.
 
-Input:
-
-```text
-40 x 3
-```
+Input: Raw 40x3 accelerometer data
 
 Recommended default:
 
@@ -336,17 +303,9 @@ Conv1D(3, kernel_size=3, padding="same")
 Linear output
 ```
 
-Loss:
+Loss:  MSE reconstruction loss
 
-```text
-MSE reconstruction loss
-```
-
-Anomaly score:
-
-```text
-mean squared reconstruction error over time and axes
-```
+Anomaly score: mean squared reconstruction error over time and axes
 
 This model is often a useful middle ground between Dense AE and LSTM-AE because it captures local temporal patterns while remaining small and fast.
 
@@ -354,13 +313,9 @@ This model is often a useful middle ground between Dense AE and LSTM-AE because 
 
 Purpose: sequence reconstruction baseline that preserves temporal ordering.
 
-Input:
+Input: 40 x 3 accelerometer data
 
-```text
-40 x 3
-```
-
-Recommended default:
+Default:
 
 ```text
 LSTM(64, return_sequences=False)
@@ -381,19 +336,11 @@ LSTM(32, return_sequences=True)
 TimeDistributed(Dense(3))
 ```
 
-Loss:
+Loss: MSE reconstruction loss
 
-```text
-MSE reconstruction loss
-```
+Anomaly score: mean squared reconstruction error over time and axes
 
-Anomaly score:
-
-```text
-mean squared reconstruction error over time and axes
-```
-
-Small tuning grid:
+Grid:
 
 ```text
 lstm_units: [32, 64]
@@ -444,12 +391,9 @@ This model is optional because it adds tuning complexity and may behave inconsis
 
 ### Transformer-Based TSAD
 
-Transformer-based TSAD models are not excluded, but they should be treated as advanced comparison models rather than first-wave baselines.
-
-Recommended order:
+Transformer-based TSAD models are not excluded, but they are treated as advanced comparison models rather than first-wave baselines.
 
 1. TranAD
-2. Anomaly Transformer
 
 Reasoning:
 

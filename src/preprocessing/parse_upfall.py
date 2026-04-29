@@ -11,7 +11,7 @@ from common import RAW_DIR, INTERIM_DIR, build_trial_df, make_trial_row
 RAW_PATH = RAW_DIR / "UP-FALL.csv"
 OUT_PATH = INTERIM_DIR / "upfall" / "UP-FALL.pkl"
 
-UPFALL_FS_HZ = 20.0
+UPFALL_FS_HZ = 18.0
 
 BeltAccCols = (15, 16, 17)  # 0-based indices; 1-based columns 16-18
 SubjectCol = 43

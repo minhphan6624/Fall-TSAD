@@ -31,8 +31,6 @@ Only the learning setup should differ:
 
 ## Shared Pipeline Priorities
 
-Recommended implementation order after the interim pickles exist:
-
 1. subject-wise split builder
 2. common windowing pipeline
 3. common labeling pipeline
@@ -43,35 +41,21 @@ This order matters because split and labeling policy determine whether the compa
 
 ## Split Policy
 
-Splits must be subject-disjoint.
+SUbject-based splitting
 
-Rules:
+Subject-disjoint for 
 
-- split by subject before any training
-- do not split by window first
-- do not allow subject leakage across train, validation, and test
-- store split assignments so all model families use the same split definition
+However, for final result, use LEave one subject out, or even k-fold validatiaon with k=5 for evaluation base
 
 ## Windowing Policy
 
 The shared processed layer should turn each trial-level `acc` array into fixed-length windows plus metadata.
 
-Recommended behavior:
+Per-window metadata and other setup can be found in the preporcessing pipeline
 
-- keep one consistent windowing implementation for all model families
-- use the same window length and stride for TSAD and classification
-- preserve traceability back to the source trial
+Current setup:
 
-Per-window metadata should include at least:
-
-- `window_id`
-- `subject_id`
-- `trial_id`
-- `activity_id`
-- `is_fall`
-- window start index
-- window end index
-- split
+window = 2s in length (seconds)
 
 ## Labeling Policy
 
@@ -108,15 +92,12 @@ Category-specific application:
 
 Window-level metrics alone are not enough for a strong fall-detection benchmark.
 
-The benchmark should report at least:
-
-- AUROC
-- AUPRC
 - Precision
 - Recall
 - F1
-
-Recommended interpretation:
+- Specificity, 
+- AUROC
+- AUPRC
 
 - use window-level metrics for core model comparison
 - add trial-level or event-level evaluation later if the window-to-event mapping becomes stable enough to support it
