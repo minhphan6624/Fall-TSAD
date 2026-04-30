@@ -1,0 +1,15 @@
+[
+  "acc_mag_mean",
+  "acc_mag_max",
+  "acc_mag_std",
+  "acc_mag_range",
+  "peak_time",
+  "horizontal_mag_mean",
+  "peak_to_peak",
+  "jerk_mean",
+  "jerk_max",
+  "horizontal_std",
+  "acc_std",
+  "axis_energy_mean",
+  "post_peak_delta"
+]
