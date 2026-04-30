@@ -165,6 +165,12 @@ Implemented so far:
 - `train_xgboost.py`
 - `train_isolation_forest.py`
 
+The shallow training scripts are documented in:
+
+```text
+docs/training_runs.md
+```
+
 ### Data Loader
 
 `src/training/data.py` loads processed train/validation/test artifacts.
@@ -297,21 +303,71 @@ Metrics to report:
 
 Window-level metrics are the current priority. Trial-level or event-level evaluation can be added later once the window-to-event aggregation policy is stable.
 
-## Next Steps
+## Version Control Policy
 
-Next implementation steps:
+Keep source code and lightweight documentation under version control:
 
-1. Add a minimal experiment config format.
-2. Add a training entry point, for example `src/experiments/run.py`.
-3. Train the first Random Forest baseline end to end.
-4. Add shared scoring, threshold selection, and metrics.
-5. Save run outputs under a consistent `runs/benchmark/...` structure.
-6. Add Isolation Forest using the same engineered feature table.
-7. Add the first deep classifier baseline using `CNN1D`.
-8. Regenerate or clearly separate the final 20 Hz primary benchmark artifacts.
+- `src/`
+- `docs/`
+- `requirements.txt`
+- small hand-written config files, once experiment configs are added
 
-The most immediate next task is to build the first complete shallow-model path:
+Do not keep generated run artifacts in git. The repository ignores:
 
 ```text
-load processed data -> extract features -> fit Random Forest -> score validation/test -> evaluate
+runs/
+```
+
+Run outputs can become large and change frequently, especially for deep models. This includes:
+
+- `model.pkl`
+- PyTorch checkpoints
+- TensorBoard event files
+- per-window prediction CSVs
+- plots generated during training/evaluation
+- smoke-test run folders
+
+For reproducibility, each run should save lightweight metadata inside its run directory:
+
+- `config.json`
+- `metrics.json`
+- `feature_names.json`
+- `feature_importance.csv` for shallow models, when available
+
+Those files are useful for inspection, but they are still generated outputs and should not be committed by default. Final thesis/report tables can be copied into a small curated results document later if needed.
+
+Current shallow training scripts use `--model-seed` for model randomness. This is separate from the preprocessing split seed used by the temporary percentage-based subject split.
+
+Curated final or checkpoint results should be recorded in:
+
+```text
+docs/results_summary.md
+```
+
+That document should contain small result tables only, not full run artifacts.
+
+## Next Steps
+
+Completed shallow-model training pieces:
+
+- Random Forest classification training script
+- XGBoost classification training script
+- Isolation Forest TSAD training script
+- shared validation-threshold selection
+- shared binary metric computation
+- generated run output structure under `runs/benchmark/...`
+
+Recommended next implementation steps:
+
+1. Add a training script for the first deep classifier, likely `CNN1D`.
+2. Add a shared PyTorch classification loop for CNN/LSTM classifiers.
+3. Add a shared PyTorch autoencoder loop for Dense AE and LSTM AE.
+4. Regenerate or clearly separate the final 20 Hz primary benchmark artifacts.
+5. Add explicit experiment configs once command-line arguments become repetitive.
+6. Add final split protocols, such as leave-one-subject-out or k-fold subject validation.
+
+The next main task is to build the first complete deep-model path:
+
+```text
+load processed data -> build dataloaders -> train CNN1D -> score validation/test -> evaluate
 ```
