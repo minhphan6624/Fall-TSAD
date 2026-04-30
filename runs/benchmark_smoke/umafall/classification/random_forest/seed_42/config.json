@@ -1,0 +1,9 @@
+{
+  "dataset": "umafall",
+  "data_root": "data/processed",
+  "run_root": "runs/benchmark_smoke",
+  "seed": 42,
+  "n_estimators": 5,
+  "max_depth": null,
+  "min_samples_leaf": 1
+}

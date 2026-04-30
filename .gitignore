@@ -1,6 +1,7 @@
 /data
 /experiments
 /outputs
+/runs
 
 .DS_Store
 */.DS_Store

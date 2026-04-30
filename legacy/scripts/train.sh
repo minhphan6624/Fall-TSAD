@@ -1,1 +1,0 @@
-python3 train_lstm_ae.py

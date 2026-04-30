@@ -32,11 +32,11 @@ def main() -> None:
         "--datasets",
         nargs="+",
         choices=("sisfall", "fallalld", "umafall", "upfall"),
-        default=list("sisfall", "fallalld", "umafall", "upfall"),
+        default=("sisfall", "fallalld", "umafall", "upfall"),
         help="Datasets to parse. Defaults to all four datasets.",
     )
     
-    args = parser.parsge_args()
+    args = parser.parse_args()
 
     for dataset in args.datasets:
         print(f"\n=== Parsing {dataset} ===", flush=True)
