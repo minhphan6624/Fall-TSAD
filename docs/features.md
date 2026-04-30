@@ -11,7 +11,7 @@ n_windows x window_length x 3
 The three channels are treated as: ax, ay, az
 
 
-The feature extractor is implemented in: src/training/window_features.py
+The feature extractor is implemented in: src/training/extract_features.py
 
 ## Feature Table
 

@@ -100,13 +100,10 @@ for all current processed datasets and modes.
 
 ## Current Data Notes
 
-The docs define the primary benchmark as all datasets downsampled to 20 Hz with 2-second windows, giving raw input shape:
+The primary benchmark is defined as all datasets downsampled to 20 Hz with 2-second windows, giving raw input shape of 40 x 3
 
-```text
-40 x 3
-```
 
-The currently processed artifacts are not all in that primary 20 Hz format yet. Current observed window shapes include:
+The currently processed artifacts are not all in that primary 20 Hz format yet. Current window shapes:
 
 ```text
 SisFall:  400 x 3
@@ -115,15 +112,12 @@ UMAFall:   40 x 3
 UP-Fall:   36 x 3
 ```
 
-This suggests the current processed outputs are closer to native-rate or mixed-rate exports. The downsampled 20 Hz primary benchmark should be regenerated or stored under explicit output names before final benchmarking.
+--> THe current processed outputs are closer to native-rate or mixed-rate exports. 
+The downsampled 20 Hz primary benchmark should be regenerated or stored under explicit output names before final benchmarking.
 
 ## Model Plan
 
-The model notes are documented in:
-
-```text
-docs/models.md
-```
+The model notes are documented in: docs/models.md
 
 Current classification model plan:
 
@@ -145,37 +139,31 @@ Optional later TSAD extensions:
 - TranAD
 - Anomaly Transformer
 
-Existing model architecture/build files are under:
-
-```text
-src/models/
-```
+Existing neural model architecture files are under: src/models/
 
 Current files include:
 
-- `random_forest.py`
-- `xgboost_classifier.py`
-- `isolation_forest.py`
 - `cnn1d.py`
 - `cnn1d_large.py`
 - `lstm_classifier.py`
 - `dense_ae.py`
 - `lstm_ae.py`
 
-Most of these are model definitions or builders. A unified training/evaluation runner is not implemented yet.
+Shallow model construction now lives directly inside the corresponding training scripts.
 
 ## Training Modules Added
 
-Training utilities are under:
-
-```text
-src/training/
-```
+Training utilities are under:  src/training/
 
 Implemented so far:
 
 - `data.py`
-- `window_features.py`
+- `extract_features.py`
+- `evaluation.py`
+- `thresholds.py`
+- `train_random_forest.py`
+- `train_xgboost.py`
+- `train_isolation_forest.py`
 
 ### Data Loader
 
@@ -216,7 +204,7 @@ Python checks should be run with the project conda environment:
 
 ### Engineered Features
 
-`src/training/window_features.py` extracts engineered features for shallow models.
+`src/training/extract_features.py` extracts engineered features for shallow models.
 
 The current feature set is documented in:
 
@@ -258,7 +246,7 @@ Deep models should use the raw normalized window tensors directly.
 
 Classification models use:
 
-```text
+```
 data/processed/<dataset>/classification/
 ```
 
@@ -275,7 +263,7 @@ Training data contains normal windows only. Validation and test still contain bo
 Shallow models should use engineered features:
 
 ```python
-from src.training.window_features import extract_features
+from src.training.extract_features import extract_features
 
 X_feat, feature_names = extract_features(X, sampling_rate_hz=rates)
 ```
@@ -311,7 +299,7 @@ Window-level metrics are the current priority. Trial-level or event-level evalua
 
 ## Next Steps
 
-Recommended next implementation steps:
+Next implementation steps:
 
 1. Add a minimal experiment config format.
 2. Add a training entry point, for example `src/experiments/run.py`.

@@ -37,7 +37,7 @@ The feature-threshold baseline can be added after the main model pipeline is sta
 
 Random Forest, XGBoost, and Isolation Forest should use the same engineered feature table so the comparison reflects the learning algorithm rather than feature availability.
 
-The current feature definitions are documented in `docs/features.md` and implemented in `src/training/window_features.py`.
+The current feature definitions are documented in `docs/features.md` and implemented in `src/training/extract_features.py`.
 
 ### Random Forest
 
