@@ -195,6 +195,40 @@ Threshold selection is implemented in:
 src/training/thresholds.py
 ```
 
+Shared run-output helpers are implemented in:
+
+```text
+src/training/run_utils.py
+```
+
+These helpers currently handle:
+
+- feature extraction for a split
+- run-directory construction
+- JSON output
+- prediction CSV output
+- shallow feature-importance output
+
+## Shallow Pipeline Verification
+
+The shallow scripts were checked on UMAFall with 50 estimators and `model_seed=42`:
+
+```text
+runs/check_shallow/umafall/classification/random_forest/model_seed_42
+runs/check_shallow/umafall/classification/xgboost/model_seed_42
+runs/check_shallow/umafall/tsad/isolation_forest/model_seed_42
+```
+
+Checks performed:
+
+- expected files were created
+- `window_label == y_true` in prediction CSVs
+- `pred_label` contained only binary labels
+- scores had no missing values
+- fall windows had higher average scores than normal windows
+
+These are development checks only. The generated folders are ignored by git.
+
 ## Smoke-Test Commands
 
 Use small estimator counts for quick checks:

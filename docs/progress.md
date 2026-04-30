@@ -164,6 +164,7 @@ Implemented so far:
 - `train_random_forest.py`
 - `train_xgboost.py`
 - `train_isolation_forest.py`
+- `run_utils.py`
 
 The shallow training scripts are documented in:
 
@@ -355,7 +356,9 @@ Completed shallow-model training pieces:
 - Isolation Forest TSAD training script
 - shared validation-threshold selection
 - shared binary metric computation
+- shared run-output utilities
 - generated run output structure under `runs/benchmark/...`
+- development checks on UMAFall for the three shallow scripts
 
 Recommended next implementation steps:
 
