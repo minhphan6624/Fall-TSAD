@@ -15,11 +15,6 @@ def _features_for_split(split):
     rates = split["meta"]["sampling_rate_hz"].to_numpy()
     return extract_features(split["X"], sampling_rate_hz=rates)
 
-
-def _run_dir(run_root, dataset, seed):
-    return Path(run_root) / dataset / "classification" / "random_forest" / f"seed_{seed}"
-
-
 def _save_json(path, data):
     with path.open("w") as f:
         json.dump(data, f, indent=2)
@@ -44,7 +39,7 @@ def parse_args():
     parser.add_argument("--dataset", default="sisfall")
     parser.add_argument("--data-root", default="data/processed")
     parser.add_argument("--run-root", default="runs/benchmark")
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--model-seed", type=int, default=42)
     parser.add_argument("--n-estimators", type=int, default=300)
     parser.add_argument("--max-depth", type=int, default=None)
     parser.add_argument("--min-samples-leaf", type=int, default=1)
@@ -69,7 +64,7 @@ def main():
         min_samples_leaf=args.min_samples_leaf,
         max_features="sqrt",
         class_weight="balanced",
-        random_state=args.seed,
+        random_state=args.model_seed,
         n_jobs=-1,
     )
     model.fit(X_train, y_train)
@@ -81,7 +76,8 @@ def main():
     val_metrics = compute_binary_metrics(y_val, val_scores, threshold)
     test_metrics = compute_binary_metrics(y_test, test_scores, threshold)
 
-    run_dir = _run_dir(args.run_root, args.dataset, args.seed)
+    run_dir = Path(args.run_root) / args.dataset /"classification" / "random_forest" / f"model_seed_{args.model_seed}"
+
     run_dir.mkdir(parents=True, exist_ok=True)
 
     _save_json(run_dir / "config.json", vars(args))
@@ -94,10 +90,12 @@ def main():
             "test": test_metrics,
         },
     )
+
     _save_predictions(run_dir / "predictions_val.csv", data["val"]["meta"], y_val, val_scores, threshold)
     _save_predictions(run_dir / "predictions_test.csv", data["test"]["meta"], y_test, test_scores, threshold)
     _save_feature_importance(run_dir / "feature_importance.csv", feature_names, model.feature_importances_)
 
+    # Save model
     with (run_dir / "model.pkl").open("wb") as f:
         pickle.dump(model, f)
 

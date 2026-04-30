@@ -11,20 +11,43 @@ from src.training.evaluation import compute_binary_metrics
 from src.training.thresholds import find_best_f1_threshold
 from src.training.extract_features import extract_features
 
+def _features_for_split(split):
+    rates = split["meta"]["sampling_rate_hz"].to_numpy()
+    return extract_features(split["X"], sampling_rate_hz=rates)
+
+def _save_json(path, data):
+    with path.open("w") as f:
+        json.dump(data, f, indent=2)
+
+
+def _save_predictions(path, meta, y_true, scores, threshold):
+    predictions = meta[
+        ["window_id", "subject_id", "activity_id", "trial_id", "split", "window_label"]
+    ].copy()
+    predictions["y_true"] = y_true
+    predictions["score"] = scores
+    predictions["pred_label"] = (scores >= threshold).astype(int)
+    predictions.to_csv(path, index=False)
+
+
+def _save_feature_importance(path, feature_names, importances):
+    rows = pd.DataFrame({"feature": feature_names, "importance": importances})
+    rows = rows.sort_values("importance", ascending=False)
+    rows.to_csv(path, index=False)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train an XGBoost baseline.")
     parser.add_argument("--dataset", default="sisfall")
     parser.add_argument("--data-root", default="data/processed")
     parser.add_argument("--run-root", default="runs/benchmark")
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--model-seed", type=int, default=42)
     parser.add_argument("--n-estimators", type=int, default=300)
     parser.add_argument("--max-depth", type=int, default=3)
     parser.add_argument("--learning-rate", type=float, default=0.05)
     parser.add_argument("--subsample", type=float, default=0.8)
     parser.add_argument("--colsample-bytree", type=float, default=0.8)
     return parser.parse_args()
-
 
 def main():
     args = parse_args()
@@ -50,7 +73,7 @@ def main():
         objective="binary:logistic",
         eval_metric="logloss",
         scale_pos_weight=scale_pos_weight,
-        random_state=args.seed,
+        random_state=args.model_seed,
         n_jobs=-1,
     )
     model.fit(X_train, y_train)
@@ -62,7 +85,7 @@ def main():
     val_metrics = compute_binary_metrics(y_val, val_scores, threshold)
     test_metrics = compute_binary_metrics(y_test, test_scores, threshold)
 
-    run_dir = _run_dir(args.run_root, args.dataset, args.seed)
+    run_dir = Path(args.run_root) / args.dataset / "classification" / "xgboost" / f"model_seed_{args.model_seed}"
     run_dir.mkdir(parents=True, exist_ok=True)
 
     config = vars(args)
@@ -86,37 +109,6 @@ def main():
 
     print(f"Saved XGBoost run to {run_dir}")
     print(json.dumps(test_metrics, indent=2))
-
-
-def _features_for_split(split):
-    rates = split["meta"]["sampling_rate_hz"].to_numpy()
-    return extract_features(split["X"], sampling_rate_hz=rates)
-
-
-def _run_dir(run_root, dataset, seed):
-    return Path(run_root) / dataset / "classification" / "xgboost" / f"seed_{seed}"
-
-
-def _save_json(path, data):
-    with path.open("w") as f:
-        json.dump(data, f, indent=2)
-
-
-def _save_predictions(path, meta, y_true, scores, threshold):
-    predictions = meta[
-        ["window_id", "subject_id", "activity_id", "trial_id", "split", "window_label"]
-    ].copy()
-    predictions["y_true"] = y_true
-    predictions["score"] = scores
-    predictions["pred_label"] = (scores >= threshold).astype(int)
-    predictions.to_csv(path, index=False)
-
-
-def _save_feature_importance(path, feature_names, importances):
-    rows = pd.DataFrame({"feature": feature_names, "importance": importances})
-    rows = rows.sort_values("importance", ascending=False)
-    rows.to_csv(path, index=False)
-
 
 if __name__ == "__main__":
     main()

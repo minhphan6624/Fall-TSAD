@@ -8,6 +8,11 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
+def _safe_score(metric_fn, y_true, scores):
+    try:
+        return float(metric_fn(y_true, scores))
+    except ValueError:
+        return None
 
 def compute_binary_metrics(y_true, scores, threshold):
     """Compute binary metrics from continuous fall/anomaly scores."""
@@ -33,10 +38,3 @@ def compute_binary_metrics(y_true, scores, threshold):
         "fn": int(fn),
         "tp": int(tp),
     }
-
-
-def _safe_score(metric_fn, y_true, scores):
-    try:
-        return float(metric_fn(y_true, scores))
-    except ValueError:
-        return None
