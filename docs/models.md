@@ -21,6 +21,41 @@ The same subject-disjoint splits, windowing policy, labeling rule, and evaluatio
 - classification models train on fall and non-fall windows
 - TSAD models train on normal windows only
 
+## Current Implementation Status
+
+The current model architecture files are under:
+
+```text
+src/models/
+```
+
+Implemented neural architecture files:
+
+```text
+cnn1d.py
+cnn1d_large.py
+lstm_classifier.py
+dense_ae.py
+lstm_ae.py
+```
+
+Current deep training entry points are under:
+
+```text
+src/training/train_cnn1d.py
+src/training/train_lstm_classifier.py
+src/training/train_dense_ae.py
+src/training/train_lstm_ae.py
+```
+
+Shared PyTorch training, scoring, model-selection, and checkpoint helpers are in:
+
+```text
+src/training/deep_utils.py
+```
+
+The deep classifier scripts train with `BCEWithLogitsLoss` and output sigmoid fall scores. The deep autoencoder scripts train with MSE reconstruction loss on TSAD normal-only training windows and score validation/test windows by mean squared reconstruction error.
+
 ## Core Classification Models
 
 The primary classification benchmark should include:
