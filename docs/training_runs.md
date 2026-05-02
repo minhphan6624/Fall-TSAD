@@ -32,6 +32,149 @@ Make sure to check the CUDA setup on the machine that is intended to run the tra
 
 ## Training Commands
 
+The command blocks below use the script defaults from `argparse` and only set the dataset, model seed, and deep-model device.
+
+Datasets currently available under `data/processed/`:
+
+```text
+sisfall
+fallalld
+umafall
+upfall
+sisfall_20hz
+fallalld_20hz
+umafall_20hz
+upfall_20hz
+```
+
+Models currently available:
+
+| Model | Entry point | Mode |
+| --- | --- | --- |
+| Random Forest | `src.training.train_random_forest` | classification |
+| XGBoost | `src.training.train_xgboost` | classification |
+| Isolation Forest | `src.training.train_isolation_forest` | tsad |
+| CNN1D | `src.training.train_cnn1d` | classification |
+| LSTM classifier | `src.training.train_lstm_classifier` | classification |
+| Dense autoencoder | `src.training.train_dense_ae` | tsad |
+| LSTM autoencoder | `src.training.train_lstm_ae` | tsad |
+
+### Run All Default Training Jobs
+
+Use this when you want every current model on every current processed dataset:
+
+```bash
+conda activate fall-tsad
+
+for dataset in sisfall fallalld umafall upfall sisfall_20hz fallalld_20hz umafall_20hz upfall_20hz; do
+  python -m src.training.train_random_forest --dataset "$dataset" --model-seed 42
+  python -m src.training.train_xgboost --dataset "$dataset" --model-seed 42
+  python -m src.training.train_isolation_forest --dataset "$dataset" --model-seed 42
+  python -m src.training.train_cnn1d --dataset "$dataset" --model-seed 42 --device auto
+  python -m src.training.train_lstm_classifier --dataset "$dataset" --model-seed 42 --device auto
+  python -m src.training.train_dense_ae --dataset "$dataset" --model-seed 42 --device auto
+  python -m src.training.train_lstm_ae --dataset "$dataset" --model-seed 42 --device auto
+done
+```
+
+### Default Commands by Dataset
+
+#### SisFall
+
+```bash
+python -m src.training.train_random_forest --dataset sisfall --model-seed 42
+python -m src.training.train_xgboost --dataset sisfall --model-seed 42
+python -m src.training.train_isolation_forest --dataset sisfall --model-seed 42
+python -m src.training.train_cnn1d --dataset sisfall --model-seed 42 --device auto
+python -m src.training.train_lstm_classifier --dataset sisfall --model-seed 42 --device auto
+python -m src.training.train_dense_ae --dataset sisfall --model-seed 42 --device auto
+python -m src.training.train_lstm_ae --dataset sisfall --model-seed 42 --device auto
+```
+
+#### FallAllD
+
+```bash
+python -m src.training.train_random_forest --dataset fallalld --model-seed 42
+python -m src.training.train_xgboost --dataset fallalld --model-seed 42
+python -m src.training.train_isolation_forest --dataset fallalld --model-seed 42
+python -m src.training.train_cnn1d --dataset fallalld --model-seed 42 --device auto
+python -m src.training.train_lstm_classifier --dataset fallalld --model-seed 42 --device auto
+python -m src.training.train_dense_ae --dataset fallalld --model-seed 42 --device auto
+python -m src.training.train_lstm_ae --dataset fallalld --model-seed 42 --device auto
+```
+
+#### UMAFall
+
+```bash
+python -m src.training.train_random_forest --dataset umafall --model-seed 42
+python -m src.training.train_xgboost --dataset umafall --model-seed 42
+python -m src.training.train_isolation_forest --dataset umafall --model-seed 42
+python -m src.training.train_cnn1d --dataset umafall --model-seed 42 --device auto
+python -m src.training.train_lstm_classifier --dataset umafall --model-seed 42 --device auto
+python -m src.training.train_dense_ae --dataset umafall --model-seed 42 --device auto
+python -m src.training.train_lstm_ae --dataset umafall --model-seed 42 --device auto
+```
+
+#### UPFall
+
+```bash
+python -m src.training.train_random_forest --dataset upfall --model-seed 42
+python -m src.training.train_xgboost --dataset upfall --model-seed 42
+python -m src.training.train_isolation_forest --dataset upfall --model-seed 42
+python -m src.training.train_cnn1d --dataset upfall --model-seed 42 --device auto
+python -m src.training.train_lstm_classifier --dataset upfall --model-seed 42 --device auto
+python -m src.training.train_dense_ae --dataset upfall --model-seed 42 --device auto
+python -m src.training.train_lstm_ae --dataset upfall --model-seed 42 --device auto
+```
+
+#### SisFall 20 Hz
+
+```bash
+python -m src.training.train_random_forest --dataset sisfall_20hz --model-seed 42
+python -m src.training.train_xgboost --dataset sisfall_20hz --model-seed 42
+python -m src.training.train_isolation_forest --dataset sisfall_20hz --model-seed 42
+python -m src.training.train_cnn1d --dataset sisfall_20hz --model-seed 42 --device auto
+python -m src.training.train_lstm_classifier --dataset sisfall_20hz --model-seed 42 --device auto
+python -m src.training.train_dense_ae --dataset sisfall_20hz --model-seed 42 --device auto
+python -m src.training.train_lstm_ae --dataset sisfall_20hz --model-seed 42 --device auto
+```
+
+#### FallAllD 20 Hz
+
+```bash
+python -m src.training.train_random_forest --dataset fallalld_20hz --model-seed 42
+python -m src.training.train_xgboost --dataset fallalld_20hz --model-seed 42
+python -m src.training.train_isolation_forest --dataset fallalld_20hz --model-seed 42
+python -m src.training.train_cnn1d --dataset fallalld_20hz --model-seed 42 --device auto
+python -m src.training.train_lstm_classifier --dataset fallalld_20hz --model-seed 42 --device auto
+python -m src.training.train_dense_ae --dataset fallalld_20hz --model-seed 42 --device auto
+python -m src.training.train_lstm_ae --dataset fallalld_20hz --model-seed 42 --device auto
+```
+
+#### UMAFall 20 Hz
+
+```bash
+python -m src.training.train_random_forest --dataset umafall_20hz --model-seed 42
+python -m src.training.train_xgboost --dataset umafall_20hz --model-seed 42
+python -m src.training.train_isolation_forest --dataset umafall_20hz --model-seed 42
+python -m src.training.train_cnn1d --dataset umafall_20hz --model-seed 42 --device auto
+python -m src.training.train_lstm_classifier --dataset umafall_20hz --model-seed 42 --device auto
+python -m src.training.train_dense_ae --dataset umafall_20hz --model-seed 42 --device auto
+python -m src.training.train_lstm_ae --dataset umafall_20hz --model-seed 42 --device auto
+```
+
+#### UPFall 20 Hz
+
+```bash
+python -m src.training.train_random_forest --dataset upfall_20hz --model-seed 42
+python -m src.training.train_xgboost --dataset upfall_20hz --model-seed 42
+python -m src.training.train_isolation_forest --dataset upfall_20hz --model-seed 42
+python -m src.training.train_cnn1d --dataset upfall_20hz --model-seed 42 --device auto
+python -m src.training.train_lstm_classifier --dataset upfall_20hz --model-seed 42 --device auto
+python -m src.training.train_dense_ae --dataset upfall_20hz --model-seed 42 --device auto
+python -m src.training.train_lstm_ae --dataset upfall_20hz --model-seed 42 --device auto
+```
+
 ### Random Forest Classification
 
 Entry point: `src/training/train_random_forest.py`
