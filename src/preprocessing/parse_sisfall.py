@@ -96,6 +96,7 @@ def iter_sisfall_rows(raw_root: Path) -> tuple[list[dict], int]:
     return rows, skipped_subject_mismatch
 
 def main() -> None:
+    print("Start parsing raw Sisfall data")
     rows, skipped_subject_mismatch = iter_sisfall_rows(RAW_ROOT)
     df = build_trial_df(rows)
 

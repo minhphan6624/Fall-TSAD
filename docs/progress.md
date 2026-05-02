@@ -161,11 +161,17 @@ Implemented so far:
 - `extract_features.py`
 - `evaluation.py`
 - `thresholds.py`
+- `deep_utils.py`
+- `run_utils.py`
 - `train_random_forest.py`
 - `train_xgboost.py`
 - `train_isolation_forest.py`
+- `train_cnn1d.py`
+- `train_lstm_classifier.py`
+- `train_dense_ae.py`
+- `train_lstm_ae.py`
 
-The shallow training scripts are documented in:
+The training scripts are documented in:
 
 ```text
 docs/training_runs.md
@@ -280,6 +286,65 @@ Deep models should use raw windows:
 X shape: n_windows x window_length x 3
 ```
 
+### Deep Training Utilities
+
+`src/training/deep_utils.py` contains the shared PyTorch training code for the deep baselines.
+
+Current shared functions:
+
+```python
+set_seed(seed)
+get_device(device)
+train_classifier(...)
+train_autoencoder(...)
+predict_classifier_scores(...)
+predict_reconstruction_scores(...)
+save_checkpoint(...)
+```
+
+The deep classification scripts use:
+
+- raw normalized window tensors
+- `BCEWithLogitsLoss`
+- class imbalance weighting via `pos_weight = normal_count / fall_count`
+- sigmoid classifier scores, where larger means more fall-like
+
+The deep TSAD autoencoder scripts use:
+
+- raw normalized window tensors
+- normal-only TSAD training windows
+- MSE reconstruction loss
+- per-window mean squared reconstruction error as the anomaly score
+
+For both families, the validation split is scored after each epoch. The best model state is selected by validation F1 after choosing the operating threshold on the validation split.
+
+Current deep training entry points:
+
+```text
+src/training/train_cnn1d.py
+src/training/train_lstm_classifier.py
+src/training/train_dense_ae.py
+src/training/train_lstm_ae.py
+```
+
+Deep run outputs are saved under the same benchmark structure as the shallow scripts:
+
+```text
+runs/benchmark/<dataset>/classification/<model>/model_seed_<model_seed>/
+runs/benchmark/<dataset>/tsad/<model>/model_seed_<model_seed>/
+```
+
+Current deep saved files:
+
+```text
+config.json
+metrics.json
+predictions_val.csv
+predictions_test.csv
+training_history.csv
+model.pt
+```
+
 ## Evaluation Plan
 
 Evaluation should be shared across classification and TSAD models.
@@ -333,6 +398,7 @@ For reproducibility, each run should save lightweight metadata inside its run di
 - `metrics.json`
 - `feature_names.json`
 - `feature_importance.csv` for shallow models, when available
+- `training_history.csv` for deep models
 
 Those files are useful for inspection, but they are still generated outputs and should not be committed by default. Final thesis/report tables can be copied into a small curated results document later if needed.
 
@@ -348,26 +414,33 @@ That document should contain small result tables only, not full run artifacts.
 
 ## Next Steps
 
-Completed shallow-model training pieces:
+Completed training pieces:
 
 - Random Forest classification training script
 - XGBoost classification training script
 - Isolation Forest TSAD training script
+- CNN1D classification training script
+- LSTM classification training script
+- Dense autoencoder TSAD training script
+- LSTM autoencoder TSAD training script
+- shared PyTorch training utilities for deep classifiers and reconstruction autoencoders
 - shared validation-threshold selection
 - shared binary metric computation
+- shared run-output utilities
 - generated run output structure under `runs/benchmark/...`
+- development checks on UMAFall for the three shallow scripts
+- one-epoch deep smoke checks on UMAFall for CNN1D, LSTM classifier, Dense AE, and LSTM AE
 
 Recommended next implementation steps:
 
-1. Add a training script for the first deep classifier, likely `CNN1D`.
-2. Add a shared PyTorch classification loop for CNN/LSTM classifiers.
-3. Add a shared PyTorch autoencoder loop for Dense AE and LSTM AE.
-4. Regenerate or clearly separate the final 20 Hz primary benchmark artifacts.
-5. Add explicit experiment configs once command-line arguments become repetitive.
-6. Add final split protocols, such as leave-one-subject-out or k-fold subject validation.
+1. Regenerate the final 20 Hz primary benchmark artifacts.
+2. Add explicit experiment configs once command-line arguments become repetitive.
+3. Add final split protocols: leave-one-subject-out or k-fold subject validation.
+4. Run full benchmark training for all current shallow and deep baselines.
+5. Add a curated results table in `docs/results_summary.md`.
 
-The next main task is to build the first complete deep-model path:
+The current model-training path now covers:
 
 ```text
-load processed data -> build dataloaders -> train CNN1D -> score validation/test -> evaluate
+load processed data -> train model -> score validation/test -> choose validation threshold -> evaluate -> save run artifacts
 ```

@@ -87,6 +87,8 @@ def iter_umafall_rows(raw_root: Path) -> tuple[list[dict], int]:
     return rows, skipped_files
 
 def main() -> None:
+    print("Start parsing raw UMAFall dataset")
+
     rows, skipped_files = iter_umafall_rows(RAW_ROOT)
     df = build_trial_df(rows)
 

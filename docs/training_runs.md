@@ -2,233 +2,161 @@
 
 This document records the current model training entry points and common commands.
 
-Use the project conda environment when running Python:
+Use the project conda environment before running training commands:
 
 ```bash
-/home/minhqphan/miniconda3/envs/fall-tsad/bin/python
+conda activate fall-tsad
 ```
 
 Run outputs are written under `runs/` by default. That directory is ignored by git.
 
-## Common Output Structure
+## Output Structure
 
-Shallow classification models write to:
+Classification models write to `runs/benchmark/<dataset>/classification/<model>/model_seed_<model_seed>/`.
 
-```text
-runs/benchmark/<dataset>/classification/<model>/model_seed_<model_seed>/
-```
+TSAD models write to `runs/benchmark/<dataset>/tsad/<model>/model_seed_<model_seed>/`.
 
-Shallow TSAD models write to:
+Shallow runs save `config.json`, `feature_names.json`, `metrics.json`, `predictions_val.csv`, `predictions_test.csv`, `model.pkl`, and `feature_importance.csv` for Random Forest and XGBoost.
 
-```text
-runs/benchmark/<dataset>/tsad/<model>/model_seed_<model_seed>/
-```
+Deep runs save `config.json`, `metrics.json`, `predictions_val.csv`, `predictions_test.csv`, `training_history.csv`, and `model.pt`.
 
-Current saved files include:
+Deep scripts accept `--device auto`, `--device cpu`, or `--device cuda`. Use `--device auto` by default. It uses CUDA when PyTorch can see a compatible GPU and falls back to CPU otherwise.
 
-- `config.json`
-- `feature_names.json`
-- `metrics.json`
-- `predictions_val.csv`
-- `predictions_test.csv`
-- `model.pkl`
-- `feature_importance.csv` for Random Forest and XGBoost
-
-## Random Forest Classification
-
-Entry point:
-
-```text
-src/training/train_random_forest.py
-```
-
-Command:
+Check CUDA visibility before deep training with:
 
 ```bash
-/home/minhqphan/miniconda3/envs/fall-tsad/bin/python -m src.training.train_random_forest \
-  --dataset sisfall \
-  --model-seed 42
+python -c "import torch; print(torch.__version__); print(torch.version.cuda); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'cpu only')"
 ```
 
-Useful options:
+Make sure to check the CUDA setup on the machine that is intended to run the training, then install the corresponding pytorch dependency
+
+## Training Commands
+
+### Random Forest Classification
+
+Entry point: `src/training/train_random_forest.py`
 
 ```bash
---n-estimators 300
---max-depth 10
---min-samples-leaf 2
---data-root data/processed
---run-root runs/benchmark
+python -m src.training.train_random_forest --dataset sisfall --model-seed 42
 ```
 
-Data mode:
+Mode: `classification`. Input: engineered features from normalized windows. Score: `predict_proba(X)[:, 1]`.
 
-```text
-classification
-```
+### XGBoost Classification
 
-Input:
-
-```text
-engineered features from normalized windows
-```
-
-Score:
-
-```text
-predict_proba(X)[:, 1]
-```
-
-## XGBoost Classification
-
-Entry point:
-
-```text
-src/training/train_xgboost.py
-```
-
-Command:
+Entry point: `src/training/train_xgboost.py`
 
 ```bash
-/home/minhqphan/miniconda3/envs/fall-tsad/bin/python -m src.training.train_xgboost \
-  --dataset sisfall \
-  --model-seed 42
+python -m src.training.train_xgboost --dataset sisfall --model-seed 42
 ```
 
-Useful options:
+Mode: `classification`. Input: engineered features from normalized windows. Score: `predict_proba(X)[:, 1]`.
+
+### Isolation Forest TSAD
+
+Entry point: `src/training/train_isolation_forest.py`
 
 ```bash
---n-estimators 300
---max-depth 3
---learning-rate 0.05
---subsample 0.8
---colsample-bytree 0.8
---data-root data/processed
---run-root runs/benchmark
+python -m src.training.train_isolation_forest --dataset sisfall --model-seed 42
 ```
 
-Data mode:
+Mode: `tsad`. Input: engineered features from normalized windows. Score: `-model.decision_function(X)`. Higher scores mean more anomalous or more fall-like.
 
-```text
-classification
-```
+### CNN1D Classification
 
-Input:
-
-```text
-engineered features from normalized windows
-```
-
-Score:
-
-```text
-predict_proba(X)[:, 1]
-```
-
-## Isolation Forest TSAD
-
-Entry point:
-
-```text
-src/training/train_isolation_forest.py
-```
-
-Command:
+Entry point: `src/training/train_cnn1d.py`
 
 ```bash
-/home/minhqphan/miniconda3/envs/fall-tsad/bin/python -m src.training.train_isolation_forest \
-  --dataset sisfall \
-  --model-seed 42
+python -m src.training.train_cnn1d --dataset sisfall --model-seed 42 --device auto
 ```
 
-Useful options:
+Mode: `classification`. Input: raw normalized windows with shape `n_windows x window_length x 3`. Score: `sigmoid(model(X))`. Higher scores mean more fall-like.
+
+### LSTM Classification
+
+Entry point: `src/training/train_lstm_classifier.py`
 
 ```bash
---n-estimators 300
---contamination auto
---max-samples auto
---max-features 1.0
---data-root data/processed
---run-root runs/benchmark
+python -m src.training.train_lstm_classifier --dataset sisfall --model-seed 42 --device auto
 ```
 
-Data mode:
+Mode: `classification`. Input: raw normalized windows with shape `n_windows x window_length x 3`. Score: `sigmoid(model(X))`. Higher scores mean more fall-like.
 
-```text
-tsad
+### Dense Autoencoder TSAD
+
+Entry point: `src/training/train_dense_ae.py`
+
+```bash
+python -m src.training.train_dense_ae --dataset sisfall --model-seed 42 --device auto
 ```
 
-Input:
+Mode: `tsad`. Input: raw normalized windows, flattened internally. Score: mean squared reconstruction error over time and axes. Higher scores mean more anomalous or more fall-like.
 
-```text
-engineered features from normalized windows
+### LSTM Autoencoder TSAD
+
+Entry point: `src/training/train_lstm_ae.py`
+
+```bash
+python -m src.training.train_lstm_ae --dataset sisfall --model-seed 42 --device auto
 ```
 
-Score:
+Mode: `tsad`. Input: raw normalized windows with shape `n_windows x window_length x 3`. Score: mean squared reconstruction error over time and axes. Higher scores mean more anomalous or more fall-like.
 
-```text
--model.decision_function(X)
-```
+## Shared Behavior
 
-Higher scores mean more anomalous or more fall-like.
-
-## Current Shared Evaluation Behavior
-
-All current shallow scripts:
+All current training scripts:
 
 1. load processed train/validation/test splits
-2. extract engineered features using `src/training/extract_features.py`
+2. prepare model inputs
 3. train the model
 4. produce continuous validation and test scores
 5. choose the operating threshold by best validation F1
 6. evaluate validation and test metrics
 7. save model, metrics, predictions, and config under `runs/`
 
-Metrics are computed by:
+Shallow scripts prepare model inputs by extracting engineered features with `src/training/extract_features.py`.
 
-```text
-src/training/evaluation.py
-```
+Deep scripts use raw normalized windows directly through `src/training/data.py`.
 
-Threshold selection is implemented in:
+Metrics are computed by `src/training/evaluation.py`. Threshold selection is implemented in `src/training/thresholds.py`.
 
-```text
-src/training/thresholds.py
-```
+Shared run-output helpers are implemented in `src/training/run_utils.py`. These handle feature extraction for a split, run-directory construction, JSON output, prediction CSV output, and shallow feature-importance output.
 
-## Smoke-Test Commands
+Deep training helpers are implemented in `src/training/deep_utils.py`. These handle seed setup, device selection, classifier training with `BCEWithLogitsLoss`, autoencoder training with MSE reconstruction loss, validation-F1 model selection, score prediction, and PyTorch checkpoint saving.
 
-Use small estimator counts for quick checks:
+## Smoke Tests
+
+Use small estimator counts for shallow smoke checks:
 
 ```bash
-/home/minhqphan/miniconda3/envs/fall-tsad/bin/python -m src.training.train_random_forest \
-  --dataset umafall \
-  --n-estimators 5 \
-  --run-root runs/benchmark_smoke_rf
+python -m src.training.train_random_forest --dataset umafall --n-estimators 5 --run-root runs/benchmark_smoke_rf
+python -m src.training.train_xgboost --dataset umafall --n-estimators 5 --run-root runs/benchmark_smoke_xgb
+python -m src.training.train_isolation_forest --dataset umafall --n-estimators 10 --run-root runs/benchmark_smoke_iforest
 ```
 
-```bash
-/home/minhqphan/miniconda3/envs/fall-tsad/bin/python -m src.training.train_xgboost \
-  --dataset umafall \
-  --n-estimators 5 \
-  --run-root runs/benchmark_smoke_xgb
-```
+Use one epoch for deep smoke checks:
 
 ```bash
-/home/minhqphan/miniconda3/envs/fall-tsad/bin/python -m src.training.train_isolation_forest \
-  --dataset umafall \
-  --n-estimators 10 \
-  --run-root runs/benchmark_smoke_iforest
+python -m src.training.train_cnn1d --dataset umafall --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_cnn1d --device auto
+python -m src.training.train_lstm_classifier --dataset umafall --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_lstm_classifier --device auto
+python -m src.training.train_dense_ae --dataset umafall --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_dense_ae --device auto
+python -m src.training.train_lstm_ae --dataset umafall --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_lstm_ae --device auto
 ```
 
 Smoke-test outputs should not be committed.
 
-## Planned Future Scripts
+## Verification
 
-The next training scripts should cover deep models:
+The shallow scripts were checked on UMAFall with 50 estimators and `model_seed=42`.
 
-- CNN1D classifier
-- LSTM classifier
-- Dense autoencoder
-- LSTM autoencoder
+The deep scripts were checked on UMAFall with one epoch, `batch_size=256`, and `model_seed=42`.
 
-Those should reuse the same evaluation and run-output conventions where possible.
+Checks performed:
+
+- expected files were created
+- `window_label == y_true` in prediction CSVs
+- `pred_label` contained only binary labels
+- scores had no missing values
+- PyTorch checkpoints were saved as `model.pt`
+
+These are development checks only. The generated folders are ignored by git.

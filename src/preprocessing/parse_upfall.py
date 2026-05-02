@@ -101,6 +101,9 @@ def load_upfall_trials(path: Path) -> list[dict]:
 
 
 def main() -> None:
+
+    print("Start parsing raw UMAFall dataset")
+    
     df = build_trial_df(load_upfall_trials(RAW_PATH))
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)

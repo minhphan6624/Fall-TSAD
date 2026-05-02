@@ -70,6 +70,8 @@ def iter_fallalld_rows(raw_root: Path) -> list[dict]:
 
 def main() -> None:
 
+    print("Start parsing raw FallAllD")
+
     df = build_trial_df(iter_fallalld_rows(RAW_ROOT))
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
