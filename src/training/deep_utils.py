@@ -59,6 +59,15 @@ def save_checkpoint(path, model, config, input_shape):
     )
 
 
+def log_epoch(epoch, epochs, train_loss, val_f1, threshold):
+    print(
+        f"Epoch {epoch}/{epochs} "
+        f"train_loss={train_loss:.4f} "
+        f"val_f1={val_f1:.4f} "
+        f"threshold={threshold:.4f}"
+    )
+
+
 def train_classifier( model,
     train_loader, val_loader, y_val,
     *,
@@ -96,15 +105,17 @@ def train_classifier( model,
         threshold = find_best_f1_threshold(y_val, val_scores)
         val_metrics = compute_binary_metrics(y_val, val_scores, threshold)
         val_f1 = val_metrics["f1"]
+        train_loss = float(np.mean(train_losses))
 
         history.append(
             {
                 "epoch": epoch,
-                "train_loss": float(np.mean(train_losses)),
+                "train_loss": train_loss,
                 "val_f1": val_f1,
                 "val_threshold": threshold,
             }
         )
+        log_epoch(epoch, epochs, train_loss, val_f1, threshold)
 
         if val_f1 > best_f1:
             best_f1 = val_f1
@@ -155,15 +166,17 @@ def train_autoencoder(
         threshold = find_best_f1_threshold(y_val, val_scores)
         val_metrics = compute_binary_metrics(y_val, val_scores, threshold)
         val_f1 = val_metrics["f1"]
+        train_loss = float(np.mean(train_losses))
 
         history.append(
             {
                 "epoch": epoch,
-                "train_loss": float(np.mean(train_losses)),
+                "train_loss": train_loss,
                 "val_f1": val_f1,
                 "val_threshold": threshold,
             }
         )
+        log_epoch(epoch, epochs, train_loss, val_f1, threshold)
 
         if val_f1 > best_f1:
             best_f1 = val_f1
