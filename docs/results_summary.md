@@ -1,6 +1,6 @@
 # Results Summary
 
-This document records curated benchmark/checkpoint results copied from local run artifacts under `runs/`.
+This document records curated benchmark results copied from local run artifacts under `runs/`.
 
 Generated run artifacts under `runs/` are not version controlled. Keep the run folders local and copy key results here when they are useful for later reference.
 
@@ -55,14 +55,6 @@ Values are `total / normal / fall` window counts for the classification processe
 - Supervised classification models currently outperform Isolation Forest TSAD on F1 for every dataset.
 - Isolation Forest often keeps high recall, especially on `umafall_20hz`, but with many more false positives and much lower precision.
 - SisFall has the strongest overall benchmark results among the current completed runs.
-
-## Smoke Run
-
-The following run is kept separate from benchmark results because it was a development smoke run.
-
-| Run root | Dataset | Mode | Model | Seed | Training setup | Test AUROC | Test AUPRC | Test Precision | Test Recall | Test Specificity | Test F1 | Notes |
-| --- | --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| `runs/benchmark_smoke` | `umafall_20hz` | classification | CNN1D | 42 | 1 epoch, batch size 256 | 0.880 | 0.150 | 0.200 | 0.805 | 0.851 | 0.320 | Pipeline/checkpoint sanity check only; not a final benchmark result. |
 
 ## What To Record Next
 
