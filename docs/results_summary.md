@@ -13,7 +13,7 @@ Generated run artifacts under `runs/` are not version controlled. Keep the run f
 - Split protocol: subject-disjoint train/validation/test split, split seed 7, target ratio 70/15/15.
 - Threshold policy: operating threshold is selected on the validation split by best F1, then reused on test.
 - Metrics below are window-level test metrics.
-- Shallow models use engineered features from normalized windows. CNN1D uses raw normalized `40 x 3` windows.
+- Shallow models use engineered features from normalized windows. Deep models use raw normalized `40 x 3` windows.
 - Classification normalization is fit on all training windows. TSAD normalization is fit on normal training windows only, and TSAD models train on normal training windows only.
 
 ## Processed Split Sizes
@@ -31,19 +31,29 @@ Values are `total / normal / fall` window counts for the classification processe
 
 | Dataset | Mode | Model | Seed | AUROC | AUPRC | Precision | Recall | Specificity | F1 | Val-selected threshold | Test confusion matrix |
 | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| `fallalld_20hz` | classification | CNN1D | 42 | 0.997 | 0.864 | 0.742 | 0.817 | 0.996 | 0.778 | 0.940 | TN=4711, FP=17, FN=11, TP=49 |
+| `fallalld_20hz` | classification | LSTM classifier | 42 | 0.939 | 0.648 | 0.667 | 0.767 | 0.995 | 0.713 | 0.984 | TN=4705, FP=23, FN=14, TP=46 |
 | `fallalld_20hz` | classification | Random Forest | 42 | 0.998 | 0.944 | 0.945 | 0.867 | 0.999 | 0.904 | 0.310 | TN=4725, FP=3, FN=8, TP=52 |
 | `fallalld_20hz` | classification | XGBoost | 42 | 0.999 | 0.953 | 0.926 | 0.833 | 0.999 | 0.877 | 0.966 | TN=4724, FP=4, FN=10, TP=50 |
 | `fallalld_20hz` | TSAD | Isolation Forest | 42 | 0.984 | 0.346 | 0.322 | 0.817 | 0.978 | 0.462 | 0.110 | TN=4625, FP=103, FN=11, TP=49 |
+| `fallalld_20hz` | TSAD | LSTM autoencoder | 42 | 0.967 | 0.445 | 0.367 | 0.600 | 0.987 | 0.456 | 1.613 | TN=4666, FP=62, FN=24, TP=36 |
 | `sisfall_20hz` | classification | CNN1D | 42 | 0.999 | 0.963 | 0.874 | 0.974 | 0.993 | 0.921 | 0.963 | TN=13932, FP=97, FN=18, TP=673 |
+| `sisfall_20hz` | classification | LSTM classifier | 42 | 0.998 | 0.993 | 0.956 | 0.973 | 0.998 | 0.964 | 0.941 | TN=13998, FP=31, FN=19, TP=672 |
 | `sisfall_20hz` | classification | Random Forest | 42 | 1.000 | 0.996 | 0.987 | 0.964 | 0.999 | 0.975 | 0.463 | TN=14020, FP=9, FN=25, TP=666 |
 | `sisfall_20hz` | classification | XGBoost | 42 | 1.000 | 0.996 | 0.985 | 0.952 | 0.999 | 0.968 | 0.966 | TN=14019, FP=10, FN=33, TP=658 |
 | `sisfall_20hz` | TSAD | Isolation Forest | 42 | 0.985 | 0.657 | 0.637 | 0.790 | 0.978 | 0.705 | 0.141 | TN=13718, FP=311, FN=145, TP=546 |
+| `umafall_20hz` | classification | CNN1D | 42 | 0.992 | 0.859 | 0.621 | 0.935 | 0.973 | 0.746 | 0.895 | TN=1615, FP=44, FN=5, TP=72 |
+| `umafall_20hz` | classification | LSTM classifier | 42 | 0.959 | 0.621 | 0.615 | 0.727 | 0.979 | 0.667 | 0.973 | TN=1624, FP=35, FN=21, TP=56 |
 | `umafall_20hz` | classification | Random Forest | 42 | 0.998 | 0.960 | 0.861 | 0.883 | 0.993 | 0.872 | 0.377 | TN=1648, FP=11, FN=9, TP=68 |
 | `umafall_20hz` | classification | XGBoost | 42 | 0.999 | 0.972 | 0.930 | 0.857 | 0.997 | 0.892 | 0.866 | TN=1654, FP=5, FN=11, TP=66 |
 | `umafall_20hz` | TSAD | Isolation Forest | 42 | 0.927 | 0.249 | 0.264 | 0.922 | 0.881 | 0.410 | 0.100 | TN=1461, FP=198, FN=6, TP=71 |
+| `umafall_20hz` | TSAD | LSTM autoencoder | 42 | 0.909 | 0.186 | 0.220 | 0.961 | 0.842 | 0.358 | 0.824 | TN=1397, FP=262, FN=3, TP=74 |
+| `upfall_20hz` | classification | CNN1D | 42 | 0.992 | 0.642 | 0.690 | 0.571 | 0.993 | 0.625 | 0.921 | TN=2723, FP=18, FN=30, TP=40 |
+| `upfall_20hz` | classification | LSTM classifier | 42 | 0.882 | 0.519 | 0.446 | 0.643 | 0.980 | 0.526 | 0.628 | TN=2685, FP=56, FN=25, TP=45 |
 | `upfall_20hz` | classification | Random Forest | 42 | 0.999 | 0.946 | 0.906 | 0.829 | 0.998 | 0.866 | 0.500 | TN=2735, FP=6, FN=12, TP=58 |
 | `upfall_20hz` | classification | XGBoost | 42 | 0.999 | 0.950 | 0.880 | 0.943 | 0.997 | 0.910 | 0.884 | TN=2732, FP=9, FN=4, TP=66 |
 | `upfall_20hz` | TSAD | Isolation Forest | 42 | 0.933 | 0.153 | 0.180 | 0.829 | 0.903 | 0.295 | 0.091 | TN=2476, FP=265, FN=12, TP=58 |
+| `upfall_20hz` | TSAD | LSTM autoencoder | 42 | 0.924 | 0.176 | 0.175 | 0.814 | 0.902 | 0.288 | 0.412 | TN=2472, FP=269, FN=13, TP=57 |
 
 ## Quick Takeaways
 
@@ -52,8 +62,8 @@ Values are `total / normal / fall` window counts for the classification processe
   - `sisfall_20hz`: Random Forest, F1 0.975.
   - `umafall_20hz`: XGBoost, F1 0.892.
   - `upfall_20hz`: XGBoost, F1 0.910.
-- Supervised classification models currently outperform Isolation Forest TSAD on F1 for every dataset.
-- Isolation Forest often keeps high recall, especially on `umafall_20hz`, but with many more false positives and much lower precision.
+- Supervised classification models currently outperform both TSAD models on F1 for every dataset.
+- LSTM autoencoder is close to Isolation Forest on `fallalld_20hz`, but does not improve TSAD F1 on the completed 20 Hz benchmark runs.
 - SisFall has the strongest overall benchmark results among the current completed runs.
 
 ## What To Record Next
