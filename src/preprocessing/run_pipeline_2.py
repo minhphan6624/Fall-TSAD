@@ -5,7 +5,10 @@ import numpy as np
 import pandas as pd
 
 from src.preprocessing.build_splits import (
+    DEFAULT_N_FOLDS,
     DEFAULT_SEED,
+    DEFAULT_SPLIT_PROTOCOL,
+    KFOLD_SPLIT_PROTOCOL,
     build_split_artifacts,
     save_split_artifacts,
 )
@@ -41,6 +44,24 @@ def parse_args() -> argparse.Namespace:
         "--manual-split-csv",
         type=Path, default=None,
         help="Optional manual split CSV. Omit to use automatic subject-wise splits.",
+    )
+    parser.add_argument(
+        "--split-protocol",
+        choices=(DEFAULT_SPLIT_PROTOCOL, KFOLD_SPLIT_PROTOCOL),
+        default=DEFAULT_SPLIT_PROTOCOL,
+        help="Subject split protocol. Manual split CSV overrides this setting.",
+    )
+    parser.add_argument(
+        "--n-folds",
+        type=int,
+        default=DEFAULT_N_FOLDS,
+        help="Number of subject folds for subject_kfold.",
+    )
+    parser.add_argument(
+        "--fold-index",
+        type=int,
+        default=0,
+        help="Fold index to use as the test split for subject_kfold.",
     )
     parser.add_argument(
         "--window-seconds",
@@ -95,6 +116,9 @@ def export_mode_split( out_dir: Path, mode: str, split_name: str,
 def run_pipeline(
     dataset: str, seed: int = DEFAULT_SEED,
     manual_split_csv: Path | None = None,
+    split_protocol: str = DEFAULT_SPLIT_PROTOCOL,
+    n_folds: int = DEFAULT_N_FOLDS,
+    fold_index: int = 0,
     window_seconds: float = DEFAULT_WINDOW_SECONDS,
     overlap: float = DEFAULT_OVERLAP,
     target_sampling_rate_hz: float | None = None,
@@ -120,6 +144,9 @@ def run_pipeline(
         trials_df=trials_df,
         seed=seed,
         manual_split_csv=manual_split_csv,
+        split_protocol=split_protocol,
+        n_folds=n_folds,
+        fold_index=fold_index,
     )
     save_split_artifacts(subject_summary, subject_splits, trials_with_split, dataset_dir)
 
@@ -177,6 +204,9 @@ def main() -> None:
         dataset=args.dataset,
         seed=args.seed,
         manual_split_csv=args.manual_split_csv,
+        split_protocol=args.split_protocol,
+        n_folds=args.n_folds,
+        fold_index=args.fold_index,
         window_seconds=args.window_seconds,
         overlap=args.overlap,
         target_sampling_rate_hz=args.target_sampling_rate_hz,
