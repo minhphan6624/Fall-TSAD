@@ -94,6 +94,8 @@ Model entry points:
 | CNN1D | `src.training.train_cnn1d` | classification |
 | LSTM classifier | `src.training.train_lstm_classifier` | classification |
 | Dense autoencoder | `src.training.train_dense_ae` | tsad |
+| CNN1D autoencoder | `src.training.train_cnn1d_ae` | tsad |
+| Large CNN1D autoencoder | `src.training.train_cnn1d_ae_large` | tsad |
 | LSTM autoencoder | `src.training.train_lstm_ae` | tsad |
 
 Train one model on one fold:
@@ -115,6 +117,7 @@ python -m src.training.train_isolation_forest --dataset "$dataset" --model-seed 
 python -m src.training.train_cnn1d --dataset "$dataset" --model-seed 42 --device auto
 python -m src.training.train_lstm_classifier --dataset "$dataset" --model-seed 42 --device auto
 python -m src.training.train_dense_ae --dataset "$dataset" --model-seed 42 --device auto
+python -m src.training.train_cnn1d_ae --dataset "$dataset" --model-seed 42 --device auto
 python -m src.training.train_lstm_ae --dataset "$dataset" --model-seed 42 --device auto
 ```
 
@@ -142,6 +145,7 @@ for fold in 0 1 2 3 4; do
   python -m src.training.train_cnn1d --dataset "$dataset" --model-seed 42 --device auto
   python -m src.training.train_lstm_classifier --dataset "$dataset" --model-seed 42 --device auto
   python -m src.training.train_dense_ae --dataset "$dataset" --model-seed 42 --device auto
+  python -m src.training.train_cnn1d_ae --dataset "$dataset" --model-seed 42 --device auto
   python -m src.training.train_lstm_ae --dataset "$dataset" --model-seed 42 --device auto
 done
 ```
@@ -190,6 +194,7 @@ python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds
 python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model cnn1d --model-seed 42
 python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model lstm_classifier --model-seed 42
 python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model dense_ae --model-seed 42
+python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model cnn1d_ae --model-seed 42
 python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model lstm_ae --model-seed 42
 ```
 
@@ -255,6 +260,7 @@ Deep models:
 python -m src.training.train_cnn1d --dataset umafall_20hz_fold0 --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_cnn1d --device auto
 python -m src.training.train_lstm_classifier --dataset umafall_20hz_fold0 --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_lstm_classifier --device auto
 python -m src.training.train_dense_ae --dataset umafall_20hz_fold0 --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_dense_ae --device auto
+python -m src.training.train_cnn1d_ae --dataset umafall_20hz_fold0 --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_cnn1d_ae --device auto
 python -m src.training.train_lstm_ae --dataset umafall_20hz_fold0 --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_lstm_ae --device auto
 ```
 

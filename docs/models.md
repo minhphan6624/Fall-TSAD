@@ -34,6 +34,8 @@ Implemented neural architecture files:
 ```text
 cnn1d.py
 cnn1d_large.py
+cnn1d_ae.py
+cnn1d_ae_large.py
 lstm_classifier.py
 dense_ae.py
 lstm_ae.py
@@ -43,6 +45,8 @@ Current deep training entry points are under:
 
 ```text
 src/training/train_cnn1d.py
+src/training/train_cnn1d_ae.py
+src/training/train_cnn1d_ae_large.py
 src/training/train_lstm_classifier.py
 src/training/train_dense_ae.py
 src/training/train_lstm_ae.py
