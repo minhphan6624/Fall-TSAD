@@ -12,7 +12,6 @@ only when inspecting fold-level variation.
 
 ## Shared Columns
 
-- `status`: `pending`, `complete`, `rerun`, or `exclude`
 - `dataset`: `sisfall`, `fallalld`, `umafall`, or `upfall`
 - `prefix`: dataset prefix used before `_fold0.._fold4`
 - `model`: run-output model name, such as `random_forest` or `lstm_ae`
