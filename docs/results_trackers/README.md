@@ -17,11 +17,10 @@ only when inspecting fold-level variation.
 - `prefix`: dataset prefix used before `_fold0.._fold4`
 - `model`: run-output model name, such as `random_forest` or `lstm_ae`
 - `mode`: `classification` or `tsad`
-- `model_seed`: usually `42`
-- `n_folds`: usually `5`
 - metric columns: mean/std copied from the aggregated `cv_metrics.csv`
-- `source_dir`: path to the aggregated CV output directory
-- `notes`: short reason for rerun/exclusion or any result caveat
+
+The seed, fold count, window size, sampling rate, and ADL condition are inferred
+from the project defaults and the `variant` / `prefix` values.
 
 ## Tracker Files
 
