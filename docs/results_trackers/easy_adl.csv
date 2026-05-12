@@ -1,0 +1,3 @@
+status,experiment,dataset,variant,prefix,window_seconds,sampling_rate_hz,adl_condition,model,mode,model_seed,n_folds,auroc_mean,auroc_std,auprc_mean,auprc_std,precision_mean,precision_std,recall_mean,recall_std,sensitivity_mean,sensitivity_std,specificity_mean,specificity_std,f1_mean,f1_std,source_dir,notes
+pending,easy_adl,sisfall,20hz_2s,sisfall_20hz_2s,2,20,full_adl,random_forest,classification,42,5,,,,,,,,,,,,,,,runs/benchmark/sisfall_20hz_2s_cv/classification/random_forest/model_seed_42,
+pending,easy_adl,sisfall,easy_adl_20hz_2s,sisfall_easy_adl_20hz_2s,2,20,easy_adl,random_forest,classification,42,5,,,,,,,,,,,,,,,runs/benchmark/sisfall_easy_adl_20hz_2s_cv/classification/random_forest/model_seed_42,
