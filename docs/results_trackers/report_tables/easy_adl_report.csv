@@ -1,0 +1,2 @@
+Dataset,Model,Mode,Full ADL F1,Easy ADL F1,Delta F1,Full ADL AUPRC,Easy ADL AUPRC,Delta AUPRC
+SisFall,Random Forest,classification,,,,,,

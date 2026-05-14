@@ -1,0 +1,13 @@
+Dataset,Model,Mode,Native F1,20 Hz F1,Delta F1,Native AUPRC,20 Hz AUPRC,Delta AUPRC
+SisFall,Random Forest,classification,0.96 ± 0.02,0.96 ± 0.02,+0.00,0.99 ± 0.01,0.99 ± 0.02,-0.00
+SisFall,XGBoost,classification,0.96 ± 0.02,0.96 ± 0.02,+0.01,0.99 ± 0.01,0.99 ± 0.01,+0.00
+SisFall,Isolation Forest,tsad,0.58 ± 0.05,0.67 ± 0.06,+0.09,0.55 ± 0.06,0.59 ± 0.06,+0.04
+FallAllD,Random Forest,classification,0.80 ± 0.07,0.79 ± 0.06,-0.01,0.88 ± 0.10,0.85 ± 0.09,-0.03
+FallAllD,XGBoost,classification,0.82 ± 0.06,0.82 ± 0.07,-0.01,0.89 ± 0.09,0.87 ± 0.07,-0.03
+FallAllD,Isolation Forest,tsad,0.31 ± 0.10,0.32 ± 0.11,+0.01,0.25 ± 0.07,0.23 ± 0.06,-0.01
+UMAFall,Random Forest,classification,0.87 ± 0.07,0.87 ± 0.07,+0.00,0.96 ± 0.02,0.96 ± 0.02,+0.00
+UMAFall,XGBoost,classification,0.91 ± 0.03,0.91 ± 0.03,+0.00,0.97 ± 0.02,0.97 ± 0.02,+0.00
+UMAFall,Isolation Forest,tsad,0.44 ± 0.05,0.44 ± 0.05,+0.00,0.45 ± 0.16,0.45 ± 0.16,+0.00
+UP-FALL,Random Forest,classification,0.87 ± 0.09,0.86 ± 0.11,-0.02,0.95 ± 0.02,0.95 ± 0.03,+0.00
+UP-FALL,XGBoost,classification,0.91 ± 0.03,0.91 ± 0.03,-0.00,0.96 ± 0.02,0.97 ± 0.02,+0.01
+UP-FALL,Isolation Forest,tsad,0.35 ± 0.06,0.33 ± 0.05,-0.01,0.17 ± 0.06,0.17 ± 0.06,-0.01
