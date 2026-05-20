@@ -94,6 +94,42 @@ Hard folds are expected. A fold can be harder because:
 - validation-selected thresholds do not transfer perfectly to test subjects
 - some subjects contribute many more windows than others
 
+## Easy-ADL Training Observations
+
+Early shallow-model results from the easy-ADL training variants show a useful
+failure mode: restricting normal training windows to easy ADLs can reduce
+precision and AUPRC even when AUROC remains high.
+
+This happens because the training distribution changes, but validation and test
+remain full-ADL. The models no longer see hard normal ADLs as negative examples
+during training, so excluded high-motion ADLs are more likely to be scored as
+fall-like at test time.
+
+Observed false positives concentrate in the expected excluded activities:
+
+- SisFall: `D04` jogging quickly, `D03` jogging slowly, and `D06` quick stairs.
+- FallAllD: jogging and fast stair activities such as `A025`, `A044`, `A024`,
+  `A036`, and `A043`.
+- UMAFall: `Hopping` and `Jogging`.
+
+This supports the interpretation that hard ADLs are not merely noisy training
+examples. They are important hard negatives that help supervised classifiers
+learn what fall-like non-falls look like.
+
+For Isolation Forest, the effect is stronger because the model learns a narrow
+normal region from easy ADLs only. It can become good at detecting "different
+from easy ADL" rather than "fall-like," which increases false positives on hard
+ADLs.
+
+A drop in precision alone could be an operating-threshold issue. A drop in
+AUPRC is more important because it means the score ranking itself is worse:
+hard ADL windows are being ranked too close to, or above, true fall windows.
+
+The main easy-ADL experiment should keep validation and test unchanged. Removing
+hard ADLs from validation/test would define a separate easy-only benchmark. That
+can be reported as a restricted-normal upper bound, but it should not replace
+the full-ADL evaluation because it hides the realistic false-positive burden.
+
 ## UMAFall Observations
 
 On UMAFall 20 Hz 2s, XGBoost is the strongest model overall. Random Forest is
@@ -164,4 +200,3 @@ When discussing TSAD, phrase the result carefully:
 When discussing fold variation, avoid over-interpreting raw TN/TP standard
 deviations. Large raw-count std can come from uneven fold sizes. Check
 normalized metrics and fold-level FP/FN patterns before claiming instability.
-

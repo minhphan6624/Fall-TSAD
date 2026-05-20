@@ -115,3 +115,83 @@ Excluded examples: walking and jumping.
 Save the selected easy-ADL list into the processed artifact or each run `config.json`. The experiment should be auditable without relying on this document alone.
 
 If the filter is implemented in preprocessing, the mode exports need to fit normalizers after filtering. If the filter is implemented in training, the training scripts need to save the filter list and ensure their normalizers or loaded tensors reflect the filtered train set.
+
+## Result Interpretation Notes
+
+The easy-ADL training variant changes the training distribution only. Validation and test still contain all ADLs and falls.
+
+For classification models, this means:
+
+- training positives stay as all fall windows
+- training negatives become easy normal ADL windows only
+- held-out negatives still include hard ADLs
+
+For TSAD models, this means:
+
+- the learned normal region is based only on easy normal ADL windows
+- hard ADLs in validation/test are expected to look more anomalous
+
+This setup can reduce training confusion, but it can also remove important hard negative examples. If precision or AUPRC drops, a likely explanation is that hard ADLs are being ranked as fall-like because the model no longer saw them as normal during training.
+
+Observed shallow-model behavior so far follows this pattern:
+
+- SisFall false positives concentrate in excluded activities such as `D04` jogging quickly, `D03` jogging slowly, and `D06` quick stairs.
+- FallAllD false positives concentrate in excluded jogging and fast stair activities such as `A025`, `A044`, `A024`, `A036`, and `A043`.
+- UMAFall false positives concentrate in excluded `Hopping` and `Jogging`.
+- Isolation Forest is especially sensitive because easy-ADL training makes the normal region narrow; it can learn "different from easy ADLs" rather than "fall-like."
+
+Some false positives may appear under fall activity IDs. These are normal-labeled windows from fall trials outside the labeled fall region. They still affect window-level metrics, but they are not ADL false alarms in the usual sense.
+
+The main conclusion to test is not simply whether easy-ADL training improves F1. The more useful question is whether removing hard normal ADLs improves fall ranking and detection on the same full held-out ADL/fall distribution. A drop in AUPRC is stronger evidence than a drop in thresholded precision because AUPRC reflects score ranking, not just the selected validation threshold.
+
+## Easy-Only Evaluation Variant
+
+Do not remove hard ADLs from validation/test for the main easy-ADL experiment. That would change the task from realistic held-out fall detection to a simplified normal-distribution benchmark.
+
+However, an easy-only evaluation can be justified as a separate diagnostic experiment:
+
+```text
+Train, validate, and test on a restricted low-motion ADL subset to measure model behavior under a simplified normal-activity distribution.
+```
+
+This answers:
+
+```text
+If the deployment environment only contains simple low-motion ADLs, how well do models separate falls from easy normal behavior?
+```
+
+It does not answer:
+
+```text
+How well does the model work for realistic fall detection across diverse ADLs?
+```
+
+Valid uses of an easy-only variant:
+
+- controlled distribution study
+- best-case or upper-bound comparison
+- deployment-specific scenario where high-motion ADLs are not expected
+- diagnostic check to see whether models still fail when hard ADL confusion is removed
+- possible curriculum-learning baseline
+
+Important caveats:
+
+- it will likely inflate precision, specificity, F1, and AUPRC relative to full-ADL evaluation
+- it underestimates false alarms in realistic settings
+- it changes the benchmark task definition
+- it is less comparable to the main full-ADL benchmark
+- it can remove clinically relevant hard non-falls such as stairs, stumbling, or quick sit/stand
+
+If implemented, use a distinct name such as:
+
+```text
+<dataset>_easy_adl_only_20hz_2s
+```
+
+Recommended reporting structure:
+
+```text
+Full-ADL benchmark: realistic evaluation.
+Easy-train/full-test: tests whether easy normal training generalizes.
+Easy-only benchmark: restricted-normal upper bound.
+```
