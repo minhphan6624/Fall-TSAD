@@ -1,4 +1,5 @@
 import argparse
+from pathlib import Path
 
 from src.preprocessing.build_splits import DEFAULT_N_FOLDS, DEFAULT_SEED, KFOLD_SPLIT_PROTOCOL
 from src.preprocessing.run_pipeline_2 import INTERIM_PICKLE_NAMES, run_pipeline
@@ -61,6 +62,12 @@ def parse_args() -> argparse.Namespace:
         required=True,
         help="Processed dataset prefix. Fold outputs are named <output-prefix>_fold<index>.",
     )
+    parser.add_argument(
+        "--adl-filter-config",
+        type=Path,
+        default=None,
+        help="Optional JSON mapping dataset names to normal training activity IDs to keep.",
+    )
     return parser.parse_args()
 
 
@@ -80,6 +87,7 @@ def main() -> None:
             target_sampling_rate_hz=args.target_sampling_rate_hz,
             allow_upsample=args.allow_upsample,
             output_dataset=output_dataset,
+            adl_filter_config=args.adl_filter_config,
         )
         print(f"Saved fold {fold_index} processed artifacts to {out_dir}")
 
