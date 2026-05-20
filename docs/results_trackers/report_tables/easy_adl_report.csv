@@ -1,2 +1,33 @@
 Dataset,Model,Mode,Full ADL F1,Easy ADL F1,Delta F1,Full ADL AUPRC,Easy ADL AUPRC,Delta AUPRC
-SisFall,Random Forest,classification,,,,,,
+SisFall,Random Forest,classification,0.96 ± 0.02,0.68 ± 0.04,-0.29,0.99 ± 0.02,0.52 ± 0.05,-0.46
+SisFall,XGBoost,classification,0.96 ± 0.02,0.58 ± 0.02,-0.39,0.99 ± 0.01,0.48 ± 0.06,-0.51
+SisFall,CNN1D,classification,0.94 ± 0.02,0.28 ± 0.01,-0.66,0.97 ± 0.02,0.13 ± 0.01,-0.85
+SisFall,LSTM Classifier,classification,0.95 ± 0.01,0.84 ± 0.02,-0.11,0.98 ± 0.01,0.85 ± 0.02,-0.14
+SisFall,Isolation Forest,tsad,0.67 ± 0.06,0.61 ± 0.03,-0.06,0.59 ± 0.06,0.48 ± 0.05,-0.11
+SisFall,Dense AE,tsad,0.63 ± 0.06,0.37 ± 0.02,-0.26,0.57 ± 0.10,0.22 ± 0.04,-0.35
+SisFall,CNN1D AE,tsad,,0.31 ± 0.02,,,0.15 ± 0.02,
+SisFall,LSTM AE,tsad,0.45 ± 0.04,0.38 ± 0.04,-0.07,0.36 ± 0.10,0.28 ± 0.07,-0.07
+FallAllD,Random Forest,classification,0.79 ± 0.06,0.52 ± 0.20,-0.28,0.85 ± 0.09,0.47 ± 0.24,-0.39
+FallAllD,XGBoost,classification,0.82 ± 0.07,0.52 ± 0.08,-0.29,0.87 ± 0.07,0.53 ± 0.14,-0.34
+FallAllD,CNN1D,classification,0.70 ± 0.10,0.19 ± 0.03,-0.51,0.72 ± 0.16,0.09 ± 0.02,-0.63
+FallAllD,LSTM Classifier,classification,0.62 ± 0.09,0.15 ± 0.09,-0.47,0.64 ± 0.09,0.10 ± 0.03,-0.54
+FallAllD,Isolation Forest,tsad,0.32 ± 0.11,0.28 ± 0.13,-0.04,0.23 ± 0.06,0.21 ± 0.10,-0.02
+FallAllD,Dense AE,tsad,0.47 ± 0.13,0.21 ± 0.05,-0.26,0.44 ± 0.18,0.11 ± 0.04,-0.33
+FallAllD,CNN1D AE,tsad,,0.16 ± 0.03,,,0.09 ± 0.03,
+FallAllD,LSTM AE,tsad,0.34 ± 0.18,0.19 ± 0.05,-0.15,0.30 ± 0.12,0.13 ± 0.05,-0.17
+UMAFall,Random Forest,classification,0.87 ± 0.07,0.61 ± 0.04,-0.26,0.96 ± 0.02,0.46 ± 0.06,-0.50
+UMAFall,XGBoost,classification,0.91 ± 0.03,0.65 ± 0.11,-0.26,0.97 ± 0.02,0.59 ± 0.04,-0.37
+UMAFall,CNN1D,classification,0.78 ± 0.07,0.31 ± 0.09,-0.48,0.87 ± 0.05,0.15 ± 0.02,-0.73
+UMAFall,LSTM Classifier,classification,0.74 ± 0.09,0.18 ± 0.11,-0.56,0.72 ± 0.11,0.18 ± 0.08,-0.54
+UMAFall,Isolation Forest,tsad,0.44 ± 0.05,0.40 ± 0.10,-0.04,0.45 ± 0.16,0.42 ± 0.15,-0.03
+UMAFall,Dense AE,tsad,0.43 ± 0.05,0.40 ± 0.03,-0.03,0.47 ± 0.19,0.23 ± 0.07,-0.23
+UMAFall,CNN1D AE,tsad,,0.38 ± 0.05,,,0.18 ± 0.02,
+UMAFall,LSTM AE,tsad,0.38 ± 0.05,0.31 ± 0.06,-0.07,0.38 ± 0.15,0.21 ± 0.08,-0.16
+UP-FALL,Random Forest,classification,0.86 ± 0.11,0.37 ± 0.03,-0.48,0.95 ± 0.03,0.23 ± 0.03,-0.73
+UP-FALL,XGBoost,classification,0.91 ± 0.03,0.32 ± 0.07,-0.60,0.97 ± 0.02,0.22 ± 0.07,-0.75
+UP-FALL,CNN1D,classification,0.68 ± 0.12,0.32 ± 0.02,-0.36,0.73 ± 0.05,0.12 ± 0.00,-0.61
+UP-FALL,LSTM Classifier,classification,0.49 ± 0.20,0.24 ± 0.14,-0.25,0.40 ± 0.22,0.27 ± 0.22,-0.13
+UP-FALL,Isolation Forest,tsad,0.33 ± 0.05,0.31 ± 0.03,-0.02,0.17 ± 0.06,0.14 ± 0.02,-0.03
+UP-FALL,Dense AE,tsad,0.32 ± 0.01,0.32 ± 0.01,+0.00,0.13 ± 0.01,0.12 ± 0.00,-0.01
+UP-FALL,CNN1D AE,tsad,,0.32 ± 0.01,,,0.12 ± 0.00,
+UP-FALL,LSTM AE,tsad,0.32 ± 0.02,0.31 ± 0.02,-0.01,0.13 ± 0.01,0.13 ± 0.01,-0.00
