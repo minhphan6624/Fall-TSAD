@@ -1,4 +1,5 @@
 import argparse
+import json
 from pathlib import Path
 
 import numpy as np
@@ -91,16 +92,29 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional processed output dataset name. Useful for variants such as sisfall_20hz.",
     )
+    parser.add_argument(
+        "--adl-filter-config",
+        type=Path,
+        default=None,
+        help="Optional JSON mapping dataset names to normal training activity IDs to keep.",
+    )
     return parser.parse_args()
 
 
 def export_mode_split( out_dir: Path, mode: str, split_name: str, 
-    X: np.ndarray, metadata_df: pd.DataFrame):
+    X: np.ndarray, metadata_df: pd.DataFrame,
+    adl_activity_ids: list[str] | None = None):
     ''' Export the final output of the preprocessing pipeline based on the learning mode '''
 
     split_meta = metadata_df[metadata_df["split"] == split_name].copy()
-    if mode == "tsad" and split_name == "train":
-        split_meta = split_meta[split_meta["window_label"] == 0].copy()
+    if split_name == "train":
+        if mode == "tsad":
+            split_meta = split_meta[split_meta["window_label"] == 0].copy()
+        if adl_activity_ids is not None:
+            keep = split_meta["activity_id"].isin(adl_activity_ids)
+            if mode == "classification":
+                keep = keep | (split_meta["window_label"] == 1)
+            split_meta = split_meta[keep].copy()
 
     split_meta = split_meta.reset_index(drop=True)
     indices = split_meta["window_id"].to_numpy(dtype=np.int64)
@@ -124,9 +138,14 @@ def run_pipeline(
     target_sampling_rate_hz: float | None = None,
     allow_upsample: bool = False,
     output_dataset: str | None = None,
+    adl_filter_config: Path | None = None,
 ) -> Path:
     interim_path = INTERIM_DIR / dataset / INTERIM_PICKLE_NAMES[dataset]
     dataset_dir = PROCESSED_DIR / (output_dataset or dataset)
+    adl_activity_ids = None
+    if adl_filter_config is not None:
+        with adl_filter_config.open() as f:
+            adl_activity_ids = json.load(f)[dataset]
 
     # ----- Step 1: Load trial-level interim data -----
     trials_df = pd.read_pickle(interim_path)
@@ -149,6 +168,14 @@ def run_pipeline(
         fold_index=fold_index,
     )
     save_split_artifacts(subject_summary, subject_splits, trials_with_split, dataset_dir)
+    if adl_activity_ids is not None:
+        with (dataset_dir / "adl_filter.json").open("w") as f:
+            json.dump(
+                {"dataset": dataset, "normal_train_activity_ids": adl_activity_ids},
+                f,
+                indent=2,
+            )
+            f.write("\n")
 
     # ----- Step 4: Windowing -----
     X_raw, window_meta = generate_windows(
@@ -192,6 +219,7 @@ def run_pipeline(
                 X=X_norm,
                 metadata_df=labeled_meta,
                 mode=mode,
+                adl_activity_ids=adl_activity_ids,
             )
 
     return dataset_dir
@@ -212,6 +240,7 @@ def main() -> None:
         target_sampling_rate_hz=args.target_sampling_rate_hz,
         allow_upsample=args.allow_upsample,
         output_dataset=args.output_dataset,
+        adl_filter_config=args.adl_filter_config,
     )
 
     print(f"Saved processed artifacts for {args.dataset} to {out_dir}")
