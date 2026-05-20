@@ -199,7 +199,10 @@ def run_pipeline(
     # ----- Step 6: Preform training mode-based normalization -----
     for mode in ("classification", "tsad"):
 
-        mean, std = fit_zscore_stats(X_raw, labeled_meta, mode=mode)
+        mean, std = fit_zscore_stats(
+            X_raw, labeled_meta, mode=mode,
+            adl_activity_ids=adl_activity_ids,
+        )
         X_norm = apply_zscore(X_raw, mean, std)
 
         mode_dir = dataset_dir / mode
