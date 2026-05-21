@@ -1,98 +1,100 @@
-# prefix=sisfall_20hz_2s
+# --------------------------------------
+# Training scripts for all models and datasets
+# --------------------------------------
 
-# prefix=upfall_20hz_2s
-
-# prefix=umafall_20hz_2s
-# prefix=umafall_20hz_3s
-# prefix=umafall_20hz_4s
-# prefix=umafall_native_2s
-
-# prefix=fallalld_20hz_2s
-# prefix=fallalld_20hz_3s
-# prefix=fallalld_20hz_5s
-# prefix=fallalld_native_2s
-
-# prefix=fallalld_native_2s
-
-
-# prefix=upfall_native_2s
-
-prefix=sisfall_20hz_3s
-
-for fold in 0 1 2 3 4; do
-  dataset="${prefix}_fold${fold}"
-
-  python -m src.training.train_lstm_classifier --dataset "$dataset" --model-seed 42 --device auto
-  python -m src.training.train_lstm_ae --dataset "$dataset" --model-seed 42 --device auto
-done
-
-# Shallow models
-
-# Deep models 
-  python -m src.training.train_cnn1d --dataset "$dataset" --model-seed 42 --device auto
-  python -m src.training.train_lstm_classifier --dataset "$dataset" --model-seed 42 --device auto
-  python -m src.training.train_dense_ae --dataset "$dataset" --model-seed 42 --device auto
-  python -m src.training.train_lstm_ae --dataset "$dataset" --model-seed 42 --device auto
-
-
-# Aggregating results
-prefix=sisfall_20hz_5s
-python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model lstm_classifier --model-seed 42
-python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model lstm_ae --model-seed 42
-
-python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model random_forest --model-seed 42
-python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model xgboost --model-seed 42
-python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model isolation_forest --model-seed 42
-
-python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model cnn1d --model-seed 42
-python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model lstm_classifier --model-seed 42
-python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model dense_ae --model-seed 42
-python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model lstm_ae --model-seed 42
-
-python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model cnn1d_ae --model-seed 42
-
-for prefix in \
-  sisfall_easy_adl_20hz_2s \
-  fallalld_easy_adl_20hz_2s \
-  umafall_easy_adl_20hz_2s \
-  upfall_easy_adl_20hz_2s
-do
-  for fold in 0 1 2 3 4; do
-    dataset="${prefix}_fold${fold}"
-    
-  python -m src.training.train_dense_ae --dataset "$dataset" --model-seed 42 --device auto
-  
+# Traditional ML models
+for model in  random_forest xgboost isolation_forest; do
+  for prefix in sisfall_native_2s fallalld_native_2s umafall_native_2s upfall_native_2s; do
+    for fold in 0 1 2 3 4; do
+      dataset="${prefix}_fold${fold}"
+      
+      python -m src.training.train_"$model" --dataset "$dataset" --model-seed 42 --device auto
+    done
   done
 done
 
-    python -m src.training.train_random_forest --dataset "$dataset" --model-seed 42
-    python -m src.training.train_xgboost --dataset "$dataset" --model-seed 42
-    python -m src.training.train_isolation_forest --dataset "$dataset" --model-seed 42
+# Deep models
+for model in cnn1d cnn1d_ae_large lstm_classifier lstm_ae; do
+  for prefix in fallalld_native_2s umafall_native_2s upfall_native_2s; do
+    for fold in 0 1 2 3 4; do
+      dataset="${prefix}_fold${fold}"
+      
+      python -m src.training.train_"$model" --dataset "$dataset" --model-seed 42 --device auto
+    done
+  done
+done
 
-    python -m src.training.train_cnn1d --dataset "$dataset" --model-seed 42 --device auto
-    python -m src.training.train_cnn1d_ae --dataset "$dataset" --model-seed 42 --device auto
+for model in cnn1d cnn1d_ae_large lstm_classifier; do
+      
+  python -m src.training.train_"$model" --dataset sisfall_native_2s_fold3 --model-seed 42 --device auto
+done
+  
+  python -m src.training.train_cnn1d_ae_large --dataset "$dataset" --model-seed 42 --device auto
 
     python -m src.training.train_lstm_ae --dataset "$dataset" --model-seed 42 --device auto
     python -m src.training.train_lstm_classifier --dataset "$dataset" --model-seed 42 --device auto
-    python -m src.training.train_dense_ae --dataset "$dataset" --model-seed 42 --device auto
 
-for prefix in \
-  sisfall_easy_adl_20hz_2s \
-  fallalld_easy_adl_20hz_2s \
-  umafall_easy_adl_20hz_2s \
-  upfall_easy_adl_20hz_2s
-do
+    python -m src.training.train_cnn1d_large --dataset "$dataset" --model-seed 42 --device auto
+
+# --------------------------------------
+# aggregate metrics for the best models on the best dataset
+# --------------------------------------
+
+# Classification models
+for dataset in fallalld umafall upfall; do
+  for model in random_forest xgboost lstm_classifier cnn1d_large; do
   
-  python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model lstm_classifier --model-seed 42
+  dataset_prefix="${dataset}_native_2s"
+  
+  python -m src.training.aggregate_cv_metrics \
+  --dataset-prefix "$dataset_prefix" \
+  --n-folds 5 \
+  --mode classification \
+  --model "$model" \
+  --model-seed 42
+  done  
 done
 
-  python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model random_forest --model-seed 42
-  python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model xgboost --model-seed 42
-  python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model isolation_forest --model-seed 42
+# Anomaly detection models
+for dataset in fallalld umafall upfall; do
+  for model in isolation_forest cnn1d_ae_large lstm_ae; do
+  
+  dataset_prefix="${dataset}_native_2s"
+  
+  python -m src.training.aggregate_cv_metrics \
+  --dataset-prefix "$dataset_prefix" \
+  --n-folds 5 \
+  --mode tsad \
+  --model "$model" \
+  --model-seed 42
+  done  
+done
 
-  python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model cnn1d --model-seed 42
-  python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model lstm_classifier --model-seed 42
 
-  python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model dense_ae --model-seed 42
-  python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model cnn1d_ae --model-seed 42
-  python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model lstm_ae --model-seed 42
+python -m src.training.aggregate_cv_metrics \
+  --dataset-prefix sisfall_native_2s \
+  --n-folds 5 \
+  --mode tsad \
+  --model cnn1d_ae_large \
+  --model-seed 42
+
+python -m src.training.aggregate_cv_metrics \
+  --dataset-prefix sisfall_native_2s \
+  --n-folds 5 \
+  --mode tsad \
+  --model lstm_ae \
+  --model-seed 42
+
+python -m src.training.aggregate_cv_metrics \
+  --dataset-prefix sisfall_native_2s \
+  --n-folds 5 \
+  --mode classification \
+  --model lstm_classifier \
+  --model-seed 42
+
+  python -m src.training.aggregate_cv_metrics \
+  --dataset-prefix sisfall_native_2s \
+  --n-folds 5 \
+  --mode classification \
+  --model cnn1d \
+  --model-seed 42
