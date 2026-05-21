@@ -24,9 +24,10 @@ for model in cnn1d cnn1d_ae_large lstm_classifier lstm_ae; do
   done
 done
 
-for model in cnn1d cnn1d_ae_large lstm_classifier; do
+for model in cnn1d_large  do
       
   python -m src.training.train_"$model" --dataset sisfall_native_2s_fold3 --model-seed 42 --device auto
+  python -m src.training.train_"$model" --dataset sisfall_native_2s_fold4 --model-seed 42 --device auto
 done
   
   python -m src.training.train_cnn1d_ae_large --dataset "$dataset" --model-seed 42 --device auto
@@ -96,5 +97,5 @@ python -m src.training.aggregate_cv_metrics \
   --dataset-prefix sisfall_native_2s \
   --n-folds 5 \
   --mode classification \
-  --model cnn1d \
+  --model cnn1d_large \
   --model-seed 42
