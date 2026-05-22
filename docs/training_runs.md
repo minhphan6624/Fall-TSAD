@@ -1,53 +1,90 @@
-# Training Run Scripts
+# Project Experiment Runbook
 
-This document records the current model training entry points and common commands.
+This runbook tracks the main commands used to generate processed artifacts, train models, and aggregate experiment results.
 
-Use the project conda environment before running training commands:
+Activate the project environment first:
 
 ```bash
 conda activate fall-tsad
 ```
 
-Run outputs are written under `runs/` by default. That directory is ignored by git.
+Run outputs are written under `runs/` by default. Processed datasets are written under `data/processed/`.
 
-## Output Structure
+## Main Benchmark Protocol
 
-Classification models write to `runs/benchmark/<dataset>/classification/<model>/model_seed_<model_seed>/`.
+Final benchmark results should use subject-wise 5-fold CV.
 
-TSAD models write to `runs/benchmark/<dataset>/tsad/<model>/model_seed_<model_seed>/`.
+The default development workflow can still use a single subject-disjoint split, but those results are for debugging and iteration only.
 
-Shallow runs save `config.json`, `feature_names.json`, `metrics.json`, `predictions_val.csv`, `predictions_test.csv`, `model.pkl`, and `feature_importance.csv` for Random Forest and XGBoost.
-
-Deep runs save `config.json`, `metrics.json`, `predictions_val.csv`, `predictions_test.csv`, `training_history.csv`, and `model.pt`.
-
-Deep scripts accept `--device auto`, `--device cpu`, or `--device cuda`. Use `--device auto` by default. It uses CUDA when PyTorch can see a compatible GPU and falls back to CPU otherwise.
-
-Check CUDA visibility before deep training with:
-
-```bash
-python -c "import torch; print(torch.__version__); print(torch.version.cuda); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'cpu only')"
-```
-
-Make sure to check the CUDA setup on the machine that is intended to run the training, then install the corresponding pytorch dependency
-
-## Training Commands
-
-The command blocks below use the script defaults from `argparse` and only set the dataset, model seed, and deep-model device.
-
-Datasets currently available under `data/processed/`:
+Standard benchmark settings:
 
 ```text
-sisfall
-fallalld
-umafall
-upfall
+n_folds=5
+model_seed=42
+run_root=runs/benchmark
+```
+
+Recommended processed dataset prefixes:
+
+```text
 sisfall_20hz
 fallalld_20hz
 umafall_20hz
 upfall_20hz
 ```
 
-Models currently available:
+## Preprocessing
+
+Generate one normal development dataset:
+
+```bash
+python -m src.preprocessing.run_pipeline_2 \
+  --dataset sisfall \
+  --target-sampling-rate-hz 20 \
+  --output-dataset sisfall_20hz
+```
+
+Generate one CV fold:
+
+```bash
+python -m src.preprocessing.run_pipeline_2 \
+  --dataset sisfall \
+  --target-sampling-rate-hz 20 \
+  --split-protocol subject_kfold \
+  --n-folds 5 \
+  --fold-index 0 \
+  --output-dataset sisfall_20hz_fold0
+```
+
+Generate all CV folds for one dataset:
+
+```bash
+python -m src.preprocessing.run_cv_pipeline \
+  --dataset sisfall \
+  --target-sampling-rate-hz 20 \
+  --protocol subject_kfold \
+  --n-folds 5 \
+  --output-prefix sisfall_20hz
+```
+
+Generate all 20 Hz CV folds:
+
+```bash
+for dataset in sisfall fallalld umafall upfall; do
+  python -m src.preprocessing.run_cv_pipeline \
+    --dataset "$dataset" \
+    --target-sampling-rate-hz 20 \
+    --protocol subject_kfold \
+    --n-folds 5 \
+    --output-prefix "${dataset}_20hz"
+done
+```
+
+Note: 20 Hz resampling requires SciPy because the resampling code uses `scipy.signal.resample_poly`.
+
+## Training
+
+Model entry points:
 
 | Model | Entry point | Mode |
 | --- | --- | --- |
@@ -57,249 +94,174 @@ Models currently available:
 | CNN1D | `src.training.train_cnn1d` | classification |
 | LSTM classifier | `src.training.train_lstm_classifier` | classification |
 | Dense autoencoder | `src.training.train_dense_ae` | tsad |
+| CNN1D autoencoder | `src.training.train_cnn1d_ae` | tsad |
+| Large CNN1D autoencoder | `src.training.train_cnn1d_ae_large` | tsad |
 | LSTM autoencoder | `src.training.train_lstm_ae` | tsad |
 
-### Run All Default Training Jobs
-
-Use this when you want every current model on every current processed dataset:
+Train one model on one fold:
 
 ```bash
-conda activate fall-tsad
+python -m src.training.train_random_forest \
+  --dataset sisfall_20hz_fold0 \
+  --model-seed 42
+```
 
-for dataset in sisfall fallalld umafall upfall sisfall_20hz fallalld_20hz umafall_20hz upfall_20hz; do
+Train all current models on one fold:
+
+```bash
+dataset=sisfall_20hz_fold0
+
+python -m src.training.train_random_forest --dataset "$dataset" --model-seed 42
+python -m src.training.train_xgboost --dataset "$dataset" --model-seed 42
+python -m src.training.train_isolation_forest --dataset "$dataset" --model-seed 42
+python -m src.training.train_cnn1d --dataset "$dataset" --model-seed 42 --device auto
+python -m src.training.train_lstm_classifier --dataset "$dataset" --model-seed 42 --device auto
+python -m src.training.train_dense_ae --dataset "$dataset" --model-seed 42 --device auto
+python -m src.training.train_cnn1d_ae --dataset "$dataset" --model-seed 42 --device auto
+python -m src.training.train_lstm_ae --dataset "$dataset" --model-seed 42 --device auto
+```
+
+Train one model across all folds:
+
+```bash
+for fold in 0 1 2 3 4; do
+  python -m src.training.train_random_forest \
+    --dataset "sisfall_20hz_fold${fold}" \
+    --model-seed 42
+done
+```
+
+Train all current models across all folds for one dataset prefix:
+
+```bash
+prefix=sisfall_20hz
+
+for fold in 0 1 2 3 4; do
+  dataset="${prefix}_fold${fold}"
+
   python -m src.training.train_random_forest --dataset "$dataset" --model-seed 42
   python -m src.training.train_xgboost --dataset "$dataset" --model-seed 42
   python -m src.training.train_isolation_forest --dataset "$dataset" --model-seed 42
   python -m src.training.train_cnn1d --dataset "$dataset" --model-seed 42 --device auto
   python -m src.training.train_lstm_classifier --dataset "$dataset" --model-seed 42 --device auto
   python -m src.training.train_dense_ae --dataset "$dataset" --model-seed 42 --device auto
+  python -m src.training.train_cnn1d_ae --dataset "$dataset" --model-seed 42 --device auto
   python -m src.training.train_lstm_ae --dataset "$dataset" --model-seed 42 --device auto
 done
 ```
 
-### Default Commands by Dataset
+Deep scripts accept `--device auto`, `--device cpu`, or `--device cuda`. Use `--device auto` unless a specific device is required.
 
-#### SisFall
+Check CUDA visibility before deep training:
 
 ```bash
-python -m src.training.train_random_forest --dataset sisfall --model-seed 42
-python -m src.training.train_xgboost --dataset sisfall --model-seed 42
-python -m src.training.train_isolation_forest --dataset sisfall --model-seed 42
-python -m src.training.train_cnn1d --dataset sisfall --model-seed 42 --device auto
-python -m src.training.train_lstm_classifier --dataset sisfall --model-seed 42 --device auto
-python -m src.training.train_dense_ae --dataset sisfall --model-seed 42 --device auto
-python -m src.training.train_lstm_ae --dataset sisfall --model-seed 42 --device auto
+python -c "import torch; print(torch.__version__); print(torch.version.cuda); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'cpu only')"
 ```
 
-#### FallAllD
+## Aggregating CV Results
 
-```bash
-python -m src.training.train_random_forest --dataset fallalld --model-seed 42
-python -m src.training.train_xgboost --dataset fallalld --model-seed 42
-python -m src.training.train_isolation_forest --dataset fallalld --model-seed 42
-python -m src.training.train_cnn1d --dataset fallalld --model-seed 42 --device auto
-python -m src.training.train_lstm_classifier --dataset fallalld --model-seed 42 --device auto
-python -m src.training.train_dense_ae --dataset fallalld --model-seed 42 --device auto
-python -m src.training.train_lstm_ae --dataset fallalld --model-seed 42 --device auto
+Training outputs are saved as:
+
+```text
+runs/benchmark/<dataset>/<mode>/<model>/model_seed_<seed>/metrics.json
 ```
 
-#### UMAFall
+For CV datasets, `<dataset>` includes the fold:
 
-```bash
-python -m src.training.train_random_forest --dataset umafall --model-seed 42
-python -m src.training.train_xgboost --dataset umafall --model-seed 42
-python -m src.training.train_isolation_forest --dataset umafall --model-seed 42
-python -m src.training.train_cnn1d --dataset umafall --model-seed 42 --device auto
-python -m src.training.train_lstm_classifier --dataset umafall --model-seed 42 --device auto
-python -m src.training.train_dense_ae --dataset umafall --model-seed 42 --device auto
-python -m src.training.train_lstm_ae --dataset umafall --model-seed 42 --device auto
+```text
+runs/benchmark/sisfall_20hz_fold0/classification/random_forest/model_seed_42/metrics.json
 ```
 
-#### UPFall
+Aggregate one model after all folds have been trained:
 
 ```bash
-python -m src.training.train_random_forest --dataset upfall --model-seed 42
-python -m src.training.train_xgboost --dataset upfall --model-seed 42
-python -m src.training.train_isolation_forest --dataset upfall --model-seed 42
-python -m src.training.train_cnn1d --dataset upfall --model-seed 42 --device auto
-python -m src.training.train_lstm_classifier --dataset upfall --model-seed 42 --device auto
-python -m src.training.train_dense_ae --dataset upfall --model-seed 42 --device auto
-python -m src.training.train_lstm_ae --dataset upfall --model-seed 42 --device auto
+python -m src.training.aggregate_cv_metrics \
+  --dataset-prefix sisfall_20hz \
+  --n-folds 5 \
+  --mode classification \
+  --model random_forest \
+  --model-seed 42
 ```
 
-#### SisFall 20 Hz
+Aggregate all current models for one dataset prefix:
 
 ```bash
-python -m src.training.train_random_forest --dataset sisfall_20hz --model-seed 42
-python -m src.training.train_xgboost --dataset sisfall_20hz --model-seed 42
-python -m src.training.train_isolation_forest --dataset sisfall_20hz --model-seed 42
-python -m src.training.train_cnn1d --dataset sisfall_20hz --model-seed 42 --device auto
-python -m src.training.train_lstm_classifier --dataset sisfall_20hz --model-seed 42 --device auto
-python -m src.training.train_dense_ae --dataset sisfall_20hz --model-seed 42 --device auto
-python -m src.training.train_lstm_ae --dataset sisfall_20hz --model-seed 42 --device auto
+prefix=sisfall_20hz
+
+python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model random_forest --model-seed 42
+python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model xgboost --model-seed 42
+python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model isolation_forest --model-seed 42
+python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model cnn1d --model-seed 42
+python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode classification --model lstm_classifier --model-seed 42
+python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model dense_ae --model-seed 42
+python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model cnn1d_ae --model-seed 42
+python -m src.training.aggregate_cv_metrics --dataset-prefix "$prefix" --n-folds 5 --mode tsad --model lstm_ae --model-seed 42
 ```
 
-#### FallAllD 20 Hz
+Aggregator outputs are written to:
 
-```bash
-python -m src.training.train_random_forest --dataset fallalld_20hz --model-seed 42
-python -m src.training.train_xgboost --dataset fallalld_20hz --model-seed 42
-python -m src.training.train_isolation_forest --dataset fallalld_20hz --model-seed 42
-python -m src.training.train_cnn1d --dataset fallalld_20hz --model-seed 42 --device auto
-python -m src.training.train_lstm_classifier --dataset fallalld_20hz --model-seed 42 --device auto
-python -m src.training.train_dense_ae --dataset fallalld_20hz --model-seed 42 --device auto
-python -m src.training.train_lstm_ae --dataset fallalld_20hz --model-seed 42 --device auto
+```text
+runs/benchmark/<dataset_prefix>_cv/<mode>/<model>/model_seed_<seed>/
 ```
 
-#### UMAFall 20 Hz
+Key files:
 
-```bash
-python -m src.training.train_random_forest --dataset umafall_20hz --model-seed 42
-python -m src.training.train_xgboost --dataset umafall_20hz --model-seed 42
-python -m src.training.train_isolation_forest --dataset umafall_20hz --model-seed 42
-python -m src.training.train_cnn1d --dataset umafall_20hz --model-seed 42 --device auto
-python -m src.training.train_lstm_classifier --dataset umafall_20hz --model-seed 42 --device auto
-python -m src.training.train_dense_ae --dataset umafall_20hz --model-seed 42 --device auto
-python -m src.training.train_lstm_ae --dataset umafall_20hz --model-seed 42 --device auto
+```text
+cv_metrics.json
+cv_metrics.csv
+fold_metrics.csv
 ```
 
-#### UPFall 20 Hz
+Use `cv_metrics.csv` for final mean/std tables. Use `fold_metrics.csv` when inspecting fold-level variation.
 
-```bash
-python -m src.training.train_random_forest --dataset upfall_20hz --model-seed 42
-python -m src.training.train_xgboost --dataset upfall_20hz --model-seed 42
-python -m src.training.train_isolation_forest --dataset upfall_20hz --model-seed 42
-python -m src.training.train_cnn1d --dataset upfall_20hz --model-seed 42 --device auto
-python -m src.training.train_lstm_classifier --dataset upfall_20hz --model-seed 42 --device auto
-python -m src.training.train_dense_ae --dataset upfall_20hz --model-seed 42 --device auto
-python -m src.training.train_lstm_ae --dataset upfall_20hz --model-seed 42 --device auto
+## Output Files
+
+Each training run writes:
+
+```text
+config.json
+metrics.json
+predictions_val.csv
+predictions_test.csv
 ```
 
-### Random Forest Classification
+Shallow models also write:
 
-Entry point: `src/training/train_random_forest.py`
-
-```bash
-python -m src.training.train_random_forest --dataset sisfall --model-seed 42
+```text
+model.pkl
+feature_names.json
+feature_importance.csv
 ```
 
-Mode: `classification`. Input: engineered features from normalized windows. Score: `predict_proba(X)[:, 1]`.
+Deep models also write:
 
-### XGBoost Classification
-
-Entry point: `src/training/train_xgboost.py`
-
-```bash
-python -m src.training.train_xgboost --dataset sisfall --model-seed 42
+```text
+model.pt
+training_history.csv
 ```
 
-Mode: `classification`. Input: engineered features from normalized windows. Score: `predict_proba(X)[:, 1]`.
+The `metrics.json` file contains validation and test metrics. Final benchmark aggregation uses only the `test` section.
 
-### Isolation Forest TSAD
+## Smoke Checks
 
-Entry point: `src/training/train_isolation_forest.py`
+Use smaller settings for quick checks.
+
+Shallow models:
 
 ```bash
-python -m src.training.train_isolation_forest --dataset sisfall --model-seed 42
+python -m src.training.train_random_forest --dataset umafall_20hz_fold0 --n-estimators 5 --run-root runs/benchmark_smoke_rf
+python -m src.training.train_xgboost --dataset umafall_20hz_fold0 --n-estimators 5 --run-root runs/benchmark_smoke_xgb
+python -m src.training.train_isolation_forest --dataset umafall_20hz_fold0 --n-estimators 10 --run-root runs/benchmark_smoke_iforest
 ```
 
-Mode: `tsad`. Input: engineered features from normalized windows. Score: `-model.decision_function(X)`. Higher scores mean more anomalous or more fall-like.
-
-### CNN1D Classification
-
-Entry point: `src/training/train_cnn1d.py`
+Deep models:
 
 ```bash
-python -m src.training.train_cnn1d --dataset sisfall --model-seed 42 --device auto
-```
-
-Mode: `classification`. Input: raw normalized windows with shape `n_windows x window_length x 3`. Score: `sigmoid(model(X))`. Higher scores mean more fall-like.
-
-### LSTM Classification
-
-Entry point: `src/training/train_lstm_classifier.py`
-
-```bash
-python -m src.training.train_lstm_classifier --dataset sisfall --model-seed 42 --device auto
-```
-
-Mode: `classification`. Input: raw normalized windows with shape `n_windows x window_length x 3`. Score: `sigmoid(model(X))`. Higher scores mean more fall-like.
-
-### Dense Autoencoder TSAD
-
-Entry point: `src/training/train_dense_ae.py`
-
-```bash
-python -m src.training.train_dense_ae --dataset sisfall --model-seed 42 --device auto
-```
-
-Mode: `tsad`. Input: raw normalized windows, flattened internally. Score: mean squared reconstruction error over time and axes. Higher scores mean more anomalous or more fall-like.
-
-### LSTM Autoencoder TSAD
-
-Entry point: `src/training/train_lstm_ae.py`
-
-```bash
-python -m src.training.train_lstm_ae --dataset sisfall --model-seed 42 --device auto
-```
-
-Mode: `tsad`. Input: raw normalized windows with shape `n_windows x window_length x 3`. Score: mean squared reconstruction error over time and axes. Higher scores mean more anomalous or more fall-like.
-
-## Shared Behavior
-
-All current training scripts:
-
-1. load processed train/validation/test splits
-2. prepare model inputs
-3. train the model
-4. produce continuous validation and test scores
-5. choose the operating threshold by best validation F1
-6. evaluate validation and test metrics
-7. save model, metrics, predictions, and config under `runs/`
-
-Shallow scripts prepare model inputs by extracting engineered features with `src/training/extract_features.py`.
-
-Deep scripts use raw normalized windows directly through `src/training/data.py`.
-
-Metrics are computed by `src/training/evaluation.py`. Threshold selection is implemented in `src/training/thresholds.py`.
-
-Shared run-output helpers are implemented in `src/training/run_utils.py`. These handle feature extraction for a split, run-directory construction, JSON output, prediction CSV output, and shallow feature-importance output.
-
-Deep training helpers are implemented in `src/training/deep_utils.py`. These handle seed setup, device selection, classifier training with `BCEWithLogitsLoss`, autoencoder training with MSE reconstruction loss, validation-F1 model selection, score prediction, and PyTorch checkpoint saving.
-
-## Smoke Tests
-
-Use small estimator counts for shallow smoke checks:
-
-```bash
-python -m src.training.train_random_forest --dataset umafall --n-estimators 5 --run-root runs/benchmark_smoke_rf
-python -m src.training.train_xgboost --dataset umafall --n-estimators 5 --run-root runs/benchmark_smoke_xgb
-python -m src.training.train_isolation_forest --dataset umafall --n-estimators 10 --run-root runs/benchmark_smoke_iforest
-```
-
-Use one epoch for deep smoke checks:
-
-```bash
-python -m src.training.train_cnn1d --dataset umafall --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_cnn1d --device auto
-python -m src.training.train_lstm_classifier --dataset umafall --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_lstm_classifier --device auto
-python -m src.training.train_dense_ae --dataset umafall --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_dense_ae --device auto
-python -m src.training.train_lstm_ae --dataset umafall --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_lstm_ae --device auto
+python -m src.training.train_cnn1d --dataset umafall_20hz_fold0 --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_cnn1d --device auto
+python -m src.training.train_lstm_classifier --dataset umafall_20hz_fold0 --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_lstm_classifier --device auto
+python -m src.training.train_dense_ae --dataset umafall_20hz_fold0 --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_dense_ae --device auto
+python -m src.training.train_cnn1d_ae --dataset umafall_20hz_fold0 --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_cnn1d_ae --device auto
+python -m src.training.train_lstm_ae --dataset umafall_20hz_fold0 --epochs 1 --batch-size 256 --patience 1 --run-root runs/benchmark_smoke_lstm_ae --device auto
 ```
 
 Smoke-test outputs should not be committed.
-
-## Verification
-
-The shallow scripts were checked on UMAFall with 50 estimators and `model_seed=42`.
-
-The deep scripts were checked on UMAFall with one epoch, `batch_size=256`, and `model_seed=42`.
-
-Checks performed:
-
-- expected files were created
-- `window_label == y_true` in prediction CSVs
-- `pred_label` contained only binary labels
-- scores had no missing values
-- PyTorch checkpoints were saved as `model.pt`
-
-These are development checks only. The generated folders are ignored by git.

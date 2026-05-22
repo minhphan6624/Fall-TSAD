@@ -21,6 +21,24 @@ The same subject-disjoint splits, windowing policy, labeling rule, and evaluatio
 - classification models train on fall and non-fall windows
 - TSAD models train on normal windows only
 
+## Methodology Model Summary
+
+For the methodology section, the model set can be summarized by learning setup, input representation, and scoring output rather than implementation status:
+
+| Model | Model family | Learning setup | Training windows | Input representation | Output score |
+|---|---|---|---|---|---|
+| Signal-threshold baseline | Rule-based baseline | Heuristic | No fitted training stage | Acceleration magnitude or engineered signal features | Thresholded fall decision |
+| Random Forest | Classical supervised classifier | Binary classification | Fall and non-fall windows | Engineered window features | Fall probability or class score |
+| XGBoost or SVM | Classical supervised classifier | Binary classification | Fall and non-fall windows | Engineered window features | Fall probability or class score |
+| 1D CNN classifier | Deep supervised classifier | Binary classification | Fall and non-fall windows | Normalized raw `40 x 3` accelerometer windows | Sigmoid fall score |
+| LSTM classifier | Deep supervised classifier | Binary classification | Fall and non-fall windows | Normalized raw `40 x 3` accelerometer windows | Sigmoid fall score |
+| Isolation Forest | Classical TSAD | Normal-only anomaly detection | Normal windows only | Engineered window features | Anomaly score |
+| Dense autoencoder | Neural TSAD | Normal-only reconstruction | Normal windows only | Flattened raw window, `120` values | Reconstruction error |
+| LSTM autoencoder | Neural TSAD | Normal-only reconstruction | Normal windows only | Normalized raw `40 x 3` accelerometer windows | Reconstruction error |
+| Conv1D autoencoder | Neural TSAD | Normal-only reconstruction | Normal windows only | Normalized raw `40 x 3` accelerometer windows | Reconstruction error |
+
+The primary comparison should focus on the supervised classifiers and the core TSAD models. The signal-threshold baseline, Conv1D autoencoder, VAE, LSTM-VAE, and TranAD can be described as secondary or optional comparisons if they are included after the main benchmark pipeline is stable.
+
 ## Current Implementation Status
 
 The current model architecture files are under:
@@ -34,6 +52,8 @@ Implemented neural architecture files:
 ```text
 cnn1d.py
 cnn1d_large.py
+cnn1d_ae.py
+cnn1d_ae_large.py
 lstm_classifier.py
 dense_ae.py
 lstm_ae.py
@@ -43,6 +63,8 @@ Current deep training entry points are under:
 
 ```text
 src/training/train_cnn1d.py
+src/training/train_cnn1d_ae.py
+src/training/train_cnn1d_ae_large.py
 src/training/train_lstm_classifier.py
 src/training/train_dense_ae.py
 src/training/train_lstm_ae.py

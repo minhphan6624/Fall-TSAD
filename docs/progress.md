@@ -100,26 +100,34 @@ for all current processed datasets and modes.
 
 ## Current Data Notes
 
-The primary benchmark is defined as all datasets downsampled to 20 Hz with 2-second windows, giving raw input shape of 40 x 3
+The completed primary benchmark uses all datasets downsampled to 20 Hz with 2-second windows and 50% overlap. This gives a raw deep-model input shape of `40 x 3`.
 
-
-The currently processed artifacts are not all in that primary 20 Hz format yet. Current window shapes:
+Primary processed dataset names:
 
 ```text
-SisFall:  400 x 3
-FallAllD: 476 x 3
-UMAFall:   40 x 3
-UP-Fall:   36 x 3
+fallalld_20hz
+sisfall_20hz
+umafall_20hz
+upfall_20hz
 ```
 
---> THe current processed outputs are closer to native-rate or mixed-rate exports. 
-The downsampled 20 Hz primary benchmark should be regenerated or stored under explicit output names before final benchmarking.
+The current primary benchmark split protocol is subject-disjoint train/validation/test with split seed 7 and a target 70/15/15 ratio. Classification normalization is fit on all training windows. TSAD normalization is fit on normal training windows only, and TSAD model training uses normal training windows only.
+
+Native-rate or alternate-window artifacts should be stored under explicit variant names, not over the primary 20 Hz outputs. Recommended naming pattern:
+
+```text
+<dataset>_native_2s
+<dataset>_20hz_3s
+<dataset>_20hz_5s
+<dataset>_native_3s
+<dataset>_easy_adl_20hz_2s
+```
 
 ## Model Plan
 
 The model notes are documented in: docs/models.md
 
-Current classification model plan:
+Classification model roster:
 
 - feature-threshold or signal-threshold baseline
 - Random Forest on engineered features
@@ -127,17 +135,13 @@ Current classification model plan:
 - 1D CNN classifier on raw normalized windows
 - LSTM classifier on raw normalized windows
 
-Current TSAD model plan:
+TSAD model roster:
 
 - Isolation Forest on engineered features
 - Dense autoencoder on flattened raw windows
-- LSTM autoencoder on raw windows
-
-Optional later TSAD extensions:
-
+- LSTM-autoencoder 
 - Conv1D autoencoder
 - TranAD
-- Anomaly Transformer
 
 Existing neural model architecture files are under: src/models/
 
@@ -208,29 +212,14 @@ from src.training.data import make_dataloaders
 train_loader, val_loader, test_loader = make_dataloaders(data)
 ```
 
-Python checks should be run with the project conda environment:
-
-```text
-/home/minhqphan/miniconda3/envs/fall-tsad/bin/python
-```
-
 ### Engineered Features
 
 `src/training/extract_features.py` extracts engineered features for shallow models.
 
-The current feature set is documented in:
+The current feature set is documented in `docs/features.md`
 
-```text
-docs/features.md
-```
 
-Current output shape:
-
-```text
-n_windows x 13
-```
-
-Current features:
+Current output shape is `n_windows x 13`. The current features are:
 
 - `acc_mag_mean`
 - `acc_mag_max`
@@ -246,29 +235,13 @@ Current features:
 - `axis_energy_mean`
 - `post_peak_delta`
 
-These features are intended for:
-
-- Random Forest
-- XGBoost or SVM
-- Isolation Forest
-
-Deep models should use the raw normalized window tensors directly.
+These features are intended for shallow models
 
 ## Training Data Handling
 
-Classification models use:
+Classification models use: `data/processed/<dataset>/classification/`, where training data contains both normal and fall windows.
 
-```
-data/processed/<dataset>/classification/
-```
-
-Training data contains both normal and fall windows.
-
-TSAD models use:
-
-```text
-data/processed/<dataset>/tsad/
-```
+TSAD models use` data/processed/<dataset>/tsad/`
 
 Training data contains normal windows only. Validation and test still contain both normal and fall windows so anomaly scores can be evaluated against `window_label`.
 
@@ -368,6 +341,53 @@ Metrics to report:
 
 Window-level metrics are the current priority. Trial-level or event-level evaluation can be added later once the window-to-event aggregation policy is stable.
 
+## Completed Primary Benchmark
+
+The primary 20 Hz, 2-second benchmark has a complete curated results matrix in:
+
+```text
+docs/results_summary.md
+```
+
+The completed matrix covers four datasets and seven models:
+
+```text
+4 datasets x 7 models = 28 benchmark rows
+```
+
+Datasets:
+
+- `fallalld_20hz`
+- `sisfall_20hz`
+- `umafall_20hz`
+- `upfall_20hz`
+
+Classification models:
+
+- Random Forest
+- XGBoost
+- CNN1D
+- LSTM classifier
+
+TSAD models:
+
+- Isolation Forest
+- Dense autoencoder
+- LSTM autoencoder
+
+Current primary-benchmark takeaways from `docs/results_summary.md`:
+
+- Best test F1 by dataset:
+  - `fallalld_20hz`: Random Forest, F1 0.904.
+  - `sisfall_20hz`: Random Forest, F1 0.975.
+  - `umafall_20hz`: XGBoost, F1 0.892.
+  - `upfall_20hz`: XGBoost, F1 0.910.
+- Supervised classification models outperform all TSAD models on F1 for every primary dataset.
+- Best TSAD F1 by dataset: Dense autoencoder on `fallalld_20hz`; Isolation Forest on `sisfall_20hz`, `umafall_20hz`, and `upfall_20hz`.
+- SisFall currently has the strongest overall benchmark results.
+
+Generated run artifacts remain outside git under `runs/`. Some curated rows in `docs/results_summary.md` were copied from runs produced on another machine, so the summary is the source of truth for the completed primary result table.
+
 ## Version Control Policy
 
 Keep source code and lightweight documentation under version control:
@@ -430,14 +450,40 @@ Completed training pieces:
 - generated run output structure under `runs/benchmark/...`
 - development checks on UMAFall for the three shallow scripts
 - one-epoch deep smoke checks on UMAFall for CNN1D, LSTM classifier, Dense AE, and LSTM AE
+- completed primary 20 Hz benchmark results for all four datasets and all seven baseline models
+- curated primary benchmark table in `docs/results_summary.md`
 
-Recommended next implementation steps:
+Recommended next experiment steps:
 
-1. Regenerate the final 20 Hz primary benchmark artifacts.
-2. Add explicit experiment configs once command-line arguments become repetitive.
-3. Add final split protocols: leave-one-subject-out or k-fold subject validation.
-4. Run full benchmark training for all current shallow and deep baselines.
-5. Add a curated results table in `docs/results_summary.md`.
+1. Native-rate sensitivity benchmark.
+   - Regenerate processed variants without `--target-sampling-rate-hz`.
+   - Keep the same 2-second duration, 50% overlap, split seed, threshold policy, and metric set.
+   - Report native-rate results separately from the 20 Hz primary benchmark because raw window lengths differ by dataset.
+   - Prioritize rate-aware models first: Random Forest, XGBoost, Isolation Forest, CNN1D, LSTM classifier, and LSTM autoencoder.
+   - Treat Dense autoencoder carefully because flattened input size changes with native sampling rate.
+
+2. Window-size sensitivity benchmark.
+   - Add 3-second and 5-second variants after the native-rate 2-second comparison is stable.
+   - Recommended first pass: keep 20 Hz and create `60 x 3` and `100 x 3` raw-window inputs.
+   - Use the same subject splits and evaluation policy so the comparison isolates window duration.
+   - Run a selected model subset first before launching the full matrix: Random Forest, XGBoost, Isolation Forest, CNN1D, and the best-performing recurrent/autoencoder models from the primary benchmark.
+
+3. Easy-ADL training experiment.
+   - Define "easy ADL" using training-set-only criteria to avoid test-set leakage.
+   - Start with simple activity-level diagnostics: acceleration magnitude max, jerk max, high-percentile magnitude, and false-positive rates from the trained primary models.
+   - Select ADL activities that are consistently low-spike and not fall-like.
+   - Keep validation and test sets unchanged for the main comparison. Filter only normal training windows so the experiment answers whether training on easier normal behavior changes generalization to all held-out ADLs and falls.
+   - For classification, keep all fall training windows and restrict normal training windows to selected easy ADLs. For TSAD, train only on selected easy-ADL normal windows.
+   - Store these as explicit variants such as `*_easy_adl_20hz_2s`, or add training-time filters that save the selected activity list into each run `config.json`.
+
+4. Experiment management cleanup.
+   - Add small experiment config files or scripts before launching large grids.
+   - Standardize output names for sampling rate, window duration, ADL-filter policy, model seed, and split seed.
+   - Add a compact summary-generation helper that reads `metrics.json` files and emits Markdown rows for `docs/results_summary.md`.
+
+5. Later evaluation extensions.
+   - Add trial-level or event-level metrics after the window-level sensitivity studies are complete.
+   - Consider subject-fold or leave-one-subject-out validation only after the current fixed-split experiments are stable.
 
 The current model-training path now covers:
 

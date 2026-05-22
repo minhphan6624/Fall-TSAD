@@ -1,0 +1,6 @@
+{
+  "sisfall": ["D07", "D09", "D12", "D14", "D15", "D16"],
+  "fallalld": ["A013", "A014", "A028", "A037", "A038", "A039", "A040"],
+  "umafall": ["Aplausing", "MakingACall", "HandsUp", "Bending", "OpeningDoor"],
+  "upfall": ["7", "8", "9", "11"]
+}

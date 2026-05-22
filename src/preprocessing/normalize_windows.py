@@ -4,22 +4,34 @@ import numpy as np
 import pandas as pd
 
 
-def training_mask(metadata_df: pd.DataFrame, mode: str) -> np.ndarray:
+def training_mask(
+    metadata_df: pd.DataFrame,
+    mode: str,
+    adl_activity_ids: list[str] | None = None,
+) -> np.ndarray:
     ''' Mask data based on training mode (e.g. TSAD only trains on normal)'''
     
     base_mask = metadata_df["split"].to_numpy() == "train"
     
+    normal_mask = metadata_df["window_label"].to_numpy() == 0
+    if adl_activity_ids is not None:
+        easy_adl_mask = metadata_df["activity_id"].isin(adl_activity_ids).to_numpy()
+        base_mask = base_mask & ((~normal_mask) | easy_adl_mask)
+    
     if mode == "classification":
         return base_mask
     if mode == "tsad":
-        return base_mask & (metadata_df["window_label"].to_numpy() == 0)
+        return base_mask & normal_mask
     
     raise ValueError(f"Unsupported normalization mode: {mode}")
 
 
-def fit_zscore_stats(X: np.ndarray, metadata_df: pd.DataFrame, mode: str) -> dict[str, np.ndarray]:
+def fit_zscore_stats(
+    X: np.ndarray, metadata_df: pd.DataFrame,
+    mode: str, adl_activity_ids: list[str] | None = None,
+) -> dict[str, np.ndarray]:
     ''' Fit zscore normalization stats on a df'''
-    mask = training_mask(metadata_df, mode=mode)
+    mask = training_mask(metadata_df, mode=mode, adl_activity_ids=adl_activity_ids)
     if not np.any(mask):
         raise ValueError(f"No eligible training windows found to fit {mode} normalization.")
 

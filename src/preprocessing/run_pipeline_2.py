@@ -1,11 +1,15 @@
 import argparse
+import json
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 from src.preprocessing.build_splits import (
+    DEFAULT_N_FOLDS,
     DEFAULT_SEED,
+    DEFAULT_SPLIT_PROTOCOL,
+    KFOLD_SPLIT_PROTOCOL,
     build_split_artifacts,
     save_split_artifacts,
 )
@@ -43,6 +47,24 @@ def parse_args() -> argparse.Namespace:
         help="Optional manual split CSV. Omit to use automatic subject-wise splits.",
     )
     parser.add_argument(
+        "--split-protocol",
+        choices=(DEFAULT_SPLIT_PROTOCOL, KFOLD_SPLIT_PROTOCOL),
+        default=DEFAULT_SPLIT_PROTOCOL,
+        help="Subject split protocol. Manual split CSV overrides this setting.",
+    )
+    parser.add_argument(
+        "--n-folds",
+        type=int,
+        default=DEFAULT_N_FOLDS,
+        help="Number of subject folds for subject_kfold.",
+    )
+    parser.add_argument(
+        "--fold-index",
+        type=int,
+        default=0,
+        help="Fold index to use as the test split for subject_kfold.",
+    )
+    parser.add_argument(
         "--window-seconds",
         type=float,
         default=DEFAULT_WINDOW_SECONDS,
@@ -70,16 +92,29 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional processed output dataset name. Useful for variants such as sisfall_20hz.",
     )
+    parser.add_argument(
+        "--adl-filter-config",
+        type=Path,
+        default=None,
+        help="Optional JSON mapping dataset names to normal training activity IDs to keep.",
+    )
     return parser.parse_args()
 
 
 def export_mode_split( out_dir: Path, mode: str, split_name: str, 
-    X: np.ndarray, metadata_df: pd.DataFrame):
+    X: np.ndarray, metadata_df: pd.DataFrame,
+    adl_activity_ids: list[str] | None = None):
     ''' Export the final output of the preprocessing pipeline based on the learning mode '''
 
     split_meta = metadata_df[metadata_df["split"] == split_name].copy()
-    if mode == "tsad" and split_name == "train":
-        split_meta = split_meta[split_meta["window_label"] == 0].copy()
+    if split_name == "train":
+        if mode == "tsad":
+            split_meta = split_meta[split_meta["window_label"] == 0].copy()
+        if adl_activity_ids is not None:
+            keep = split_meta["activity_id"].isin(adl_activity_ids)
+            if mode == "classification":
+                keep = keep | (split_meta["window_label"] == 1)
+            split_meta = split_meta[keep].copy()
 
     split_meta = split_meta.reset_index(drop=True)
     indices = split_meta["window_id"].to_numpy(dtype=np.int64)
@@ -95,14 +130,22 @@ def export_mode_split( out_dir: Path, mode: str, split_name: str,
 def run_pipeline(
     dataset: str, seed: int = DEFAULT_SEED,
     manual_split_csv: Path | None = None,
+    split_protocol: str = DEFAULT_SPLIT_PROTOCOL,
+    n_folds: int = DEFAULT_N_FOLDS,
+    fold_index: int = 0,
     window_seconds: float = DEFAULT_WINDOW_SECONDS,
     overlap: float = DEFAULT_OVERLAP,
     target_sampling_rate_hz: float | None = None,
     allow_upsample: bool = False,
     output_dataset: str | None = None,
+    adl_filter_config: Path | None = None,
 ) -> Path:
     interim_path = INTERIM_DIR / dataset / INTERIM_PICKLE_NAMES[dataset]
     dataset_dir = PROCESSED_DIR / (output_dataset or dataset)
+    adl_activity_ids = None
+    if adl_filter_config is not None:
+        with adl_filter_config.open() as f:
+            adl_activity_ids = json.load(f)[dataset]
 
     # ----- Step 1: Load trial-level interim data -----
     trials_df = pd.read_pickle(interim_path)
@@ -120,8 +163,19 @@ def run_pipeline(
         trials_df=trials_df,
         seed=seed,
         manual_split_csv=manual_split_csv,
+        split_protocol=split_protocol,
+        n_folds=n_folds,
+        fold_index=fold_index,
     )
     save_split_artifacts(subject_summary, subject_splits, trials_with_split, dataset_dir)
+    if adl_activity_ids is not None:
+        with (dataset_dir / "adl_filter.json").open("w") as f:
+            json.dump(
+                {"dataset": dataset, "normal_train_activity_ids": adl_activity_ids},
+                f,
+                indent=2,
+            )
+            f.write("\n")
 
     # ----- Step 4: Windowing -----
     X_raw, window_meta = generate_windows(
@@ -145,7 +199,10 @@ def run_pipeline(
     # ----- Step 6: Preform training mode-based normalization -----
     for mode in ("classification", "tsad"):
 
-        mean, std = fit_zscore_stats(X_raw, labeled_meta, mode=mode)
+        mean, std = fit_zscore_stats(
+            X_raw, labeled_meta, mode=mode,
+            adl_activity_ids=adl_activity_ids,
+        )
         X_norm = apply_zscore(X_raw, mean, std)
 
         mode_dir = dataset_dir / mode
@@ -165,6 +222,7 @@ def run_pipeline(
                 X=X_norm,
                 metadata_df=labeled_meta,
                 mode=mode,
+                adl_activity_ids=adl_activity_ids,
             )
 
     return dataset_dir
@@ -177,11 +235,15 @@ def main() -> None:
         dataset=args.dataset,
         seed=args.seed,
         manual_split_csv=args.manual_split_csv,
+        split_protocol=args.split_protocol,
+        n_folds=args.n_folds,
+        fold_index=args.fold_index,
         window_seconds=args.window_seconds,
         overlap=args.overlap,
         target_sampling_rate_hz=args.target_sampling_rate_hz,
         allow_upsample=args.allow_upsample,
         output_dataset=args.output_dataset,
+        adl_filter_config=args.adl_filter_config,
     )
 
     print(f"Saved processed artifacts for {args.dataset} to {out_dir}")
