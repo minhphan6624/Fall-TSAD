@@ -51,7 +51,7 @@ However, for final result, use LEave one subject out, or even k-fold validatiaon
 
 The shared processed layer should turn each trial-level `acc` array into fixed-length windows plus metadata.
 
-Per-window metadata and other setup can be found in the preporcessing pipeline
+Per-window metadata and other setup can be found in `docs/preprocessing_pipeline.md`.
 
 Current setup:
 
