@@ -1,29 +1,29 @@
 Dataset,Model,Mode,Native F1,20 Hz F1,Delta F1,Native AUPRC,20 Hz AUPRC,Delta AUPRC
-SisFall,Random Forest,classification,0.96 ± 0.02,0.96 ± 0.02,+0.00,0.99 ± 0.01,0.99 ± 0.02,-0.00
-SisFall,XGBoost,classification,0.96 ± 0.02,0.96 ± 0.02,+0.01,0.99 ± 0.01,0.99 ± 0.01,+0.00
-SisFall,CNN1D Large,classification,0.90 ± 0.01,0.94 ± 0.02,+0.04,0.94 ± 0.01,0.97 ± 0.02,+0.03
-SisFall,LSTM Classifier,classification,0.43 ± 0.22,0.95 ± 0.01,+0.52,0.35 ± 0.24,0.98 ± 0.01,+0.63
-SisFall,Isolation Forest,tsad,0.58 ± 0.05,0.67 ± 0.06,+0.09,0.55 ± 0.06,0.59 ± 0.06,+0.04
-SisFall,CNN1D AE Large,tsad,0.39 ± 0.05,,,0.40 ± 0.11,,
-SisFall,LSTM AE,tsad,0.46 ± 0.02,0.45 ± 0.04,-0.01,0.42 ± 0.07,0.36 ± 0.10,-0.06
-FallAllD,Random Forest,classification,0.80 ± 0.07,0.79 ± 0.06,-0.01,0.88 ± 0.10,0.85 ± 0.09,-0.03
-FallAllD,XGBoost,classification,0.82 ± 0.06,0.82 ± 0.07,-0.01,0.89 ± 0.09,0.87 ± 0.07,-0.03
-FallAllD,CNN1D Large,classification,0.69 ± 0.05,0.70 ± 0.10,+0.01,0.74 ± 0.09,0.72 ± 0.16,-0.02
-FallAllD,LSTM Classifier,classification,0.16 ± 0.06,0.62 ± 0.09,+0.46,0.10 ± 0.05,0.64 ± 0.09,+0.54
-FallAllD,Isolation Forest,tsad,0.31 ± 0.10,0.32 ± 0.11,+0.01,0.25 ± 0.07,0.23 ± 0.06,-0.01
-FallAllD,CNN1D AE Large,tsad,0.34 ± 0.11,,,0.30 ± 0.12,,
-FallAllD,LSTM AE,tsad,0.36 ± 0.14,0.34 ± 0.18,-0.01,0.27 ± 0.09,0.30 ± 0.12,+0.02
-UMAFall,Random Forest,classification,0.87 ± 0.07,0.87 ± 0.07,+0.00,0.96 ± 0.02,0.96 ± 0.02,+0.00
-UMAFall,XGBoost,classification,0.91 ± 0.03,0.91 ± 0.03,+0.00,0.97 ± 0.02,0.97 ± 0.02,+0.00
-UMAFall,CNN1D Large,classification,0.84 ± 0.07,0.78 ± 0.07,-0.06,0.94 ± 0.05,0.87 ± 0.05,-0.06
-UMAFall,LSTM Classifier,classification,0.74 ± 0.12,0.74 ± 0.09,-0.00,0.72 ± 0.16,0.72 ± 0.11,+0.01
-UMAFall,Isolation Forest,tsad,0.44 ± 0.05,0.44 ± 0.05,+0.00,0.45 ± 0.16,0.45 ± 0.16,+0.00
-UMAFall,CNN1D AE Large,tsad,0.40 ± 0.05,,,0.39 ± 0.18,,
-UMAFall,LSTM AE,tsad,0.39 ± 0.04,0.38 ± 0.05,-0.01,0.38 ± 0.15,0.38 ± 0.15,-0.00
-UP-FALL,Random Forest,classification,0.87 ± 0.09,0.86 ± 0.11,-0.02,0.95 ± 0.02,0.95 ± 0.03,+0.00
-UP-FALL,XGBoost,classification,0.91 ± 0.03,0.91 ± 0.03,-0.00,0.96 ± 0.02,0.97 ± 0.02,+0.01
-UP-FALL,CNN1D Large,classification,0.82 ± 0.11,0.68 ± 0.12,-0.14,0.86 ± 0.14,0.73 ± 0.05,-0.13
-UP-FALL,LSTM Classifier,classification,0.58 ± 0.12,0.49 ± 0.20,-0.09,0.60 ± 0.12,0.40 ± 0.22,-0.20
-UP-FALL,Isolation Forest,tsad,0.34 ± 0.05,0.33 ± 0.05,-0.01,0.17 ± 0.06,0.17 ± 0.06,-0.01
-UP-FALL,CNN1D AE Large,tsad,0.32 ± 0.01,,,0.13 ± 0.00,,
-UP-FALL,LSTM AE,tsad,0.33 ± 0.01,0.32 ± 0.02,-0.01,0.13 ± 0.01,0.13 ± 0.01,-0.00
+SisFall,Random Forest,classification,0.960,0.965,0.004,0.986,0.985,-0.000
+SisFall,XGBoost,classification,0.958,0.964,0.006,0.987,0.988,0.001
+SisFall,CNN1D Large,classification,0.899,0.941,0.043,0.942,0.973,0.031
+SisFall,LSTM Classifier,classification,0.430,0.953,0.523,0.353,0.984,0.631
+SisFall,Isolation Forest,tsad,0.580,0.670,0.090,0.552,0.592,0.040
+SisFall,CNN1D AE Large,tsad,0.394,0.464,0.070,0.403,0.416,0.013
+SisFall,LSTM AE,tsad,0.461,0.449,-0.011,0.419,0.355,-0.063
+FallAllD,Random Forest,classification,0.800,0.794,-0.006,0.883,0.854,-0.028
+FallAllD,XGBoost,classification,0.822,0.815,-0.007,0.891,0.866,-0.026
+FallAllD,CNN1D Large,classification,0.689,0.703,0.013,0.742,0.718,-0.023
+FallAllD,LSTM Classifier,classification,0.158,0.623,0.465,0.104,0.641,0.537
+FallAllD,Isolation Forest,tsad,0.312,0.321,0.009,0.247,0.233,-0.013
+FallAllD,CNN1D AE Large,tsad,0.341,0.305,-0.035,0.303,0.221,-0.082
+FallAllD,LSTM AE,tsad,0.356,0.343,-0.013,0.274,0.298,0.023
+UMAFall,Random Forest,classification,0.866,0.866,0.000,0.958,0.958,0.000
+UMAFall,XGBoost,classification,0.910,0.910,0.000,0.969,0.969,0.000
+UMAFall,CNN1D Large,classification,0.841,0.785,-0.056,0.938,0.875,-0.063
+UMAFall,LSTM Classifier,classification,0.744,0.740,-0.005,0.717,0.725,0.008
+UMAFall,Isolation Forest,tsad,0.438,0.438,0.000,0.453,0.453,0.000
+UMAFall,CNN1D AE Large,tsad,0.400,0.363,-0.037,0.388,0.386,-0.002
+UMAFall,LSTM AE,tsad,0.385,0.378,-0.007,0.376,0.375,-0.000
+UP-FALL,Random Forest,classification,0.874,0.856,-0.017,0.949,0.954,0.005
+UP-FALL,XGBoost,classification,0.914,0.914,-0.000,0.963,0.970,0.008
+UP-FALL,CNN1D Large,classification,0.821,0.676,-0.145,0.862,0.734,-0.128
+UP-FALL,LSTM Classifier,classification,0.581,0.487,-0.094,0.599,0.399,-0.200
+UP-FALL,Isolation Forest,tsad,0.343,0.332,-0.012,0.171,0.166,-0.005
+UP-FALL,CNN1D AE Large,tsad,0.324,0.297,-0.027,0.128,0.122,-0.006
+UP-FALL,LSTM AE,tsad,0.331,0.319,-0.012,0.132,0.129,-0.003

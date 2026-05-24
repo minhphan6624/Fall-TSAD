@@ -1,101 +1,63 @@
-# --------------------------------------
-# Training scripts for all models and datasets
-# --------------------------------------
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Traditional ML models
-for model in  random_forest xgboost isolation_forest; do
-  for prefix in sisfall_native_2s fallalld_native_2s umafall_native_2s upfall_native_2s; do
-    for fold in 0 1 2 3 4; do
-      dataset="${prefix}_fold${fold}"
-      
-      python -m src.training.train_"$model" --dataset "$dataset" --model-seed 42 --device auto
-    done
+# Scratch runbook for CNN/CNN-AE training commands.
+# Run from the repository root after activating the project environment.
+
+MODEL_SEED=42
+N_FOLDS=5
+DEVICE=auto
+
+train_folds() {
+  local prefix="$1"
+  local trainer="$2"
+
+  for fold in 0 1 2 3 4; do
+    python -m "src.training.${trainer}" \
+      --dataset "${prefix}_fold${fold}" \
+      --model-seed "$MODEL_SEED" \
+      --device "$DEVICE"
   done
-done
+}
 
-# Deep models
-for model in cnn1d cnn1d_ae_large lstm_classifier lstm_ae; do
-  for prefix in fallalld_native_2s umafall_native_2s upfall_native_2s; do
-    for fold in 0 1 2 3 4; do
-      dataset="${prefix}_fold${fold}"
-      
-      python -m src.training.train_"$model" --dataset "$dataset" --model-seed 42 --device auto
-    done
-  done
-done
+aggregate_model() {
+  local prefix="$1"
+  local mode="$2"
+  local model="$3"
 
-for model in cnn1d_large  do
-      
-  python -m src.training.train_"$model" --dataset sisfall_native_2s_fold3 --model-seed 42 --device auto
-  python -m src.training.train_"$model" --dataset sisfall_native_2s_fold4 --model-seed 42 --device auto
-done
-  
-  python -m src.training.train_cnn1d_ae_large --dataset "$dataset" --model-seed 42 --device auto
-
-    python -m src.training.train_lstm_ae --dataset "$dataset" --model-seed 42 --device auto
-    python -m src.training.train_lstm_classifier --dataset "$dataset" --model-seed 42 --device auto
-
-    python -m src.training.train_cnn1d_large --dataset "$dataset" --model-seed 42 --device auto
+  python -m src.training.aggregate_cv_metrics \
+    --dataset-prefix "$prefix" \
+    --n-folds "$N_FOLDS" \
+    --mode "$mode" \
+    --model "$model" \
+    --model-seed "$MODEL_SEED"
+}
 
 # --------------------------------------
-# aggregate metrics for the best models on the best dataset
+# Main 20 Hz 2s benchmark: CNN1D AE
 # --------------------------------------
 
-# Classification models
-for dataset in fallalld umafall upfall; do
-  for model in random_forest xgboost lstm_classifier cnn1d_large; do
-  
-  dataset_prefix="${dataset}_native_2s"
-  
-  python -m src.training.aggregate_cv_metrics \
-  --dataset-prefix "$dataset_prefix" \
-  --n-folds 5 \
-  --mode classification \
-  --model "$model" \
-  --model-seed 42
-  done  
+# for prefix in sisfall_20hz_2s fallalld_20hz_2s umafall_20hz_2s upfall_20hz_2s; do
+#   train_folds "$prefix" train_cnn1d_ae
+#   aggregate_model "$prefix" tsad cnn1d_ae
+# done
+
+# --------------------------------------
+# Sampling-rate ablation: SisFall + FallAllD
+# --------------------------------------
+
+for prefix in sisfall_native_2s fallalld_native_2s; do
+  train_folds "$prefix" train_cnn1d_large
+  train_folds "$prefix" train_cnn1d_ae_large
+
+  aggregate_model "$prefix" classification cnn1d_large
+  aggregate_model "$prefix" tsad cnn1d_ae_large
 done
 
-# Anomaly detection models
-for dataset in fallalld umafall upfall; do
-  for model in isolation_forest cnn1d_ae_large lstm_ae; do
-  
-  dataset_prefix="${dataset}_native_2s"
-  
-  python -m src.training.aggregate_cv_metrics \
-  --dataset-prefix "$dataset_prefix" \
-  --n-folds 5 \
-  --mode tsad \
-  --model "$model" \
-  --model-seed 42
-  done  
+for prefix in sisfall_20hz_2s fallalld_20hz_2s; do
+  train_folds "$prefix" train_cnn1d_ae
+  train_folds "$prefix" train_cnn1d_ae_large
+
+  aggregate_model "$prefix" tsad cnn1d_ae
+  aggregate_model "$prefix" tsad cnn1d_ae_large
 done
-
-
-python -m src.training.aggregate_cv_metrics \
-  --dataset-prefix sisfall_native_2s \
-  --n-folds 5 \
-  --mode tsad \
-  --model cnn1d_ae_large \
-  --model-seed 42
-
-python -m src.training.aggregate_cv_metrics \
-  --dataset-prefix sisfall_native_2s \
-  --n-folds 5 \
-  --mode tsad \
-  --model lstm_ae \
-  --model-seed 42
-
-python -m src.training.aggregate_cv_metrics \
-  --dataset-prefix sisfall_native_2s \
-  --n-folds 5 \
-  --mode classification \
-  --model lstm_classifier \
-  --model-seed 42
-
-  python -m src.training.aggregate_cv_metrics \
-  --dataset-prefix sisfall_native_2s \
-  --n-folds 5 \
-  --mode classification \
-  --model cnn1d_large \
-  --model-seed 42

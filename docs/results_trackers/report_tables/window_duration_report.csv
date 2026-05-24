@@ -1,25 +1,29 @@
 Dataset,Model,Mode,2s F1,3s F1,5s F1,Best Window
-SisFall,Random Forest,classification,0.96 ± 0.02,0.97 ± 0.02,0.98 ± 0.01,5s
-SisFall,XGBoost,classification,0.96 ± 0.02,0.97 ± 0.02,0.97 ± 0.01,5s
-SisFall,CNN1D,classification,0.94 ± 0.02,,,2s
-SisFall,LSTM Classifier,classification,0.95 ± 0.01,0.93 ± 0.03,0.94 ± 0.02,2s
-SisFall,Isolation Forest,tsad,0.67 ± 0.06,0.74 ± 0.04,0.81 ± 0.03,5s
-SisFall,LSTM AE,tsad,0.45 ± 0.04,0.51 ± 0.04,0.58 ± 0.03,5s
-FallAllD,Random Forest,classification,0.79 ± 0.06,0.87 ± 0.05,0.83 ± 0.06,3s
-FallAllD,XGBoost,classification,0.82 ± 0.07,0.87 ± 0.05,0.84 ± 0.06,3s
-FallAllD,CNN1D,classification,0.70 ± 0.10,,,2s
-FallAllD,LSTM Classifier,classification,0.62 ± 0.09,0.78 ± 0.05,0.27 ± 0.06,3s
-FallAllD,Isolation Forest,tsad,0.32 ± 0.11,0.64 ± 0.11,0.38 ± 0.10,3s
-FallAllD,LSTM AE,tsad,0.34 ± 0.18,0.53 ± 0.13,0.49 ± 0.08,3s
-UMAFall,Random Forest,classification,0.87 ± 0.07,0.88 ± 0.06,0.93 ± 0.02,5s
-UMAFall,XGBoost,classification,0.91 ± 0.03,0.89 ± 0.07,0.95 ± 0.02,5s
-UMAFall,CNN1D,classification,0.78 ± 0.07,,,2s
-UMAFall,LSTM Classifier,classification,0.74 ± 0.09,0.71 ± 0.09,0.42 ± 0.06,2s
-UMAFall,Isolation Forest,tsad,0.44 ± 0.05,0.51 ± 0.04,0.60 ± 0.04,5s
-UMAFall,LSTM AE,tsad,0.38 ± 0.05,0.45 ± 0.06,0.52 ± 0.08,5s
-UP-FALL,Random Forest,classification,0.86 ± 0.11,0.95 ± 0.03,0.95 ± 0.04,5s
-UP-FALL,XGBoost,classification,0.91 ± 0.03,0.92 ± 0.03,0.96 ± 0.03,5s
-UP-FALL,CNN1D,classification,0.68 ± 0.12,,,2s
-UP-FALL,LSTM Classifier,classification,0.49 ± 0.20,0.15 ± 0.10,0.21 ± 0.13,2s
-UP-FALL,Isolation Forest,tsad,0.33 ± 0.05,0.45 ± 0.08,0.46 ± 0.04,5s
-UP-FALL,LSTM AE,tsad,0.32 ± 0.02,0.41 ± 0.04,0.44 ± 0.06,5s
+SisFall,Random Forest,classification,0.965,0.967,0.975,5s
+SisFall,XGBoost,classification,0.964,0.966,0.973,5s
+SisFall,CNN1D,classification,0.941,,,2s
+SisFall,LSTM Classifier,classification,0.953,0.930,0.936,2s
+SisFall,Isolation Forest,tsad,0.670,0.739,0.806,5s
+SisFall,LSTM AE,tsad,0.449,0.508,0.583,5s
+SisFall,CNN1D AE,tsad,0.464,,,2s
+FallAllD,Random Forest,classification,0.794,0.871,0.831,3s
+FallAllD,XGBoost,classification,0.815,0.872,0.836,3s
+FallAllD,CNN1D,classification,0.703,,,2s
+FallAllD,LSTM Classifier,classification,0.623,0.776,0.273,3s
+FallAllD,Isolation Forest,tsad,0.321,0.637,0.379,3s
+FallAllD,LSTM AE,tsad,0.343,0.526,0.491,3s
+FallAllD,CNN1D AE,tsad,0.305,,,2s
+UMAFall,Random Forest,classification,0.866,0.880,0.925,5s
+UMAFall,XGBoost,classification,0.910,0.894,0.955,5s
+UMAFall,CNN1D,classification,0.785,,,2s
+UMAFall,LSTM Classifier,classification,0.740,0.706,0.422,2s
+UMAFall,Isolation Forest,tsad,0.438,0.513,0.601,5s
+UMAFall,LSTM AE,tsad,0.378,0.453,0.519,5s
+UMAFall,CNN1D AE,tsad,0.363,,,2s
+UP-FALL,Random Forest,classification,0.856,0.946,0.951,5s
+UP-FALL,XGBoost,classification,0.914,0.923,0.963,5s
+UP-FALL,CNN1D,classification,0.676,,,2s
+UP-FALL,LSTM Classifier,classification,0.487,0.155,0.207,2s
+UP-FALL,Isolation Forest,tsad,0.332,0.446,0.457,5s
+UP-FALL,LSTM AE,tsad,0.319,0.409,0.444,5s
+UP-FALL,CNN1D AE,tsad,0.297,,,2s
