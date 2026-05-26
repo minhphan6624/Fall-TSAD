@@ -91,8 +91,14 @@ def plot_metric_dataset_subplots(args: argparse.Namespace):
         plt.Rectangle((0, 0), 1, 1, color=COLORS["tsad"], label="tsad"),
     ]
     fig.suptitle(args.metric.replace("_", " ").upper(), y=0.99)
-    fig.legend(handles=handles, loc="upper center", ncol=2, frameon=False)
-    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    fig.legend(
+        handles=handles,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.955),
+        ncol=2,
+        frameon=False,
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.90))
 
     out = next_output_path(args)
     out.parent.mkdir(parents=True, exist_ok=True)
