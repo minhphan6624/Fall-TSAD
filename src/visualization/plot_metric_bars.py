@@ -46,7 +46,7 @@ def next_output_path(args: argparse.Namespace):
     dataset_name = filename_part(args.datasets, "all_datasets")
     mode_name = filename_part(args.modes, "all_modes")
     model_name = filename_part(args.models, "all_models")
-    stem = f"benchmark_bar_{dataset_name}_{mode_name}_{model_name}_{metric_name}"
+    stem = f"{dataset_name}_{mode_name}_{model_name}_{metric_name}"
     out = OUT_DIR / f"{stem}.png"
 
     counter = 2
