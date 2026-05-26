@@ -37,6 +37,25 @@ def filter_tracker(args: argparse.Namespace) -> pd.DataFrame:
     return df.copy()
 
 
+def filename_part(values: list[str] | None, default: str) -> str:
+    return "_".join(values) if values else default
+
+
+def next_output_path(args: argparse.Namespace):
+    metric_name = "_".join(args.metrics)
+    dataset_name = filename_part(args.datasets, "all_datasets")
+    mode_name = filename_part(args.modes, "all_modes")
+    model_name = filename_part(args.models, "all_models")
+    stem = f"benchmark_bar_{dataset_name}_{mode_name}_{model_name}_{metric_name}"
+    out = OUT_DIR / f"{stem}.png"
+
+    counter = 2
+    while out.exists():
+        out = OUT_DIR / f"{stem}_{counter}.png"
+        counter += 1
+    return out
+
+
 def plot_metric_bars(args: argparse.Namespace):
     df = filter_tracker(args)
     missing_metrics = [metric for metric in args.metrics if metric not in df.columns]
@@ -77,8 +96,7 @@ def plot_metric_bars(args: argparse.Namespace):
     fig.legend(handles=handles, loc="upper center", ncol=2, frameon=False)
     fig.tight_layout(rect=(0, 0, 1, 0.93))
 
-    metric_name = "_".join(args.metrics)
-    out = OUT_DIR / f"benchmark_bar_{metric_name}.png"
+    out = next_output_path(args)
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=200)
     plt.close(fig)
