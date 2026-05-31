@@ -4,6 +4,9 @@ import pandas as pd
 
 RUN_ROOT = Path("runs/benchmark")
 TRACKER_PATH = Path("docs/results_trackers/main_benchmark.csv")
+SAMPLING_RATE_REPORT_PATH = Path("docs/results_trackers/sampling_rate_report.csv")
+EASY_ADL_REPORT_PATH = Path("docs/results_trackers/easy_adl_report.csv")
+WINDOW_DURATION_REPORT_PATH = Path("docs/results_trackers/window_duration_report.csv")
 OUT_DIR = Path("figures/model_performance")
 MODEL_SEED = 42
 N_FOLDS = 5
@@ -14,6 +17,12 @@ BEST_MAIN_MODELS = {
     "umafall": {"classification": "xgboost", "tsad": "dense_ae"},
     "upfall": {"classification": "xgboost", "tsad": "isolation_forest"},
 }
+REPRESENTATIVE_WINDOW_MODELS = (
+    "XGBoost",
+    "CNN1D",
+    "Isolation Forest",
+    "LSTM AE",
+)
 DISPLAY_NAMES = {
     "cnn1d": "CNN1D",
     "cnn1d_ae": "CNN1D AE",
