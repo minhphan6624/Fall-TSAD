@@ -66,7 +66,7 @@ def plot_pr_curves(args: argparse.Namespace):
         linewidth=1.0,
         label=f"Prevalence={positive_rate:.3f}",
     )
-    ax.set_title(f"{args.dataset} precision-recall curve")
+    ax.set_title(f"{args.dataset}")
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
     ax.set_xlim(0, 1.01)
